@@ -17,5 +17,6 @@ export function DynamicComponent({ type, props, value, onChange }: DynamicCompon
     return null
   }
   
-  return <Component {...props} value={value} onChange={onChange} />
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <Component {...(props as any)} value={value} onChange={onChange} />
 }

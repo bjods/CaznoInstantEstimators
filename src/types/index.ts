@@ -2,6 +2,8 @@ export interface WidgetConfig {
   steps: WidgetStep[]
   showInstantQuote: boolean
   priceDisplay: 'exact' | 'range' | 'hidden'
+  showProgressBar?: boolean
+  thankYouMessage?: string
 }
 
 export interface WidgetStep {

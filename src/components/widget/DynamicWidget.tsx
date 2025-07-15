@@ -15,7 +15,7 @@ export default function DynamicWidget({ widget }: DynamicWidgetProps) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { config, theme } = widget
+  const { config } = widget
 
   const updateField = (name: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -79,22 +79,14 @@ export default function DynamicWidget({ widget }: DynamicWidgetProps) {
   const progress = ((currentStep + 1) / config.steps.length) * 100
 
   return (
-    <div 
-      className="mx-auto p-6"
-      style={{
-        maxWidth: theme.containerMaxWidth,
-        width: theme.containerWidth,
-        fontFamily: theme.fontFamily
-      }}
-    >
+    <div className="max-w-2xl mx-auto p-6">
       {config.showProgressBar && (
         <div className="mb-8">
           <div className="bg-gray-200 rounded-full h-2">
             <div 
-              className="h-2 rounded-full transition-all duration-300"
+              className="h-2 rounded-full transition-all duration-300 bg-blue-600"
               style={{
-                width: `${progress}%`,
-                backgroundColor: theme.primaryColor
+                width: `${progress}%`
               }}
             />
           </div>
@@ -113,8 +105,8 @@ export default function DynamicWidget({ widget }: DynamicWidgetProps) {
               key={`${currentStep}-${idx}`}
               type={component.type}
               props={component.props}
-              value={formData[component.props.name]}
-              onChange={(value) => updateField(component.props.name, value)}
+              value={formData[component.props.name as string]}
+              onChange={(value) => updateField(component.props.name as string, value)}
             />
           ))}
         </div>
@@ -138,11 +130,7 @@ export default function DynamicWidget({ widget }: DynamicWidgetProps) {
           <button
             onClick={handleNext}
             disabled={submitting}
-            className="ml-auto px-6 py-2 text-white rounded-lg hover:opacity-90 disabled:opacity-50"
-            style={{
-              backgroundColor: theme.primaryColor,
-              borderRadius: theme.borderRadius
-            }}
+            className="ml-auto px-6 py-2 text-white bg-blue-600 rounded-lg hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? 'Submitting...' : 
              currentStep === config.steps.length - 1 ? 'Submit' : 'Next'}

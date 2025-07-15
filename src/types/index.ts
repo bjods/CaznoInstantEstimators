@@ -12,7 +12,7 @@ export interface WidgetStep {
 
 export interface ComponentConfig {
   type: string
-  props: Record<string, any>
+  props: Record<string, unknown>
 }
 
 export interface Widget {

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Widget } from '@/types'
-import { ComponentMap } from '../widget-library'
 import { DynamicComponent } from './DynamicComponent'
 
 interface DynamicWidgetProps {
@@ -11,14 +10,14 @@ interface DynamicWidgetProps {
 
 export default function DynamicWidget({ widget }: DynamicWidgetProps) {
   const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [formData, setFormData] = useState<Record<string, string | number>>({})
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { config, theme } = widget
 
-  const updateField = (name: string, value: any) => {
+  const updateField = (name: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 

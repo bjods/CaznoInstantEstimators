@@ -23,8 +23,7 @@ export function RadioGroup({
   label,
   name,
   helpText,
-  required,
-  ...props 
+  required
 }: RadioGroupProps) {
   return (
     <div className="space-y-2">

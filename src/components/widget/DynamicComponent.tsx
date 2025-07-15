@@ -4,9 +4,9 @@ import { ComponentMap } from '@/components/widget-library'
 
 interface DynamicComponentProps {
   type: string
-  props: Record<string, any>
-  value: any
-  onChange: (value: any) => void
+  props: Record<string, unknown>
+  value: string | number
+  onChange: (value: string | number) => void
 }
 
 export function DynamicComponent({ type, props, value, onChange }: DynamicComponentProps) {

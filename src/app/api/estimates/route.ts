@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (error) throw error
 
     return NextResponse.json(data, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to create estimate' },
       { status: 500 }
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch estimates' },
       { status: 500 }

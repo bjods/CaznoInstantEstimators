@@ -17,7 +17,7 @@ export async function GET(
     if (error) throw error
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Widget not found' },
       { status: 404 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 export default function Home() {
   const [showNav, setShowNav] = useState(false)
@@ -32,9 +33,9 @@ export default function Home() {
                 <a href="#stats" className="text-gray-700 hover:text-black transition-colors">STATS</a>
                 <a href="#about" className="text-gray-700 hover:text-black transition-colors">ABOUT</a>
                 <a href="#testimonials" className="text-gray-700 hover:text-black transition-colors">REVIEWS</a>
-                <button className="bg-lime-400 text-black px-6 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">
+                <Link href="/onboarding" className="bg-lime-400 text-black px-6 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">
                   GET STARTED
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -80,9 +81,9 @@ export default function Home() {
             focused on growth.
           </h1>
           
-          <button className="bg-lime-400 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-lime-300 transition-colors transform hover:scale-105">
-            START BUILDING
-          </button>
+          <Link href="/onboarding" className="inline-block bg-lime-400 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-lime-300 transition-colors transform hover:scale-105">
+            GET STARTED
+          </Link>
         </div>
       </section>
 
@@ -227,9 +228,9 @@ export default function Home() {
           <p className="text-xl text-gray-600 mb-12">
             Join hundreds of contractors already using Cazno to grow their business.
           </p>
-          <button className="bg-lime-400 text-black px-12 py-4 rounded-full font-bold text-xl hover:bg-lime-300 transition-colors transform hover:scale-105">
+          <Link href="/onboarding" className="inline-block bg-lime-400 text-black px-12 py-4 rounded-full font-bold text-xl hover:bg-lime-300 transition-colors transform hover:scale-105">
             GET STARTED
-          </button>
+          </Link>
         </div>
       </section>
     </div>

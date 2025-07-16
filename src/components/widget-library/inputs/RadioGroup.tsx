@@ -1,17 +1,8 @@
-'use client'
-
-export interface RadioOption {
-  value: string
-  label: string
-  description?: string
-}
-
 export interface RadioGroupProps {
   value: string
   onChange: (value: string) => void
-  options: RadioOption[]
+  options: Array<{ value: string; label: string; description?: string }>
   label?: string
-  name?: string
   helpText?: string
   required?: boolean
 }
@@ -19,9 +10,8 @@ export interface RadioGroupProps {
 export function RadioGroup({ 
   value, 
   onChange, 
-  options,
+  options, 
   label,
-  name,
   helpText,
   required
 }: RadioGroupProps) {
@@ -34,29 +24,23 @@ export function RadioGroup({
         </label>
       )}
       
-      <div className="space-y-2">
+      <div className="space-y-3">
         {options.map((option) => (
           <label
             key={option.value}
-            className="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
+            className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
           >
             <input
               type="radio"
-              name={name || label}
               value={option.value}
               checked={value === option.value}
               onChange={(e) => onChange(e.target.value)}
-              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
-              required={required && !value}
+              className="mt-1 mr-4 text-blue-500 focus:ring-blue-500"
             />
-            <div className="ml-3">
-              <div className="text-sm font-medium text-gray-900">
-                {option.label}
-              </div>
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">{option.label}</div>
               {option.description && (
-                <div className="text-sm text-gray-500">
-                  {option.description}
-                </div>
+                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
               )}
             </div>
           </label>

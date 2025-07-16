@@ -11,3 +11,6 @@ export const ComponentMap = {
 } as const
 
 export type ComponentType = keyof typeof ComponentMap
+
+// Re-export components for direct imports
+export { TextInput, RadioGroup, LinearFeetInput, NumberInput }

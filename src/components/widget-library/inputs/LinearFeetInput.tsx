@@ -1,38 +1,24 @@
-'use client'
-
 export interface LinearFeetInputProps {
   value: number
   onChange: (value: number) => void
   label?: string
   placeholder?: string
   helpText?: string
-  name?: string
+  required?: boolean
   min?: number
   max?: number
-  required?: boolean
 }
 
-export function LinearFeetInput({
-  value,
-  onChange,
+export function LinearFeetInput({ 
+  value, 
+  onChange, 
   label,
   placeholder,
   helpText,
-  name,
-  min = 0,
-  max,
   required,
-  ...props
+  min,
+  max
 }: LinearFeetInputProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const numValue = parseFloat(e.target.value)
-    if (!isNaN(numValue)) {
-      onChange(numValue)
-    } else if (e.target.value === '') {
-      onChange(0)
-    }
-  }
-
   return (
     <div className="space-y-2">
       {label && (
@@ -46,23 +32,26 @@ export function LinearFeetInput({
         <input
           type="number"
           value={value || ''}
-          onChange={handleChange}
+          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           placeholder={placeholder}
-          name={name}
+          required={required}
           min={min}
           max={max}
-          step="0.1"
-          required={required}
-          className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          {...props}
+          className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
         />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-          ft
-        </span>
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <span className="text-gray-500 text-sm">ft</span>
+        </div>
       </div>
       
       {helpText && (
         <p className="text-sm text-gray-500">{helpText}</p>
+      )}
+      
+      {min && max && (
+        <p className="text-xs text-gray-400">
+          Range: {min} - {max} feet
+        </p>
       )}
     </div>
   )

@@ -1,12 +1,10 @@
-'use client'
-
 import { ComponentMap } from '@/components/widget-library'
 
 interface DynamicComponentProps {
   type: string
-  props: Record<string, unknown>
-  value: string | number
-  onChange: (value: string | number) => void
+  props: Record<string, any>
+  value: any
+  onChange: (value: any) => void
 }
 
 export function DynamicComponent({ type, props, value, onChange }: DynamicComponentProps) {
@@ -14,9 +12,12 @@ export function DynamicComponent({ type, props, value, onChange }: DynamicCompon
   
   if (!Component) {
     console.error(`Component type "${type}" not found`)
-    return null
+    return (
+      <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+        <p className="text-red-600">Unknown component type: {type}</p>
+      </div>
+    )
   }
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <Component {...(props as any)} value={value} onChange={onChange} />
+  return <Component {...props} value={value} onChange={onChange} />
 }

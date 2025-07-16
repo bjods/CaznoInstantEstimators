@@ -1,5 +1,3 @@
-'use client'
-
 export interface TextInputProps {
   value: string
   onChange: (value: string) => void
@@ -8,7 +6,6 @@ export interface TextInputProps {
   helpText?: string
   required?: boolean
   type?: 'text' | 'email' | 'tel'
-  name?: string
 }
 
 export function TextInput({ 
@@ -18,9 +15,7 @@ export function TextInput({
   placeholder,
   helpText,
   required,
-  type = 'text',
-  name,
-  ...props 
+  type = 'text'
 }: TextInputProps) {
   return (
     <div className="space-y-2">
@@ -37,9 +32,7 @@ export function TextInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        name={name}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        {...props}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
       />
       
       {helpText && (

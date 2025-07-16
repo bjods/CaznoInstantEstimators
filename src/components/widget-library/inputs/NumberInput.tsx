@@ -1,40 +1,26 @@
-'use client'
-
 export interface NumberInputProps {
   value: number
   onChange: (value: number) => void
   label?: string
   placeholder?: string
   helpText?: string
-  name?: string
+  required?: boolean
   min?: number
   max?: number
   step?: number
-  required?: boolean
 }
 
-export function NumberInput({
-  value,
-  onChange,
+export function NumberInput({ 
+  value, 
+  onChange, 
   label,
   placeholder,
   helpText,
-  name,
+  required,
   min,
   max,
-  step = 1,
-  required,
-  ...props
+  step = 1
 }: NumberInputProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const numValue = parseFloat(e.target.value)
-    if (!isNaN(numValue)) {
-      onChange(numValue)
-    } else if (e.target.value === '') {
-      onChange(0)
-    }
-  }
-
   return (
     <div className="space-y-2">
       {label && (
@@ -47,19 +33,23 @@ export function NumberInput({
       <input
         type="number"
         value={value || ''}
-        onChange={handleChange}
+        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         placeholder={placeholder}
-        name={name}
+        required={required}
         min={min}
         max={max}
         step={step}
-        required={required}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        {...props}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
       />
       
       {helpText && (
         <p className="text-sm text-gray-500">{helpText}</p>
+      )}
+      
+      {min !== undefined && max !== undefined && (
+        <p className="text-xs text-gray-400">
+          Range: {min} - {max}
+        </p>
       )}
     </div>
   )

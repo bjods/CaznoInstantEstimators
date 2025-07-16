@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 export default function Home() {
   const [showNav, setShowNav] = useState(false)
+  const [activeCalculator, setActiveCalculator] = useState('fencing')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,42 +93,70 @@ export default function Home() {
             Award-winning estimate calculators.
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white rounded-2xl p-8 shadow-lg transform hover:scale-105 transition-transform">
-              <div className="w-full h-64 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl mb-6 flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">FENCING</span>
-              </div>
-              <h3 className="text-xl font-bold mb-4">Fencing Calculator</h3>
-              <p className="text-gray-600">Instant quotes for residential and commercial fencing projects</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-8 shadow-lg transform hover:scale-105 transition-transform">
-              <div className="w-full h-64 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl mb-6 flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">CONCRETE</span>
-              </div>
-              <h3 className="text-xl font-bold mb-4">Concrete Calculator</h3>
-              <p className="text-gray-600">Calculate driveways, patios, and foundation costs instantly</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-8 shadow-lg transform hover:scale-105 transition-transform">
-              <div className="w-full h-64 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl mb-6 flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">LANDSCAPE</span>
-              </div>
-              <h3 className="text-xl font-bold mb-4">Landscaping Calculator</h3>
-              <p className="text-gray-600">Design and installation pricing calculated in seconds</p>
+          {/* Large Calculator Card */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div 
+              className={`w-full h-96 rounded-2xl shadow-xl transition-all duration-500 ${
+                activeCalculator === 'fencing' 
+                  ? 'bg-gradient-to-br from-blue-500 to-purple-600' 
+                  : activeCalculator === 'concrete'
+                  ? 'bg-gradient-to-br from-green-500 to-teal-600'
+                  : activeCalculator === 'landscaping'
+                  ? 'bg-gradient-to-br from-orange-500 to-red-600'
+                  : 'bg-gradient-to-br from-gray-400 to-gray-600'
+              }`}
+            >
+              {/* Blank card - will add calculator content later */}
             </div>
           </div>
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12">
             We shape estimating that feels like you. Honest, sharp, and built to stick in 
-            people's minds long after they've scrolled past or walked away.
+            people&apos;s minds long after they&apos;ve scrolled past or walked away.
           </p>
 
+          {/* Calculator Type Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
-            <span className="bg-gray-200 text-gray-700 px-6 py-3 rounded-full">FENCING</span>
-            <span className="bg-black text-white px-6 py-3 rounded-full">CONCRETE</span>
-            <span className="bg-gray-200 text-gray-700 px-6 py-3 rounded-full">LANDSCAPING</span>
-            <span className="bg-gray-200 text-gray-700 px-6 py-3 rounded-full">ROOFING</span>
+            <button 
+              onClick={() => setActiveCalculator('fencing')}
+              className={`px-6 py-3 rounded-full transition-colors ${
+                activeCalculator === 'fencing' 
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              FENCING
+            </button>
+            <button 
+              onClick={() => setActiveCalculator('concrete')}
+              className={`px-6 py-3 rounded-full transition-colors ${
+                activeCalculator === 'concrete' 
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              CONCRETE
+            </button>
+            <button 
+              onClick={() => setActiveCalculator('landscaping')}
+              className={`px-6 py-3 rounded-full transition-colors ${
+                activeCalculator === 'landscaping' 
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              LANDSCAPING
+            </button>
+            <button 
+              onClick={() => setActiveCalculator('roofing')}
+              className={`px-6 py-3 rounded-full transition-colors ${
+                activeCalculator === 'roofing' 
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              ROOFING
+            </button>
           </div>
         </div>
       </section>

@@ -34,6 +34,32 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     }))
   }
 
+  const getFieldValue = (name: string, componentType: string) => {
+    if (formData[name] !== undefined) {
+      return formData[name]
+    }
+    
+    // Set default values based on component type
+    switch (componentType) {
+      case 'checkbox_group':
+        return []
+      case 'map_with_drawing':
+        return {
+          mode: 'area',
+          coordinates: [],
+          measurements: {}
+        }
+      case 'toggle_switch':
+        return false
+      case 'slider_input':
+        return 1000
+      case 'file_upload':
+        return null
+      default:
+        return ''
+    }
+  }
+
   const handleNext = () => {
     if (currentStep < config.steps.length - 1) {
       setCurrentStep(currentStep + 1)
@@ -88,8 +114,9 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
             key={`${currentStep}-${idx}`}
             type={component.type}
             props={component.props}
-            value={formData[component.props.name]}
+            value={getFieldValue(component.props.name, component.type)}
             onChange={(value) => updateField(component.props.name, value)}
+            formData={formData}
           />
         ))}
       </div>

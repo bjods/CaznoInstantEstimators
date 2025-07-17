@@ -9,7 +9,7 @@ export interface TextInputProps {
 }
 
 export function TextInput({ 
-  value, 
+  value = '', 
   onChange, 
   label,
   placeholder,

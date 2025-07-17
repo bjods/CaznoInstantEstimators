@@ -5,9 +5,10 @@ interface DynamicComponentProps {
   props: Record<string, any>
   value: any
   onChange: (value: any) => void
+  formData?: Record<string, any>
 }
 
-export function DynamicComponent({ type, props, value, onChange }: DynamicComponentProps) {
+export function DynamicComponent({ type, props, value, onChange, formData }: DynamicComponentProps) {
   const Component = ComponentMap[type as keyof typeof ComponentMap]
   
   if (!Component) {
@@ -17,6 +18,13 @@ export function DynamicComponent({ type, props, value, onChange }: DynamicCompon
         <p className="text-red-600">Unknown component type: {type}</p>
       </div>
     )
+  }
+  
+  // Special handling for MapWithDrawing to pass address from previous step
+  if (type === 'map_with_drawing' && formData) {
+    // Look for address in form data - common field names
+    const address = formData.address || formData.property_address || formData.location || formData.site_address
+    return <Component {...props} value={value} onChange={onChange} address={address} />
   }
   
   return <Component {...props} value={value} onChange={onChange} />

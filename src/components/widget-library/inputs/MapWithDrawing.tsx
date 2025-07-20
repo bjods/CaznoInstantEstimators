@@ -5,7 +5,6 @@ import { Loader } from '@googlemaps/js-api-loader'
 
 export interface MapWithDrawingProps {
   value: {
-    mode: 'linear' | 'area' | 'placement'
     coordinates: google.maps.LatLngLiteral[]
     measurements: {
       length?: number // feet for linear
@@ -17,7 +16,7 @@ export interface MapWithDrawingProps {
   }
   onChange: (value: MapWithDrawingProps['value']) => void
   address?: string
-  mode?: 'linear' | 'area' | 'placement'
+  mode: 'linear' | 'area' | 'placement' // Required from config
   label?: string
   helpText?: string
   required?: boolean
@@ -27,7 +26,7 @@ export function MapWithDrawing({
   value,
   onChange,
   address,
-  mode: defaultMode = 'area',
+  mode,
   label,
   helpText,
   required
@@ -69,21 +68,19 @@ export function MapWithDrawing({
     if (!isLoaded || !mapRef.current) return
 
     const mapInstance = new google.maps.Map(mapRef.current, {
-      zoom: 18,
+      zoom: 20,
       center: { lat: 40.7128, lng: -74.0060 }, // Default to NYC
-      mapTypeId: 'satellite'
+      mapTypeId: 'satellite',
+      tilt: 0, // Force top-down view
+      streetViewControl: false, // Remove street view
+      mapTypeControl: false, // Remove map type switcher
+      fullscreenControl: false, // Remove fullscreen button
+      rotateControl: false, // Remove rotation control
+      scaleControl: true, // Keep scale for measurements
+      zoomControl: true // Keep zoom controls
     })
 
     setMap(mapInstance)
-
-    // Initialize with default mode if value is empty
-    if (!value.mode) {
-      onChange({
-        mode: defaultMode,
-        coordinates: [],
-        measurements: {}
-      })
-    }
 
     // Geocode address if provided
     if (address) {
@@ -95,7 +92,7 @@ export function MapWithDrawing({
         }
       })
     }
-  }, [isLoaded, address, defaultMode, value.mode, onChange])
+  }, [isLoaded, address])
 
   useEffect(() => {
     if (!map) return
@@ -105,7 +102,7 @@ export function MapWithDrawing({
 
       const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() }
       
-      if (value.mode === 'linear') {
+      if (mode === 'linear') {
         const newPath = [...drawingPath, newPoint]
         setDrawingPath(newPath)
         
@@ -125,11 +122,10 @@ export function MapWithDrawing({
         
         const length = calculatePolylineLength(newPath)
         onChange({
-          mode: 'linear',
           coordinates: newPath,
           measurements: { length }
         })
-      } else if (value.mode === 'area') {
+      } else if (mode === 'area') {
         const newPath = [...drawingPath, newPoint]
         setDrawingPath(newPath)
         
@@ -151,12 +147,11 @@ export function MapWithDrawing({
         if (newPath.length >= 3) {
           const area = calculatePolygonArea(newPath)
           onChange({
-            mode: 'area',
             coordinates: newPath,
             measurements: { area, squareFeet: area }
           })
         }
-      } else if (value.mode === 'placement') {
+      } else if (mode === 'placement') {
         if (drawingPath.length === 0) {
           setDrawingPath([newPoint])
         } else {
@@ -182,7 +177,6 @@ export function MapWithDrawing({
           
           const { width, height } = calculateRectangleDimensions(startPoint, newPoint)
           onChange({
-            mode: 'placement',
             coordinates: [startPoint, newPoint],
             measurements: { width, height }
           })
@@ -195,7 +189,7 @@ export function MapWithDrawing({
     return () => {
       google.maps.event.removeListener(clickListener)
     }
-  }, [map, value.mode, drawingPath, currentDrawing, onChange])
+  }, [map, mode, drawingPath, currentDrawing, onChange])
 
   const calculatePolylineLength = (path: google.maps.LatLngLiteral[]): number => {
     if (path.length < 2) return 0
@@ -248,23 +242,10 @@ export function MapWithDrawing({
     }
     setDrawingPath([])
     onChange({
-      mode: value.mode,
       coordinates: [],
       measurements: {}
     })
   }
-
-  const setMode = (mode: 'linear' | 'area' | 'placement') => {
-    clearDrawing()
-    onChange({
-      mode,
-      coordinates: [],
-      measurements: {}
-    })
-  }
-
-  // Use current mode or default mode
-  const currentMode = value.mode || defaultMode
 
   if (error) {
     return (
@@ -291,46 +272,16 @@ export function MapWithDrawing({
         </label>
       )}
 
-      <div className="flex gap-2 mb-4">
-        <button
-          type="button"
-          onClick={() => setMode('linear')}
-          className={`px-4 py-2 rounded-lg border transition-colors ${
-            currentMode === 'linear' 
-              ? 'bg-blue-500 text-white border-blue-500' 
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          Linear
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('area')}
-          className={`px-4 py-2 rounded-lg border transition-colors ${
-            currentMode === 'area' 
-              ? 'bg-blue-500 text-white border-blue-500' 
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          Area
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('placement')}
-          className={`px-4 py-2 rounded-lg border transition-colors ${
-            currentMode === 'placement' 
-              ? 'bg-blue-500 text-white border-blue-500' 
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          Placement
-        </button>
+      <div className="flex justify-between items-center mb-3">
+        <div className="text-sm text-gray-600">
+          <strong>Mode:</strong> {mode === 'linear' ? 'Linear Drawing' : mode === 'area' ? 'Area Drawing' : 'Rectangle Placement'}
+        </div>
         <button
           type="button"
           onClick={clearDrawing}
-          className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+          className="px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
         >
-          Clear
+          Clear Drawing
         </button>
       </div>
 
@@ -365,12 +316,12 @@ export function MapWithDrawing({
         </div>
       )}
 
-      <div className="text-sm text-gray-500">
+      <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-700">
+        <p className="font-medium mb-1">Instructions:</p>
         <p>
-          <strong>{currentMode === 'linear' ? 'Linear' : currentMode === 'area' ? 'Area' : 'Placement'} Mode:</strong>{' '}
-          {currentMode === 'linear' && 'Click points to draw a line'}
-          {currentMode === 'area' && 'Click points to draw a polygon'}
-          {currentMode === 'placement' && 'Click two points to draw a rectangle'}
+          {mode === 'linear' && '• Click multiple points to draw lines. Each click adds a new segment.'}
+          {mode === 'area' && '• Click points to create a polygon. Click at least 3 points to calculate area.'}
+          {mode === 'placement' && '• Click twice: first for one corner, then for the opposite corner to place a rectangle.'}
         </p>
       </div>
 

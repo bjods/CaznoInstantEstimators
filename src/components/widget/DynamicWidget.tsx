@@ -45,7 +45,6 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         return []
       case 'map_with_drawing':
         return {
-          mode: 'area',
           coordinates: [],
           measurements: {}
         }

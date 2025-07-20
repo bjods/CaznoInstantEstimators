@@ -23,7 +23,7 @@ export interface MapWithDrawingProps {
 }
 
 export function MapWithDrawing({
-  value,
+  value = { coordinates: [], measurements: {} },
   onChange,
   address,
   mode,
@@ -184,10 +184,12 @@ export function MapWithDrawing({
       }
     }
 
-    map.addListener('click', clickListener)
+    const listener = map.addListener('click', clickListener)
     
     return () => {
-      google.maps.event.removeListener(clickListener)
+      if (listener) {
+        google.maps.event.removeListener(listener)
+      }
     }
   }, [map, mode, drawingPath, currentDrawing, onChange])
 
@@ -272,16 +274,13 @@ export function MapWithDrawing({
         </label>
       )}
 
-      <div className="flex justify-between items-center mb-3">
-        <div className="text-sm text-gray-600">
-          <strong>Mode:</strong> {mode === 'linear' ? 'Linear Drawing' : mode === 'area' ? 'Area Drawing' : 'Rectangle Placement'}
-        </div>
+      <div className="flex justify-end mb-2">
         <button
           type="button"
           onClick={clearDrawing}
-          className="px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
+          className="text-sm text-gray-500 hover:text-red-600 transition-colors"
         >
-          Clear Drawing
+          Clear
         </button>
       </div>
 
@@ -298,35 +297,18 @@ export function MapWithDrawing({
         )}
       </div>
 
-      {value.measurements && (
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-medium text-gray-900 mb-2">Measurements</h4>
+      {value.measurements && Object.keys(value.measurements).length > 0 && (
+        <div className="mt-3 text-sm text-gray-600">
           {value.measurements.length && (
-            <p className="text-sm text-gray-600">Length: {value.measurements.length.toFixed(2)} feet</p>
+            <span>Length: {value.measurements.length.toFixed(0)} ft</span>
           )}
           {(value.measurements.area || value.measurements.squareFeet) && (
-            <p className="text-sm text-gray-600">Area: {(value.measurements.area || value.measurements.squareFeet || 0).toFixed(2)} square feet</p>
+            <span>Area: {(value.measurements.area || value.measurements.squareFeet || 0).toFixed(0)} sq ft</span>
           )}
           {value.measurements.width && value.measurements.height && (
-            <div className="text-sm text-gray-600">
-              <p>Width: {value.measurements.width.toFixed(2)} feet</p>
-              <p>Height: {value.measurements.height.toFixed(2)} feet</p>
-            </div>
+            <span>{value.measurements.width.toFixed(0)} × {value.measurements.height.toFixed(0)} ft</span>
           )}
         </div>
-      )}
-
-      <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-700">
-        <p className="font-medium mb-1">Instructions:</p>
-        <p>
-          {mode === 'linear' && '• Click multiple points to draw lines. Each click adds a new segment.'}
-          {mode === 'area' && '• Click points to create a polygon. Click at least 3 points to calculate area.'}
-          {mode === 'placement' && '• Click twice: first for one corner, then for the opposite corner to place a rectangle.'}
-        </p>
-      </div>
-
-      {helpText && (
-        <p className="text-sm text-gray-500">{helpText}</p>
       )}
     </div>
   )

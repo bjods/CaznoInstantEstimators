@@ -59,7 +59,7 @@ export function AddressAutocomplete({
       fields: ['formatted_address', 'geometry', 'address_components']
     })
 
-    autocomplete.addListener('place_changed', () => {
+    const listener = autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace()
       if (place.formatted_address) {
         onChange(place.formatted_address, place)
@@ -69,7 +69,9 @@ export function AddressAutocomplete({
     autocompleteRef.current = autocomplete
 
     return () => {
-      google.maps.event.clearInstanceListeners(autocomplete)
+      if (listener) {
+        google.maps.event.removeListener(listener)
+      }
     }
   }, [isLoaded, onChange])
 

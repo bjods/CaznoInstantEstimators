@@ -24,7 +24,8 @@ export function DynamicComponent({ type, props, value, onChange, formData }: Dyn
   if (type === 'map_with_drawing' && formData) {
     // Look for address in form data - common field names
     const address = formData.address || formData.property_address || formData.location || formData.site_address
-    return <Component {...props} value={value} onChange={onChange} address={address} />
+    // Ensure mode is passed from props
+    return <Component {...props} value={value} onChange={onChange} address={address} mode={props.mode} />
   }
   
   return <Component {...props} value={value} onChange={onChange} />

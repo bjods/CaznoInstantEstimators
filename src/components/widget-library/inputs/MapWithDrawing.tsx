@@ -40,7 +40,6 @@ export function MapWithDrawing({
   const [drawMode, setDrawMode] = useState(false)
   const [currentPolygon, setCurrentPolygon] = useState<google.maps.Polygon | null>(null)
   const [polygons, setPolygons] = useState<google.maps.Polygon[]>([])
-  const [addressMarker, setAddressMarker] = useState<google.maps.Marker | null>(null)
   
   // Load Google Maps
   useEffect(() => {
@@ -81,44 +80,12 @@ export function MapWithDrawing({
       const geocoder = new google.maps.Geocoder()
       geocoder.geocode({ address }, (results, status) => {
         if (status === 'OK' && results?.[0]) {
-          const location = results[0].geometry.location
-          mapInstance.setCenter(location)
+          mapInstance.setCenter(results[0].geometry.location)
           mapInstance.setZoom(19)
-          
-          // Clear existing marker
-          if (addressMarker) {
-            addressMarker.setMap(null)
-          }
-          
-          // Add marker at property location
-          const marker = new google.maps.Marker({
-            position: location,
-            map: mapInstance,
-            title: address,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 8,
-              fillColor: '#ef4444',
-              fillOpacity: 1,
-              strokeColor: '#ffffff',
-              strokeWeight: 3,
-            }
-          })
-          
-          setAddressMarker(marker)
         }
       })
     }
-  }, [isLoaded, address, addressMarker])
-
-  // Cleanup marker on unmount
-  useEffect(() => {
-    return () => {
-      if (addressMarker) {
-        addressMarker.setMap(null)
-      }
-    }
-  }, [addressMarker])
+  }, [isLoaded, address])
 
   // Drawing manager
   useEffect(() => {

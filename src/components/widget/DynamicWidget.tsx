@@ -90,69 +90,80 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between text-sm text-gray-500 mb-2">
-          <span>Step {currentStep + 1} of {config.steps.length}</span>
-          <span>{Math.round(((currentStep + 1) / config.steps.length) * 100)}%</span>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header with Progress */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-xl font-semibold text-gray-900">Get Your Instant Estimate</h1>
+            <div className="text-sm text-gray-500">
+              Step {currentStep + 1} of {config.steps.length} ({Math.round(((currentStep + 1) / config.steps.length) * 100)}%)
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentStep + 1) / config.steps.length) * 100}%` }}
+            />
+          </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / config.steps.length) * 100}%` }}
-          />
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 px-6 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Step Title */}
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{currentStepConfig.title}</h2>
+
+          {/* Step Components */}
+          <div className="space-y-8 mb-12">
+            {currentStepConfig.components.map((component, idx) => (
+              <DynamicComponent
+                key={`${currentStep}-${idx}`}
+                type={component.type}
+                props={component.props}
+                value={getFieldValue(component.props.name, component.type)}
+                onChange={(value) => updateField(component.props.name, value)}
+                formData={formData}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </main>
 
-      {/* Step Title */}
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">{currentStepConfig.title}</h2>
-
-      {/* Step Components */}
-      <div className="space-y-6 mb-8">
-        {currentStepConfig.components.map((component, idx) => (
-          <DynamicComponent
-            key={`${currentStep}-${idx}`}
-            type={component.type}
-            props={component.props}
-            value={getFieldValue(component.props.name, component.type)}
-            onChange={(value) => updateField(component.props.name, value)}
-            formData={formData}
-          />
-        ))}
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        <button
-          onClick={handlePrevious}
-          disabled={currentStep === 0}
-          className="px-6 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-        >
-          Previous
-        </button>
-
-        {isLastStep ? (
+      {/* Footer with Navigation */}
+      <footer className="bg-white border-t border-gray-200 px-6 py-6">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button
-            onClick={handleSubmit}
-            className="px-8 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            onClick={handlePrevious}
+            disabled={currentStep === 0}
+            className="px-8 py-3 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors font-medium"
           >
-            Get Quote
+            Previous
           </button>
-        ) : (
-          <button
-            onClick={handleNext}
-            className="px-8 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-          >
-            Next
-          </button>
-        )}
-      </div>
+
+          {isLastStep ? (
+            <button
+              onClick={handleSubmit}
+              className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg"
+            >
+              Get Quote
+            </button>
+          ) : (
+            <button
+              onClick={handleNext}
+              className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg"
+            >
+              Next
+            </button>
+          )}
+        </div>
+      </footer>
 
       {/* Debug Info - Remove in production */}
-      <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-        <h3 className="font-medium mb-2">Form Data (Debug):</h3>
-        <pre className="text-sm text-gray-600">
+      <div className="fixed bottom-4 right-4 w-80 p-4 bg-gray-100 rounded-lg shadow-lg opacity-50 hover:opacity-100 transition-opacity">
+        <h3 className="font-medium mb-2 text-sm">Form Data (Debug):</h3>
+        <pre className="text-xs text-gray-600 max-h-40 overflow-auto">
           {JSON.stringify(formData, null, 2)}
         </pre>
       </div>

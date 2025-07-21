@@ -228,15 +228,18 @@ export function MapWithDrawing({
         </div>
       </div>
 
-      <div className="border border-gray-300 rounded-lg overflow-hidden">
+      <div className="border border-gray-300 rounded-lg overflow-hidden shadow-lg">
         <div 
           ref={mapRef} 
-          className="w-full h-96"
+          className="w-full h-[600px]"
           style={{ display: isLoaded ? 'block' : 'none' }}
         />
         {!isLoaded && (
-          <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
-            <p className="text-gray-500">Loading map...</p>
+          <div className="w-full h-[600px] bg-gray-100 flex items-center justify-center">
+            <div className="text-center">
+              <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-500">Loading map...</p>
+            </div>
           </div>
         )}
       </div>

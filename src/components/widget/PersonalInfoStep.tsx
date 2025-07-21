@@ -50,6 +50,23 @@ export function PersonalInfoStep({ formData, updateField, onComplete }: Personal
         <p className="text-lg text-gray-600">
           We'll need some basic information to provide you with an accurate estimate
         </p>
+        
+        {/* Debug Skip Button */}
+        <div className="mt-6">
+          <button
+            onClick={() => {
+              updateField('firstName', 'John')
+              updateField('lastName', 'Doe')
+              updateField('email', 'john.doe@example.com')
+              updateField('phone', '(555) 123-4567')
+              updateField('address', '123 Main St, Toronto, ON')
+              setTimeout(() => onComplete(), 100)
+            }}
+            className="text-sm text-gray-500 hover:text-blue-600 underline transition-colors"
+          >
+            🚀 Skip for Testing (Auto-fill & Continue)
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6">

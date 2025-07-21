@@ -310,7 +310,56 @@ Google Places address autocomplete.
 }
 ```
 
-### 13. map_with_drawing
+### 13. service_selection
+Visual card-based service selection with images, titles, and descriptions.
+```json
+{
+  "type": "service_selection",
+  "props": {
+    "name": "selected_services",
+    "label": "What services do you need?",
+    "helpText": "Select all services you're interested in",
+    "multiple": true,
+    "required": true,
+    "options": [
+      {
+        "value": "concrete_driveway",
+        "title": "Concrete Driveways",
+        "description": "Professional concrete driveway installation and repair",
+        "image": "https://example.com/images/concrete-driveway.jpg"
+      },
+      {
+        "value": "lawn_care",
+        "title": "Lawn Care Services", 
+        "description": "Weekly lawn maintenance, fertilization, and weed control",
+        "image": "https://example.com/images/lawn-care.jpg"
+      },
+      {
+        "value": "snow_removal",
+        "title": "Snow Removal",
+        "description": "24/7 residential snow plowing and ice management"
+      }
+    ]
+  }
+}
+```
+
+**Properties:**
+- `multiple`: Boolean - Allow multiple service selection (default: false)
+- `options`: Array of service objects with:
+  - `value`: Unique identifier for the service
+  - `title`: Service name displayed on card
+  - `description`: Service description text
+  - `image`: Optional - URL to service image (shows placeholder if omitted)
+
+**Notes:**
+- Cards are displayed in a responsive grid (1-3 columns based on screen size)
+- Selected cards show blue ring and checkmark
+- Images should be high quality and relevant to the service
+- If no image provided, shows placeholder with camera icon
+- Cards have hover effects and smooth transitions
+
+### 14. map_with_drawing
 Interactive map for area/line drawing. Always shows satellite view with top-down perspective.
 
 **Mode Options:**
@@ -423,6 +472,63 @@ Interactive map for area/line drawing. Always shows satellite view with top-down
             "mode": "area",
             "required": true,
             "helpText": "Click points to outline the lawn area"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Multi-Service Home Contractor Estimator
+```json
+{
+  "steps": [
+    {
+      "id": "service-selection",
+      "title": "Services Needed",
+      "components": [
+        {
+          "type": "service_selection",
+          "props": {
+            "name": "selected_services",
+            "label": "What services do you need?",
+            "helpText": "Select all services you're interested in",
+            "multiple": true,
+            "required": true,
+            "options": [
+              {
+                "value": "concrete_driveway",
+                "title": "Concrete Driveways",
+                "description": "Professional concrete driveway installation and repair",
+                "image": "https://example.com/images/concrete-driveway.jpg"
+              },
+              {
+                "value": "landscaping",
+                "title": "Landscaping",
+                "description": "Complete landscape design and installation services",
+                "image": "https://example.com/images/landscaping.jpg"
+              },
+              {
+                "value": "snow_removal",
+                "title": "Snow Removal",
+                "description": "24/7 residential snow plowing and ice management"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "project-location", 
+      "title": "Project Location",
+      "components": [
+        {
+          "type": "address_autocomplete",
+          "props": {
+            "name": "project_address",
+            "label": "Property Address",
+            "required": true
           }
         }
       ]

@@ -49,10 +49,11 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     // Set default values based on component type
     switch (componentType) {
       case 'checkbox_group':
+      case 'service_selection':
         return []
       case 'map_with_drawing':
         return {
-          coordinates: [],
+          shapes: [],
           measurements: {}
         }
       case 'toggle_switch':

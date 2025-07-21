@@ -85,6 +85,12 @@ export function MapWithDrawing({
       if (status === 'OK' && results?.[0]) {
         map.setCenter(results[0].geometry.location)
         map.setZoom(19)
+        
+        // Add marker at property location
+        new google.maps.Marker({
+          position: results[0].geometry.location,
+          map: map
+        })
       }
     })
   }, [map, address])

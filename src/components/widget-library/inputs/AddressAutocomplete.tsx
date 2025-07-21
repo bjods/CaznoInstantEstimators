@@ -10,6 +10,7 @@ export interface AddressAutocompleteProps {
   placeholder?: string
   helpText?: string
   required?: boolean
+  onEnter?: () => void
 }
 
 export function AddressAutocomplete({
@@ -18,7 +19,8 @@ export function AddressAutocomplete({
   label,
   placeholder = "Enter address...",
   helpText,
-  required
+  required,
+  onEnter
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -92,11 +94,17 @@ export function AddressAutocomplete({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && onEnter) {
+            e.preventDefault()
+            onEnter()
+          }
+        }}
         placeholder={!isLoaded ? "Loading..." : placeholder}
         disabled={!isLoaded}
         required={required}
         autoComplete="off"
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors disabled:bg-gray-50"
+        className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors disabled:bg-gray-50"
       />
       
       {helpText && (

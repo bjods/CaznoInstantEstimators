@@ -12,6 +12,9 @@ import { FileUpload } from './inputs/FileUpload'
 import { ToggleSwitch } from './inputs/ToggleSwitch'
 import { SliderInput } from './inputs/SliderInput'
 import { AreaMeasurement } from './inputs/AreaMeasurement'
+import { NameInput } from './inputs/NameInput'
+import { EmailInput } from './inputs/EmailInput'
+import { PhoneInput } from './inputs/PhoneInput'
 
 export const ComponentMap = {
   'text_input': TextInput,
@@ -28,6 +31,9 @@ export const ComponentMap = {
   'toggle_switch': ToggleSwitch,
   'slider_input': SliderInput,
   'area_measurement': AreaMeasurement,
+  'name_input': NameInput,
+  'email_input': EmailInput,
+  'phone_input': PhoneInput,
 } as const
 
 export type ComponentType = keyof typeof ComponentMap
@@ -47,5 +53,8 @@ export {
   FileUpload,
   ToggleSwitch,
   SliderInput,
-  AreaMeasurement
+  AreaMeasurement,
+  NameInput,
+  EmailInput,
+  PhoneInput
 }

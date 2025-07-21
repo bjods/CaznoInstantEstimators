@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { DynamicComponent } from './DynamicComponent'
+import { PersonalInfoStep } from './PersonalInfoStep'
 
 interface WidgetStep {
   id: string
@@ -24,8 +25,14 @@ interface DynamicWidgetProps {
 }
 
 export function DynamicWidget({ config }: DynamicWidgetProps) {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [currentStep, setCurrentStep] = useState(-1) // Start at -1 for personal info step
+  const [formData, setFormData] = useState<Record<string, any>>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: ''
+  })
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => ({
@@ -68,7 +75,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   const handlePrevious = () => {
-    if (currentStep > 0) {
+    if (currentStep > -1) {
       setCurrentStep(currentStep - 1)
     }
   }
@@ -78,8 +85,55 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     // TODO: Submit to API
   }
 
-  const currentStepConfig = config.steps[currentStep]
+  const completePersonalInfo = () => {
+    setCurrentStep(0) // Move to first config step
+  }
+
+  const totalSteps = config.steps.length + 1 // +1 for personal info step
+  const currentStepForProgress = currentStep + 1 // Adjust for display
   const isLastStep = currentStep === config.steps.length - 1
+
+  // Show personal info step
+  if (currentStep === -1) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header with Progress */}
+        <header className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-xl font-semibold text-gray-900">Get Your Instant Estimate</h1>
+              <div className="text-sm text-gray-500">
+                Step 1 of {totalSteps} (Personal Information)
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(1 / totalSteps) * 100}%` }}
+              />
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 px-6 py-8">
+          <PersonalInfoStep
+            formData={{
+              firstName: formData.firstName || '',
+              lastName: formData.lastName || '',
+              email: formData.email || '',
+              phone: formData.phone || '',
+              address: formData.address || ''
+            }}
+            updateField={updateField}
+            onComplete={completePersonalInfo}
+          />
+        </main>
+      </div>
+    )
+  }
+
+  const currentStepConfig = config.steps[currentStep]
 
   if (!currentStepConfig) {
     return (
@@ -97,13 +151,13 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-xl font-semibold text-gray-900">Get Your Instant Estimate</h1>
             <div className="text-sm text-gray-500">
-              Step {currentStep + 1} of {config.steps.length} ({Math.round(((currentStep + 1) / config.steps.length) * 100)}%)
+              Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
             </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / config.steps.length) * 100}%` }}
+              style={{ width: `${((currentStepForProgress + 1) / totalSteps) * 100}%` }}
             />
           </div>
         </div>
@@ -136,7 +190,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}
-            disabled={currentStep === 0}
+            disabled={currentStep === -1}
             className="px-8 py-3 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors font-medium"
           >
             Previous

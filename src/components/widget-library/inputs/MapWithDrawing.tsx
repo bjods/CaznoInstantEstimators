@@ -142,7 +142,7 @@ export function MapWithDrawing({
     if (!map || !isDrawing || currentPath.length === 0) return
 
     const mouseMoveListener = (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return
+      if (!e.latLng || !isDrawing) return
 
       const mousePos = { lat: e.latLng.lat(), lng: e.latLng.lng() }
       const previewPath = [...currentPath, mousePos]
@@ -173,18 +173,35 @@ export function MapWithDrawing({
         google.maps.event.removeListener(listener)
       }
     }
-  }, [map, isDrawing, currentPath, previewLine])
+  }, [map, isDrawing, currentPath.length])
 
-  // Click handler for drawing
+  // Click handler for drawing - using refs to avoid stale closures
+  const isDrawingRef = useRef(isDrawing)
+  const currentPathRef = useRef(currentPath)
+  
+  useEffect(() => {
+    isDrawingRef.current = isDrawing
+  }, [isDrawing])
+  
+  useEffect(() => {
+    currentPathRef.current = currentPath
+  }, [currentPath])
+
   useEffect(() => {
     if (!map || mode !== 'area') return
 
     const clickListener = (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return
+      if (!e.latLng) {
+        console.log('No latLng in click event')
+        return
+      }
+
+      console.log('Map clicked:', { isDrawing: isDrawingRef.current, pathLength: currentPathRef.current.length })
 
       const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() }
       
-      if (!isDrawing) {
+      if (!isDrawingRef.current) {
+        console.log('Starting new shape')
         // Start new shape
         setIsDrawing(true)
         setCurrentPath([newPoint])
@@ -205,34 +222,41 @@ export function MapWithDrawing({
         })
         setStartMarker(marker)
       } else {
+        console.log('Adding point to existing shape')
         // Check if clicking on start point to close shape
-        const startPoint = currentPath[0]
-        if (startPoint) {
+        const startPoint = currentPathRef.current[0]
+        if (startPoint && currentPathRef.current.length >= 3) {
           const distance = google.maps.geometry.spherical.computeDistanceBetween(
             new google.maps.LatLng(startPoint),
             new google.maps.LatLng(newPoint)
           )
           
-          if (distance < 15 && currentPath.length >= 3) {
-            // Close the shape
+          if (distance < 15) {
+            console.log('Closing shape - close to start point')
             completeShape()
             return
           }
         }
         
         // Add point to current path
-        setCurrentPath(prev => [...prev, newPoint])
+        setCurrentPath(prev => {
+          const newPath = [...prev, newPoint]
+          console.log('New path length:', newPath.length)
+          return newPath
+        })
       }
     }
 
     const listener = map.addListener('click', clickListener)
+    console.log('Added click listener')
     
     return () => {
       if (listener) {
         google.maps.event.removeListener(listener)
+        console.log('Removed click listener')
       }
     }
-  }, [map, mode, isDrawing, currentPath.length])
+  }, [map, mode])
 
   const completeShape = () => {
     if (currentPath.length < 3) return

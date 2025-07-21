@@ -71,15 +71,59 @@ export function MapWithDrawing({
       center: { lat: 40.7128, lng: -74.0060 }, // Default to NYC
       mapTypeId: 'satellite',
       tilt: 0, // Force top-down view
-      streetViewControl: false, // Remove street view
-      mapTypeControl: false, // Remove map type switcher
-      fullscreenControl: false, // Remove fullscreen button
-      rotateControl: false, // Remove rotation control
-      scaleControl: true, // Keep scale for measurements
-      zoomControl: true // Keep zoom controls
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: false,
+      rotateControl: false,
+      scaleControl: false, // Remove scale
+      zoomControl: true,
+      clickableIcons: false, // Disable clickable POIs
+      keyboardShortcuts: false, // Disable keyboard shortcuts
+      styles: [
+        {
+          featureType: 'all',
+          elementType: 'labels',
+          stylers: [{ visibility: 'off' }]
+        }
+      ]
     })
 
     setMap(mapInstance)
+
+    // Hide Google branding and style controls after map loads
+    mapInstance.addListener('tilesloaded', () => {
+      // Hide all Google branding elements
+      const elementsToHide = [
+        '.gm-style-cc',
+        '.gmnoprint',
+        '.gm-style-mtc',
+        '.gm-style-pbc',
+        '[title="Toggle fullscreen view"]',
+        '[title="Rotate map 90 degrees"]',
+        '[title="Tilt map"]',
+        '[title="Show street map"]',
+        '[title="Show satellite imagery"]'
+      ]
+      
+      elementsToHide.forEach(selector => {
+        const elements = mapRef.current?.querySelectorAll(selector)
+        elements?.forEach(el => {
+          (el as HTMLElement).style.display = 'none'
+        })
+      })
+      
+      // Style zoom controls
+      const controls = mapRef.current?.querySelectorAll('.gm-ui-hover-effect, button')
+      controls?.forEach(control => {
+        const el = control as HTMLElement
+        el.style.background = 'white'
+        el.style.borderRadius = '50%'
+        el.style.border = 'none'
+        el.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)'
+        el.style.width = '40px'
+        el.style.height = '40px'
+      })
+    })
 
     // Geocode address if provided
     if (address) {
@@ -109,11 +153,11 @@ export function MapWithDrawing({
         const line = new google.maps.Polyline({
           path: previewPath,
           geodesic: true,
-          strokeColor: '#2563eb',
-          strokeOpacity: 0.6,
-          strokeWeight: 2,
+          strokeColor: '#fbbf24',
+          strokeOpacity: 0.8,
+          strokeWeight: 3,
           icons: [{
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3 },
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#fbbf24', fillOpacity: 1 },
             offset: '100%'
           }]
         })
@@ -133,50 +177,51 @@ export function MapWithDrawing({
 
   // Click handler for drawing
   useEffect(() => {
-    if (!map) return
+    if (!map || mode !== 'area') return
 
     const clickListener = (e: google.maps.MapMouseEvent) => {
       if (!e.latLng) return
 
       const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() }
       
-      if (mode === 'area') {
-        if (!isDrawing) {
-          // Start new shape
-          setIsDrawing(true)
-          setCurrentPath([newPoint])
-          
-          // Create start marker
-          const marker = new google.maps.Marker({
-            position: newPoint,
-            map: map,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 6,
-              fillColor: '#2563eb',
-              fillOpacity: 1,
-              strokeColor: '#ffffff',
-              strokeWeight: 2
-            },
-            title: 'Click here to close shape'
-          })
-          setStartMarker(marker)
-        } else {
-          // Check if clicking on start point to close shape
-          const startPoint = currentPath[0]
+      if (!isDrawing) {
+        // Start new shape
+        setIsDrawing(true)
+        setCurrentPath([newPoint])
+        
+        // Create start marker
+        const marker = new google.maps.Marker({
+          position: newPoint,
+          map: map,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: '#fbbf24',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 3
+          },
+          title: 'Click here to close shape'
+        })
+        setStartMarker(marker)
+      } else {
+        // Check if clicking on start point to close shape
+        const startPoint = currentPath[0]
+        if (startPoint) {
           const distance = google.maps.geometry.spherical.computeDistanceBetween(
             new google.maps.LatLng(startPoint),
             new google.maps.LatLng(newPoint)
           )
           
-          if (distance < 10 && currentPath.length >= 3) {
+          if (distance < 15 && currentPath.length >= 3) {
             // Close the shape
             completeShape()
-          } else {
-            // Add point to current path
-            setCurrentPath(prev => [...prev, newPoint])
+            return
           }
         }
+        
+        // Add point to current path
+        setCurrentPath(prev => [...prev, newPoint])
       }
     }
 
@@ -187,7 +232,7 @@ export function MapWithDrawing({
         google.maps.event.removeListener(listener)
       }
     }
-  }, [map, mode, isDrawing, currentPath])
+  }, [map, mode, isDrawing, currentPath.length])
 
   const completeShape = () => {
     if (currentPath.length < 3) return
@@ -198,11 +243,11 @@ export function MapWithDrawing({
     // Create completed polygon
     const polygon = new google.maps.Polygon({
       paths: currentPath,
-      strokeColor: '#10b981',
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: '#10b981',
-      fillOpacity: 0.2,
+      strokeColor: '#fbbf24',
+      strokeOpacity: 0.9,
+      strokeWeight: 3,
+      fillColor: '#fbbf24',
+      fillOpacity: 0.3,
       clickable: true
     })
     polygon.setMap(map)
@@ -375,10 +420,10 @@ export function MapWithDrawing({
         </div>
       </div>
 
-      <div className="border border-gray-300 rounded-lg overflow-hidden">
+      <div className="border border-gray-300 rounded-lg overflow-hidden relative">
         <div 
           ref={mapRef} 
-          className="w-full h-96"
+          className="w-full h-96 map-container"
           style={{ display: isLoaded ? 'block' : 'none' }}
         />
         {!isLoaded && (
@@ -387,6 +432,43 @@ export function MapWithDrawing({
           </div>
         )}
       </div>
+      
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .map-container .gm-style .gm-style-cc,
+          .map-container .gm-style .gmnoprint,
+          .map-container .gm-style .gm-style-mtc,
+          .map-container .gm-style-pbc {
+            display: none !important;
+          }
+          .map-container .gm-style .gm-ui-hover-effect {
+            background: white !important;
+            border-radius: 50% !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+            border: none !important;
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .map-container .gm-style .gm-ui-hover-effect > span {
+            background: transparent !important;
+            margin: 0 !important;
+          }
+          .map-container .gm-style button {
+            background: white !important;
+            border: none !important;
+            border-radius: 50% !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .map-container .gm-style .gm-control-active {
+            background: white !important;
+          }
+          .map-container .gm-bundled-control {
+            margin: 10px !important;
+          }
+        `
+      }} />
 
       {/* Results */}
       {value.shapes.length > 0 && (

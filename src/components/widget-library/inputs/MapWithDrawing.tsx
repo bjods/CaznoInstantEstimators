@@ -41,6 +41,7 @@ export function MapWithDrawing({
   const [error, setError] = useState<string | null>(null)
   
   // Drawing state
+  const [drawMode, setDrawMode] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
   const [currentPath, setCurrentPath] = useState<google.maps.LatLngLiteral[]>([])
   const [previewLine, setPreviewLine] = useState<google.maps.Polyline | null>(null)
@@ -137,12 +138,12 @@ export function MapWithDrawing({
     }
   }, [isLoaded, address])
 
-  // Mouse move handler for live preview
+  // Mouse move handler for live preview - ONLY when actively drawing
   useEffect(() => {
-    if (!map || !isDrawing || currentPath.length === 0) return
+    if (!map || !drawMode || !isDrawing || currentPath.length === 0) return
 
     const mouseMoveListener = (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng || !isDrawing) return
+      if (!e.latLng) return
 
       const mousePos = { lat: e.latLng.lat(), lng: e.latLng.lng() }
       const previewPath = [...currentPath, mousePos]
@@ -154,10 +155,10 @@ export function MapWithDrawing({
           path: previewPath,
           geodesic: true,
           strokeColor: '#fbbf24',
-          strokeOpacity: 0.8,
-          strokeWeight: 3,
+          strokeOpacity: 0.6,
+          strokeWeight: 2,
           icons: [{
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#fbbf24', fillOpacity: 1 },
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 2, fillColor: '#fbbf24', fillOpacity: 1 },
             offset: '100%'
           }]
         })
@@ -173,35 +174,19 @@ export function MapWithDrawing({
         google.maps.event.removeListener(listener)
       }
     }
-  }, [map, isDrawing, currentPath.length])
+  }, [map, drawMode, isDrawing, currentPath.length])
 
-  // Click handler for drawing - using refs to avoid stale closures
-  const isDrawingRef = useRef(isDrawing)
-  const currentPathRef = useRef(currentPath)
-  
-  useEffect(() => {
-    isDrawingRef.current = isDrawing
-  }, [isDrawing])
-  
-  useEffect(() => {
-    currentPathRef.current = currentPath
-  }, [currentPath])
-
+  // Click handler for drawing
   useEffect(() => {
     if (!map || mode !== 'area') return
 
     const clickListener = (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) {
-        console.log('No latLng in click event')
-        return
-      }
-
-      console.log('Map clicked:', { isDrawing: isDrawingRef.current, pathLength: currentPathRef.current.length })
+      // Only handle clicks when in draw mode
+      if (!drawMode || !e.latLng) return
 
       const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() }
       
-      if (!isDrawingRef.current) {
-        console.log('Starting new shape')
+      if (!isDrawing) {
         // Start new shape
         setIsDrawing(true)
         setCurrentPath([newPoint])
@@ -222,41 +207,34 @@ export function MapWithDrawing({
         })
         setStartMarker(marker)
       } else {
-        console.log('Adding point to existing shape')
         // Check if clicking on start point to close shape
-        const startPoint = currentPathRef.current[0]
-        if (startPoint && currentPathRef.current.length >= 3) {
+        const startPoint = currentPath[0]
+        if (startPoint && currentPath.length >= 3) {
           const distance = google.maps.geometry.spherical.computeDistanceBetween(
             new google.maps.LatLng(startPoint),
             new google.maps.LatLng(newPoint)
           )
           
-          if (distance < 15) {
-            console.log('Closing shape - close to start point')
+          if (distance < 20) {
+            // Close the shape
             completeShape()
             return
           }
         }
         
         // Add point to current path
-        setCurrentPath(prev => {
-          const newPath = [...prev, newPoint]
-          console.log('New path length:', newPath.length)
-          return newPath
-        })
+        setCurrentPath(prev => [...prev, newPoint])
       }
     }
 
     const listener = map.addListener('click', clickListener)
-    console.log('Added click listener')
     
     return () => {
       if (listener) {
         google.maps.event.removeListener(listener)
-        console.log('Removed click listener')
       }
     }
-  }, [map, mode])
+  }, [map, mode, drawMode, isDrawing, currentPath])
 
   const completeShape = () => {
     if (currentPath.length < 3) return
@@ -418,26 +396,44 @@ export function MapWithDrawing({
 
       <div className="flex justify-between items-center mb-2">
         <div className="text-sm text-gray-600">
-          {isDrawing ? (
+          {!drawMode ? (
+            <span>Click "Draw" to start drawing areas</span>
+          ) : isDrawing ? (
             <span className="text-blue-600">Drawing... Click start point to close shape</span>
           ) : (
-            <span>Click to start drawing</span>
+            <span className="text-blue-600">Draw mode active - Click to start new shape</span>
           )}
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setDrawMode(!drawMode)
+              if (drawMode) {
+                resetDrawing()
+              }
+            }}
+            className={`px-3 py-1 text-sm rounded transition-colors ${
+              drawMode
+                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {drawMode ? 'Stop Drawing' : 'Draw'}
+          </button>
           {isDrawing && (
             <button
               type="button"
               onClick={resetDrawing}
-              className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
             >
-              Cancel
+              Cancel Shape
             </button>
           )}
           <button
             type="button"
             onClick={clearAll}
-            className="text-sm text-gray-500 hover:text-red-600 transition-colors"
+            className="px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
           >
             Clear All
           </button>

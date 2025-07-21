@@ -49,6 +49,7 @@ export function MapWithDrawing({
   
   // Completed shapes
   const [completedShapes, setCompletedShapes] = useState<Array<google.maps.Polygon | google.maps.Polyline>>([])
+  const [vertexMarkers, setVertexMarkers] = useState<google.maps.Marker[]>([])
 
   useEffect(() => {
     const initGoogleMaps = async () => {
@@ -138,43 +139,32 @@ export function MapWithDrawing({
     }
   }, [isLoaded, address])
 
-  // Mouse move handler for live preview - ONLY when actively drawing
+  // Draw current polygon being created
   useEffect(() => {
-    if (!map || !drawMode || !isDrawing || currentPath.length === 0) return
+    if (!map || !isDrawing || currentPath.length === 0) return
 
-    const mouseMoveListener = (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return
-
-      const mousePos = { lat: e.latLng.lat(), lng: e.latLng.lng() }
-      const previewPath = [...currentPath, mousePos]
-
-      if (previewLine) {
-        previewLine.setPath(previewPath)
-      } else {
-        const line = new google.maps.Polyline({
-          path: previewPath,
-          geodesic: true,
-          strokeColor: '#fbbf24',
-          strokeOpacity: 0.6,
-          strokeWeight: 2,
-          icons: [{
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 2, fillColor: '#fbbf24', fillOpacity: 1 },
-            offset: '100%'
-          }]
-        })
-        line.setMap(map)
-        setPreviewLine(line)
-      }
+    // Clean up old preview line
+    if (previewLine) {
+      previewLine.setMap(null)
     }
 
-    const listener = map.addListener('mousemove', mouseMoveListener)
-    
+    // Create static line for current path
+    const line = new google.maps.Polyline({
+      path: currentPath,
+      geodesic: true,
+      strokeColor: '#fbbf24',
+      strokeOpacity: 0.8,
+      strokeWeight: 3
+    })
+    line.setMap(map)
+    setPreviewLine(line)
+
     return () => {
-      if (listener) {
-        google.maps.event.removeListener(listener)
+      if (line) {
+        line.setMap(null)
       }
     }
-  }, [map, drawMode, isDrawing, currentPath.length])
+  }, [map, isDrawing, currentPath])
 
   // Click handler for drawing
   useEffect(() => {
@@ -224,6 +214,21 @@ export function MapWithDrawing({
         
         // Add point to current path
         setCurrentPath(prev => [...prev, newPoint])
+        
+        // Add vertex marker for this point
+        const marker = new google.maps.Marker({
+          position: newPoint,
+          map: map,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 4,
+            fillColor: '#fbbf24',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          }
+        })
+        setVertexMarkers(prev => [...prev, marker])
       }
     }
 
@@ -308,6 +313,10 @@ export function MapWithDrawing({
       startMarker.setMap(null)
       setStartMarker(null)
     }
+    
+    // Clear vertex markers
+    vertexMarkers.forEach(marker => marker.setMap(null))
+    setVertexMarkers([])
   }
 
   const calculatePolylineLength = (path: google.maps.LatLngLiteral[]): number => {

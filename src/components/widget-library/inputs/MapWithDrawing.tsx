@@ -74,18 +74,20 @@ export function MapWithDrawing({
     })
 
     setMap(mapInstance)
+  }, [isLoaded])
 
-    // Geocode address if provided
-    if (address) {
-      const geocoder = new google.maps.Geocoder()
-      geocoder.geocode({ address }, (results, status) => {
-        if (status === 'OK' && results?.[0]) {
-          mapInstance.setCenter(results[0].geometry.location)
-          mapInstance.setZoom(19)
-        }
-      })
-    }
-  }, [isLoaded, address])
+  // Handle address geocoding separately
+  useEffect(() => {
+    if (!map || !address || !address.trim()) return
+
+    const geocoder = new google.maps.Geocoder()
+    geocoder.geocode({ address }, (results, status) => {
+      if (status === 'OK' && results?.[0]) {
+        map.setCenter(results[0].geometry.location)
+        map.setZoom(19)
+      }
+    })
+  }, [map, address])
 
   // Drawing manager
   useEffect(() => {

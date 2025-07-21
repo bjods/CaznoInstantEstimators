@@ -54,6 +54,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         return 1000
       case 'file_upload':
         return null
+      case 'area_measurement':
+        return 0
       default:
         return ''
     }

@@ -11,6 +11,7 @@ import { DatePicker } from './inputs/DatePicker'
 import { FileUpload } from './inputs/FileUpload'
 import { ToggleSwitch } from './inputs/ToggleSwitch'
 import { SliderInput } from './inputs/SliderInput'
+import { AreaMeasurement } from './inputs/AreaMeasurement'
 
 export const ComponentMap = {
   'text_input': TextInput,
@@ -26,6 +27,7 @@ export const ComponentMap = {
   'file_upload': FileUpload,
   'toggle_switch': ToggleSwitch,
   'slider_input': SliderInput,
+  'area_measurement': AreaMeasurement,
 } as const
 
 export type ComponentType = keyof typeof ComponentMap
@@ -44,5 +46,6 @@ export {
   DatePicker,
   FileUpload,
   ToggleSwitch,
-  SliderInput
+  SliderInput,
+  AreaMeasurement
 }

@@ -20,12 +20,11 @@ export function DynamicComponent({ type, props, value, onChange, formData }: Dyn
     )
   }
   
-  // Special handling for MapWithDrawing to pass address from previous step
-  if (type === 'map_with_drawing' && formData) {
+  // Special handling for components that need address from previous step
+  if ((type === 'map_with_drawing' || type === 'area_measurement') && formData) {
     // Look for address in form data - common field names
     const address = formData.address || formData.property_address || formData.location || formData.site_address
-    // Ensure mode is passed from props
-    return <Component {...props} value={value} onChange={onChange} address={address} mode={props.mode} />
+    return <Component {...props} value={value} onChange={onChange} address={address} />
   }
   
   return <Component {...props} value={value} onChange={onChange} />

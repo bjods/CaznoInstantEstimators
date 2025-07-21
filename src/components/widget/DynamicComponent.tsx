@@ -13,9 +13,11 @@ export function DynamicComponent({ type, props, value, onChange, formData }: Dyn
   
   if (!Component) {
     console.error(`Component type "${type}" not found`)
+    console.log('Available components:', Object.keys(ComponentMap))
     return (
       <div className="p-4 border border-red-200 rounded-lg bg-red-50">
         <p className="text-red-600">Unknown component type: {type}</p>
+        <p className="text-xs text-gray-500 mt-1">Available: {Object.keys(ComponentMap).join(', ')}</p>
       </div>
     )
   }

@@ -17,7 +17,7 @@ export function AreaMeasurement({
   value = 0,
   onChange,
   serviceName,
-  address,
+  address = '',
   label,
   helpText,
   required

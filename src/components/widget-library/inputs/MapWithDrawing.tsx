@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Loader } from '@googlemaps/js-api-loader'
+import { loadGoogleMaps } from '@/lib/google-maps-loader'
 
 export interface MapWithDrawingProps {
   value: {
@@ -39,21 +39,9 @@ export function MapWithDrawing({
   const [drawingPath, setDrawingPath] = useState<google.maps.LatLngLiteral[]>([])
 
   useEffect(() => {
-    const loadGoogleMaps = async () => {
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-      if (!apiKey) {
-        setError('Google Maps API key not found')
-        return
-      }
-
+    const initGoogleMaps = async () => {
       try {
-        const loader = new Loader({
-          apiKey,
-          version: 'weekly',
-          libraries: ['places', 'geometry']
-        })
-
-        await loader.load()
+        await loadGoogleMaps()
         setIsLoaded(true)
       } catch (err) {
         setError('Failed to load Google Maps')
@@ -61,7 +49,7 @@ export function MapWithDrawing({
       }
     }
 
-    loadGoogleMaps()
+    initGoogleMaps()
   }, [])
 
   useEffect(() => {

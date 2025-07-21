@@ -19,7 +19,7 @@ export async function loadGoogleMaps() {
     loaderInstance = new Loader({
       apiKey,
       version: 'weekly',
-      libraries: ['places', 'geometry'] // Include all libraries needed
+      libraries: ['places', 'geometry', 'drawing'] // Include all libraries needed
     })
   }
 

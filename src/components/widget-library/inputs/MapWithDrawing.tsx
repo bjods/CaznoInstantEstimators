@@ -9,18 +9,14 @@ export interface MapWithDrawingProps {
       id: string
       coordinates: google.maps.LatLngLiteral[]
       area?: number
-      length?: number
     }>
     measurements: {
-      totalArea?: number // total square feet for all shapes
-      totalLength?: number // total length for all lines
-      width?: number // feet for placement
-      height?: number // feet for placement
+      totalArea?: number
     }
   }
   onChange: (value: MapWithDrawingProps['value']) => void
   address?: string
-  mode: 'linear' | 'area' | 'placement' // Required from config
+  mode: 'linear' | 'area' | 'placement'
   label?: string
   helpText?: string
   required?: boolean
@@ -42,15 +38,10 @@ export function MapWithDrawing({
   
   // Drawing state
   const [drawMode, setDrawMode] = useState(false)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [currentPath, setCurrentPath] = useState<google.maps.LatLngLiteral[]>([])
-  const [previewLine, setPreviewLine] = useState<google.maps.Polyline | null>(null)
-  const [startMarker, setStartMarker] = useState<google.maps.Marker | null>(null)
+  const [currentPolygon, setCurrentPolygon] = useState<google.maps.Polygon | null>(null)
+  const [polygons, setPolygons] = useState<google.maps.Polygon[]>([])
   
-  // Completed shapes
-  const [completedShapes, setCompletedShapes] = useState<Array<google.maps.Polygon | google.maps.Polyline>>([])
-  const [vertexMarkers, setVertexMarkers] = useState<google.maps.Marker[]>([])
-
+  // Load Google Maps
   useEffect(() => {
     const initGoogleMaps = async () => {
       try {
@@ -65,67 +56,24 @@ export function MapWithDrawing({
     initGoogleMaps()
   }, [])
 
+  // Initialize map
   useEffect(() => {
     if (!isLoaded || !mapRef.current) return
 
     const mapInstance = new google.maps.Map(mapRef.current, {
       zoom: 20,
-      center: { lat: 40.7128, lng: -74.0060 }, // Default to NYC
+      center: { lat: 40.7128, lng: -74.0060 },
       mapTypeId: 'satellite',
-      tilt: 0, // Force top-down view
+      tilt: 0,
       streetViewControl: false,
       mapTypeControl: false,
       fullscreenControl: false,
       rotateControl: false,
-      scaleControl: false, // Remove scale
-      zoomControl: true,
-      clickableIcons: false, // Disable clickable POIs
-      keyboardShortcuts: false, // Disable keyboard shortcuts
-      styles: [
-        {
-          featureType: 'all',
-          elementType: 'labels',
-          stylers: [{ visibility: 'off' }]
-        }
-      ]
+      clickableIcons: false,
+      disableDefaultUI: false
     })
 
     setMap(mapInstance)
-
-    // Hide Google branding and style controls after map loads
-    mapInstance.addListener('tilesloaded', () => {
-      // Hide all Google branding elements
-      const elementsToHide = [
-        '.gm-style-cc',
-        '.gmnoprint',
-        '.gm-style-mtc',
-        '.gm-style-pbc',
-        '[title="Toggle fullscreen view"]',
-        '[title="Rotate map 90 degrees"]',
-        '[title="Tilt map"]',
-        '[title="Show street map"]',
-        '[title="Show satellite imagery"]'
-      ]
-      
-      elementsToHide.forEach(selector => {
-        const elements = mapRef.current?.querySelectorAll(selector)
-        elements?.forEach(el => {
-          (el as HTMLElement).style.display = 'none'
-        })
-      })
-      
-      // Style zoom controls
-      const controls = mapRef.current?.querySelectorAll('.gm-ui-hover-effect, button')
-      controls?.forEach(control => {
-        const el = control as HTMLElement
-        el.style.background = 'white'
-        el.style.borderRadius = '50%'
-        el.style.border = 'none'
-        el.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)'
-        el.style.width = '40px'
-        el.style.height = '40px'
-      })
-    })
 
     // Geocode address if provided
     if (address) {
@@ -133,279 +81,92 @@ export function MapWithDrawing({
       geocoder.geocode({ address }, (results, status) => {
         if (status === 'OK' && results?.[0]) {
           mapInstance.setCenter(results[0].geometry.location)
-          mapInstance.setZoom(19) // Closer zoom for property-level work
+          mapInstance.setZoom(19)
         }
       })
     }
   }, [isLoaded, address])
 
-  // Draw current polygon being created
-  useEffect(() => {
-    if (!map || !isDrawing || currentPath.length === 0) return
-
-    // Clean up old preview line
-    if (previewLine) {
-      previewLine.setMap(null)
-    }
-
-    // Create static line for current path
-    const line = new google.maps.Polyline({
-      path: currentPath,
-      geodesic: true,
-      strokeColor: '#fbbf24',
-      strokeOpacity: 0.8,
-      strokeWeight: 3
-    })
-    line.setMap(map)
-    setPreviewLine(line)
-
-    return () => {
-      if (line) {
-        line.setMap(null)
-      }
-    }
-  }, [map, isDrawing, currentPath])
-
-  // Mouse move handler for preview line - only when actively drawing
-  useEffect(() => {
-    if (!map || !isDrawing || currentPath.length === 0) return
-
-    let mousePreviewLine: google.maps.Polyline | null = null
-
-    const mouseMoveListener = (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return
-
-      const mousePos = { lat: e.latLng.lat(), lng: e.latLng.lng() }
-      
-      // Remove old mouse preview line
-      if (mousePreviewLine) {
-        mousePreviewLine.setMap(null)
-      }
-
-      // Create new preview line from last point to mouse
-      mousePreviewLine = new google.maps.Polyline({
-        path: [currentPath[currentPath.length - 1], mousePos],
-        geodesic: true,
-        strokeColor: '#fbbf24',
-        strokeOpacity: 0.5,
-        strokeWeight: 2,
-        strokeDashArray: [5, 5] // Dashed line for preview
-      })
-      mousePreviewLine.setMap(map)
-    }
-
-    const listener = map.addListener('mousemove', mouseMoveListener)
-    
-    return () => {
-      if (listener) {
-        google.maps.event.removeListener(listener)
-      }
-      if (mousePreviewLine) {
-        mousePreviewLine.setMap(null)
-      }
-    }
-  }, [map, isDrawing, currentPath])
-
-  // Click handler for drawing
+  // Drawing manager
   useEffect(() => {
     if (!map || mode !== 'area') return
 
-    const clickListener = (e: google.maps.MapMouseEvent) => {
-      // Only handle clicks when in draw mode
-      if (!drawMode || !e.latLng) return
-
-      const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() }
-      
-      if (!isDrawing) {
-        // Start new shape
-        setIsDrawing(true)
-        setCurrentPath([newPoint])
-        
-        // Create start marker
-        const marker = new google.maps.Marker({
-          position: newPoint,
-          map: map,
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: '#f59e0b',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 3
-          },
-          title: 'Click here to close shape',
-          cursor: 'pointer'
-        })
-        
-        // Add click listener to start marker for closing shape
-        marker.addListener('click', () => {
-          if (currentPath.length >= 3) {
-            completeShape()
-          }
-        })
-        
-        setStartMarker(marker)
-      } else {
-        // Just add point to current path - no auto-closing
-        setCurrentPath(prev => [...prev, newPoint])
-        
-        // Add vertex marker for this point
-        const marker = new google.maps.Marker({
-          position: newPoint,
-          map: map,
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 4,
-            fillColor: '#fbbf24',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 2
-          }
-        })
-        setVertexMarkers(prev => [...prev, marker])
+    const drawingManager = new google.maps.drawing.DrawingManager({
+      drawingMode: drawMode ? google.maps.drawing.OverlayType.POLYGON : null,
+      drawingControl: false,
+      polygonOptions: {
+        fillColor: '#fbbf24',
+        fillOpacity: 0.3,
+        strokeColor: '#fbbf24',
+        strokeWeight: 3,
+        clickable: true,
+        editable: false
       }
-    }
+    })
 
-    const listener = map.addListener('click', clickListener)
-    
-    return () => {
-      if (listener) {
-        google.maps.event.removeListener(listener)
+    drawingManager.setMap(map)
+
+    // Listen for polygon completion
+    const polygonCompleteListener = google.maps.event.addListener(
+      drawingManager,
+      'polygoncomplete',
+      (polygon: google.maps.Polygon) => {
+        // Calculate area
+        const path = polygon.getPath()
+        const area = google.maps.geometry.spherical.computeArea(path.getArray()) * 10.764 // to sq ft
+        
+        // Add to polygons array
+        const newPolygon = polygon
+        setPolygons(prev => [...prev, newPolygon])
+        
+        // Update value
+        const shapeId = `shape-${Date.now()}`
+        const coordinates = path.getArray().map(latLng => ({
+          lat: latLng.lat(),
+          lng: latLng.lng()
+        }))
+        
+        const updatedShapes = [...value.shapes, { id: shapeId, coordinates, area }]
+        const totalArea = updatedShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
+        
+        onChange({
+          shapes: updatedShapes,
+          measurements: { totalArea }
+        })
+        
+        // Add click listener for deletion
+        polygon.addListener('click', () => {
+          polygon.setMap(null)
+          setPolygons(prev => prev.filter(p => p !== polygon))
+          
+          // Update value
+          const filteredShapes = updatedShapes.filter(s => s.id !== shapeId)
+          const newTotalArea = filteredShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
+          
+          onChange({
+            shapes: filteredShapes,
+            measurements: { totalArea: newTotalArea }
+          })
+        })
       }
-    }
-  }, [map, mode, drawMode, isDrawing, currentPath])
-
-  const completeShape = () => {
-    if (currentPath.length < 3) return
-
-    const shapeId = `shape-${Date.now()}`
-    const area = calculatePolygonArea(currentPath)
-    
-    // Create completed polygon
-    const polygon = new google.maps.Polygon({
-      paths: currentPath,
-      strokeColor: '#fbbf24',
-      strokeOpacity: 0.9,
-      strokeWeight: 3,
-      fillColor: '#fbbf24',
-      fillOpacity: 0.3,
-      clickable: true
-    })
-    polygon.setMap(map)
-    
-    // Add click listener for deletion
-    polygon.addListener('click', () => deleteShape(shapeId))
-    
-    setCompletedShapes(prev => [...prev, polygon])
-    
-    // Update value
-    const newShape = {
-      id: shapeId,
-      coordinates: currentPath,
-      area
-    }
-    
-    const updatedShapes = [...value.shapes, newShape]
-    const totalArea = updatedShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
-    
-    onChange({
-      shapes: updatedShapes,
-      measurements: { totalArea }
-    })
-    
-    // Reset drawing state
-    resetDrawing()
-  }
-
-  const deleteShape = (shapeId: string) => {
-    const updatedShapes = value.shapes.filter(shape => shape.id !== shapeId)
-    const totalArea = updatedShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
-    
-    // Find and remove the polygon from map
-    const shapeIndex = value.shapes.findIndex(shape => shape.id === shapeId)
-    if (shapeIndex !== -1 && completedShapes[shapeIndex]) {
-      completedShapes[shapeIndex].setMap(null)
-      setCompletedShapes(prev => prev.filter((_, index) => index !== shapeIndex))
-    }
-    
-    onChange({
-      shapes: updatedShapes,
-      measurements: { totalArea }
-    })
-  }
-
-  const resetDrawing = () => {
-    setIsDrawing(false)
-    setCurrentPath([])
-    
-    if (previewLine) {
-      previewLine.setMap(null)
-      setPreviewLine(null)
-    }
-    
-    if (startMarker) {
-      startMarker.setMap(null)
-      setStartMarker(null)
-    }
-    
-    // Clear vertex markers
-    vertexMarkers.forEach(marker => marker.setMap(null))
-    setVertexMarkers([])
-  }
-
-  const calculatePolylineLength = (path: google.maps.LatLngLiteral[]): number => {
-    if (path.length < 2) return 0
-    
-    let totalLength = 0
-    for (let i = 0; i < path.length - 1; i++) {
-      const distance = google.maps.geometry.spherical.computeDistanceBetween(
-        new google.maps.LatLng(path[i]),
-        new google.maps.LatLng(path[i + 1])
-      )
-      totalLength += distance
-    }
-    
-    return totalLength * 3.28084 // Convert meters to feet
-  }
-
-  const calculatePolygonArea = (path: google.maps.LatLngLiteral[]): number => {
-    if (path.length < 3) return 0
-    
-    const area = google.maps.geometry.spherical.computeArea(
-      path.map(p => new google.maps.LatLng(p))
     )
-    
-    return area * 10.764 // Convert square meters to square feet
-  }
 
-  const calculateRectangleDimensions = (point1: google.maps.LatLngLiteral, point2: google.maps.LatLngLiteral) => {
-    const ne = { lat: Math.max(point1.lat, point2.lat), lng: Math.max(point1.lng, point2.lng) }
-    const sw = { lat: Math.min(point1.lat, point2.lat), lng: Math.min(point1.lng, point2.lng) }
-    const nw = { lat: ne.lat, lng: sw.lng }
-    const se = { lat: sw.lat, lng: ne.lng }
-    
-    const width = google.maps.geometry.spherical.computeDistanceBetween(
-      new google.maps.LatLng(nw),
-      new google.maps.LatLng(ne)
-    ) * 3.28084 // Convert to feet
-    
-    const height = google.maps.geometry.spherical.computeDistanceBetween(
-      new google.maps.LatLng(sw),
-      new google.maps.LatLng(nw)
-    ) * 3.28084 // Convert to feet
-    
-    return { width, height }
-  }
+    // Change cursor when in draw mode
+    if (drawMode) {
+      map.setOptions({ draggableCursor: 'crosshair' })
+    } else {
+      map.setOptions({ draggableCursor: null })
+    }
+
+    return () => {
+      drawingManager.setMap(null)
+      google.maps.event.removeListener(polygonCompleteListener)
+    }
+  }, [map, mode, drawMode, value.shapes, onChange])
 
   const clearAll = () => {
-    // Clear all completed shapes
-    completedShapes.forEach(shape => shape.setMap(null))
-    setCompletedShapes([])
-    
-    // Reset current drawing
-    resetDrawing()
-    
-    // Update value
+    polygons.forEach(polygon => polygon.setMap(null))
+    setPolygons([])
     onChange({
       shapes: [],
       measurements: {}
@@ -439,23 +200,16 @@ export function MapWithDrawing({
 
       <div className="flex justify-between items-center mb-2">
         <div className="text-sm text-gray-600">
-          {!drawMode ? (
-            <span>Click "Draw" to start drawing areas</span>
-          ) : isDrawing ? (
-            <span className="text-blue-600">Drawing... Click start point to close shape</span>
+          {drawMode ? (
+            <span className="text-blue-600">Draw mode active - Click to create shapes</span>
           ) : (
-            <span className="text-blue-600">Draw mode active - Click to start new shape</span>
+            <span>Click "Draw" to start drawing areas</span>
           )}
         </div>
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => {
-              setDrawMode(!drawMode)
-              if (drawMode) {
-                resetDrawing()
-              }
-            }}
+            onClick={() => setDrawMode(!drawMode)}
             className={`px-3 py-1 text-sm rounded transition-colors ${
               drawMode
                 ? 'bg-blue-500 text-white hover:bg-blue-600'
@@ -464,15 +218,6 @@ export function MapWithDrawing({
           >
             {drawMode ? 'Stop Drawing' : 'Draw'}
           </button>
-          {isDrawing && (
-            <button
-              type="button"
-              onClick={resetDrawing}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-            >
-              Cancel Shape
-            </button>
-          )}
           <button
             type="button"
             onClick={clearAll}
@@ -483,10 +228,10 @@ export function MapWithDrawing({
         </div>
       </div>
 
-      <div className="border border-gray-300 rounded-lg overflow-hidden relative">
+      <div className="border border-gray-300 rounded-lg overflow-hidden">
         <div 
           ref={mapRef} 
-          className="w-full h-96 map-container"
+          className="w-full h-96"
           style={{ display: isLoaded ? 'block' : 'none' }}
         />
         {!isLoaded && (
@@ -495,45 +240,7 @@ export function MapWithDrawing({
           </div>
         )}
       </div>
-      
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          .map-container .gm-style .gm-style-cc,
-          .map-container .gm-style .gmnoprint,
-          .map-container .gm-style .gm-style-mtc,
-          .map-container .gm-style-pbc {
-            display: none !important;
-          }
-          .map-container .gm-style .gm-ui-hover-effect {
-            background: white !important;
-            border-radius: 50% !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
-            border: none !important;
-            width: 40px !important;
-            height: 40px !important;
-          }
-          .map-container .gm-style .gm-ui-hover-effect > span {
-            background: transparent !important;
-            margin: 0 !important;
-          }
-          .map-container .gm-style button {
-            background: white !important;
-            border: none !important;
-            border-radius: 50% !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
-            width: 40px !important;
-            height: 40px !important;
-          }
-          .map-container .gm-style .gm-control-active {
-            background: white !important;
-          }
-          .map-container .gm-bundled-control {
-            margin: 10px !important;
-          }
-        `
-      }} />
 
-      {/* Results */}
       {value.shapes.length > 0 && (
         <div className="mt-3 space-y-2">
           <div className="text-sm font-medium text-gray-900">
@@ -541,10 +248,14 @@ export function MapWithDrawing({
           </div>
           {value.shapes.length > 1 && (
             <div className="text-xs text-gray-500">
-              {value.shapes.length} shapes drawn
+              {value.shapes.length} shapes drawn (click a shape to delete)
             </div>
           )}
         </div>
+      )}
+
+      {helpText && (
+        <p className="text-sm text-gray-500">{helpText}</p>
       )}
     </div>
   )

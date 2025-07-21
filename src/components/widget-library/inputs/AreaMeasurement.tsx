@@ -23,11 +23,11 @@ export function AreaMeasurement({
   required
 }: AreaMeasurementProps) {
   const [method, setMethod] = useState<'draw' | 'manual'>('draw')
-  const [mapValue, setMapValue] = useState({ coordinates: [], measurements: {} })
+  const [mapValue, setMapValue] = useState({ shapes: [], measurements: {} })
 
   const handleMapChange = (mapData: any) => {
     setMapValue(mapData)
-    const sqft = mapData.measurements?.squareFeet || mapData.measurements?.area || 0
+    const sqft = mapData.measurements?.totalArea || mapData.measurements?.squareFeet || mapData.measurements?.area || 0
     onChange(Math.round(sqft))
   }
 

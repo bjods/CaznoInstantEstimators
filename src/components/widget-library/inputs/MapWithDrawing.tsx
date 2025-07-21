@@ -5,11 +5,15 @@ import { loadGoogleMaps } from '@/lib/google-maps-loader'
 
 export interface MapWithDrawingProps {
   value: {
-    coordinates: google.maps.LatLngLiteral[]
+    shapes: Array<{
+      id: string
+      coordinates: google.maps.LatLngLiteral[]
+      area?: number
+      length?: number
+    }>
     measurements: {
-      length?: number // feet for linear
-      area?: number // square feet for area
-      squareFeet?: number // alias for area
+      totalArea?: number // total square feet for all shapes
+      totalLength?: number // total length for all lines
       width?: number // feet for placement
       height?: number // feet for placement
     }
@@ -23,7 +27,7 @@ export interface MapWithDrawingProps {
 }
 
 export function MapWithDrawing({
-  value = { coordinates: [], measurements: {} },
+  value = { shapes: [], measurements: {} },
   onChange,
   address,
   mode,
@@ -35,8 +39,15 @@ export function MapWithDrawing({
   const [map, setMap] = useState<google.maps.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentDrawing, setCurrentDrawing] = useState<google.maps.Polyline | google.maps.Polygon | google.maps.Rectangle | null>(null)
-  const [drawingPath, setDrawingPath] = useState<google.maps.LatLngLiteral[]>([])
+  
+  // Drawing state
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [currentPath, setCurrentPath] = useState<google.maps.LatLngLiteral[]>([])
+  const [previewLine, setPreviewLine] = useState<google.maps.Polyline | null>(null)
+  const [startMarker, setStartMarker] = useState<google.maps.Marker | null>(null)
+  
+  // Completed shapes
+  const [completedShapes, setCompletedShapes] = useState<Array<google.maps.Polygon | google.maps.Polyline>>([])
 
   useEffect(() => {
     const initGoogleMaps = async () => {
@@ -82,6 +93,45 @@ export function MapWithDrawing({
     }
   }, [isLoaded, address])
 
+  // Mouse move handler for live preview
+  useEffect(() => {
+    if (!map || !isDrawing || currentPath.length === 0) return
+
+    const mouseMoveListener = (e: google.maps.MapMouseEvent) => {
+      if (!e.latLng) return
+
+      const mousePos = { lat: e.latLng.lat(), lng: e.latLng.lng() }
+      const previewPath = [...currentPath, mousePos]
+
+      if (previewLine) {
+        previewLine.setPath(previewPath)
+      } else {
+        const line = new google.maps.Polyline({
+          path: previewPath,
+          geodesic: true,
+          strokeColor: '#2563eb',
+          strokeOpacity: 0.6,
+          strokeWeight: 2,
+          icons: [{
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3 },
+            offset: '100%'
+          }]
+        })
+        line.setMap(map)
+        setPreviewLine(line)
+      }
+    }
+
+    const listener = map.addListener('mousemove', mouseMoveListener)
+    
+    return () => {
+      if (listener) {
+        google.maps.event.removeListener(listener)
+      }
+    }
+  }, [map, isDrawing, currentPath, previewLine])
+
+  // Click handler for drawing
   useEffect(() => {
     if (!map) return
 
@@ -90,84 +140,42 @@ export function MapWithDrawing({
 
       const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() }
       
-      if (mode === 'linear') {
-        const newPath = [...drawingPath, newPoint]
-        setDrawingPath(newPath)
-        
-        if (currentDrawing) {
-          (currentDrawing as google.maps.Polyline).setPath(newPath)
-        } else {
-          const polyline = new google.maps.Polyline({
-            path: newPath,
-            geodesic: true,
-            strokeColor: '#FF0000',
-            strokeOpacity: 1.0,
-            strokeWeight: 2
-          })
-          polyline.setMap(map)
-          setCurrentDrawing(polyline)
-        }
-        
-        const length = calculatePolylineLength(newPath)
-        onChange({
-          coordinates: newPath,
-          measurements: { length }
-        })
-      } else if (mode === 'area') {
-        const newPath = [...drawingPath, newPoint]
-        setDrawingPath(newPath)
-        
-        if (currentDrawing) {
-          (currentDrawing as google.maps.Polygon).setPath(newPath)
-        } else {
-          const polygon = new google.maps.Polygon({
-            paths: newPath,
-            strokeColor: '#FF0000',
-            strokeOpacity: 0.8,
-            strokeWeight: 2,
-            fillColor: '#FF0000',
-            fillOpacity: 0.35
-          })
-          polygon.setMap(map)
-          setCurrentDrawing(polygon)
-        }
-        
-        if (newPath.length >= 3) {
-          const area = calculatePolygonArea(newPath)
-          onChange({
-            coordinates: newPath,
-            measurements: { area, squareFeet: area }
-          })
-        }
-      } else if (mode === 'placement') {
-        if (drawingPath.length === 0) {
-          setDrawingPath([newPoint])
-        } else {
-          const startPoint = drawingPath[0]
-          const bounds = new google.maps.LatLngBounds()
-          bounds.extend(startPoint)
-          bounds.extend(newPoint)
+      if (mode === 'area') {
+        if (!isDrawing) {
+          // Start new shape
+          setIsDrawing(true)
+          setCurrentPath([newPoint])
           
-          if (currentDrawing) {
-            (currentDrawing as google.maps.Rectangle).setBounds(bounds)
+          // Create start marker
+          const marker = new google.maps.Marker({
+            position: newPoint,
+            map: map,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 6,
+              fillColor: '#2563eb',
+              fillOpacity: 1,
+              strokeColor: '#ffffff',
+              strokeWeight: 2
+            },
+            title: 'Click here to close shape'
+          })
+          setStartMarker(marker)
+        } else {
+          // Check if clicking on start point to close shape
+          const startPoint = currentPath[0]
+          const distance = google.maps.geometry.spherical.computeDistanceBetween(
+            new google.maps.LatLng(startPoint),
+            new google.maps.LatLng(newPoint)
+          )
+          
+          if (distance < 10 && currentPath.length >= 3) {
+            // Close the shape
+            completeShape()
           } else {
-            const rectangle = new google.maps.Rectangle({
-              bounds,
-              strokeColor: '#FF0000',
-              strokeOpacity: 0.8,
-              strokeWeight: 2,
-              fillColor: '#FF0000',
-              fillOpacity: 0.35
-            })
-            rectangle.setMap(map)
-            setCurrentDrawing(rectangle)
+            // Add point to current path
+            setCurrentPath(prev => [...prev, newPoint])
           }
-          
-          const { width, height } = calculateRectangleDimensions(startPoint, newPoint)
-          onChange({
-            coordinates: [startPoint, newPoint],
-            measurements: { width, height }
-          })
         }
       }
     }
@@ -179,7 +187,81 @@ export function MapWithDrawing({
         google.maps.event.removeListener(listener)
       }
     }
-  }, [map, mode, drawingPath, currentDrawing, onChange])
+  }, [map, mode, isDrawing, currentPath])
+
+  const completeShape = () => {
+    if (currentPath.length < 3) return
+
+    const shapeId = `shape-${Date.now()}`
+    const area = calculatePolygonArea(currentPath)
+    
+    // Create completed polygon
+    const polygon = new google.maps.Polygon({
+      paths: currentPath,
+      strokeColor: '#10b981',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: '#10b981',
+      fillOpacity: 0.2,
+      clickable: true
+    })
+    polygon.setMap(map)
+    
+    // Add click listener for deletion
+    polygon.addListener('click', () => deleteShape(shapeId))
+    
+    setCompletedShapes(prev => [...prev, polygon])
+    
+    // Update value
+    const newShape = {
+      id: shapeId,
+      coordinates: currentPath,
+      area
+    }
+    
+    const updatedShapes = [...value.shapes, newShape]
+    const totalArea = updatedShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
+    
+    onChange({
+      shapes: updatedShapes,
+      measurements: { totalArea }
+    })
+    
+    // Reset drawing state
+    resetDrawing()
+  }
+
+  const deleteShape = (shapeId: string) => {
+    const updatedShapes = value.shapes.filter(shape => shape.id !== shapeId)
+    const totalArea = updatedShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
+    
+    // Find and remove the polygon from map
+    const shapeIndex = value.shapes.findIndex(shape => shape.id === shapeId)
+    if (shapeIndex !== -1 && completedShapes[shapeIndex]) {
+      completedShapes[shapeIndex].setMap(null)
+      setCompletedShapes(prev => prev.filter((_, index) => index !== shapeIndex))
+    }
+    
+    onChange({
+      shapes: updatedShapes,
+      measurements: { totalArea }
+    })
+  }
+
+  const resetDrawing = () => {
+    setIsDrawing(false)
+    setCurrentPath([])
+    
+    if (previewLine) {
+      previewLine.setMap(null)
+      setPreviewLine(null)
+    }
+    
+    if (startMarker) {
+      startMarker.setMap(null)
+      setStartMarker(null)
+    }
+  }
 
   const calculatePolylineLength = (path: google.maps.LatLngLiteral[]): number => {
     if (path.length < 2) return 0
@@ -225,14 +307,17 @@ export function MapWithDrawing({
     return { width, height }
   }
 
-  const clearDrawing = () => {
-    if (currentDrawing) {
-      currentDrawing.setMap(null)
-      setCurrentDrawing(null)
-    }
-    setDrawingPath([])
+  const clearAll = () => {
+    // Clear all completed shapes
+    completedShapes.forEach(shape => shape.setMap(null))
+    setCompletedShapes([])
+    
+    // Reset current drawing
+    resetDrawing()
+    
+    // Update value
     onChange({
-      coordinates: [],
+      shapes: [],
       measurements: {}
     })
   }
@@ -262,14 +347,32 @@ export function MapWithDrawing({
         </label>
       )}
 
-      <div className="flex justify-end mb-2">
-        <button
-          type="button"
-          onClick={clearDrawing}
-          className="text-sm text-gray-500 hover:text-red-600 transition-colors"
-        >
-          Clear
-        </button>
+      <div className="flex justify-between items-center mb-2">
+        <div className="text-sm text-gray-600">
+          {isDrawing ? (
+            <span className="text-blue-600">Drawing... Click start point to close shape</span>
+          ) : (
+            <span>Click to start drawing</span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {isDrawing && (
+            <button
+              type="button"
+              onClick={resetDrawing}
+              className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={clearAll}
+            className="text-sm text-gray-500 hover:text-red-600 transition-colors"
+          >
+            Clear All
+          </button>
+        </div>
       </div>
 
       <div className="border border-gray-300 rounded-lg overflow-hidden">
@@ -285,16 +388,16 @@ export function MapWithDrawing({
         )}
       </div>
 
-      {value.measurements && Object.keys(value.measurements).length > 0 && (
-        <div className="mt-3 text-sm text-gray-600">
-          {value.measurements.length && (
-            <span>Length: {value.measurements.length.toFixed(0)} ft</span>
-          )}
-          {(value.measurements.area || value.measurements.squareFeet) && (
-            <span>Area: {(value.measurements.area || value.measurements.squareFeet || 0).toFixed(0)} sq ft</span>
-          )}
-          {value.measurements.width && value.measurements.height && (
-            <span>{value.measurements.width.toFixed(0)} × {value.measurements.height.toFixed(0)} ft</span>
+      {/* Results */}
+      {value.shapes.length > 0 && (
+        <div className="mt-3 space-y-2">
+          <div className="text-sm font-medium text-gray-900">
+            Total Area: {(value.measurements.totalArea || 0).toFixed(0)} sq ft
+          </div>
+          {value.shapes.length > 1 && (
+            <div className="text-xs text-gray-500">
+              {value.shapes.length} shapes drawn
+            </div>
           )}
         </div>
       )}

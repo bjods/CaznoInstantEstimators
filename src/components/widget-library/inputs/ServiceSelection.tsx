@@ -63,7 +63,7 @@ export function ServiceSelection({
               onClick={() => handleServiceToggle(service.value)}
               className={`relative cursor-pointer rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 ${
                 isSelected 
-                  ? 'ring-4 ring-blue-500 bg-blue-50' 
+                  ? 'ring-4 ring-blue-500 bg-white' 
                   : 'bg-white hover:bg-gray-50'
               }`}
             >
@@ -106,10 +106,6 @@ export function ServiceSelection({
                 </div>
               )}
 
-              {/* Hover Overlay */}
-              <div className={`absolute inset-0 bg-blue-500 bg-opacity-0 transition-all duration-300 ${
-                !isSelected ? 'hover:bg-opacity-5' : ''
-              }`} />
             </div>
           )
         })}

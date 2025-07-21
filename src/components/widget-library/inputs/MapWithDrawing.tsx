@@ -166,6 +166,46 @@ export function MapWithDrawing({
     }
   }, [map, isDrawing, currentPath])
 
+  // Mouse move handler for preview line - only when actively drawing
+  useEffect(() => {
+    if (!map || !isDrawing || currentPath.length === 0) return
+
+    let mousePreviewLine: google.maps.Polyline | null = null
+
+    const mouseMoveListener = (e: google.maps.MapMouseEvent) => {
+      if (!e.latLng) return
+
+      const mousePos = { lat: e.latLng.lat(), lng: e.latLng.lng() }
+      
+      // Remove old mouse preview line
+      if (mousePreviewLine) {
+        mousePreviewLine.setMap(null)
+      }
+
+      // Create new preview line from last point to mouse
+      mousePreviewLine = new google.maps.Polyline({
+        path: [currentPath[currentPath.length - 1], mousePos],
+        geodesic: true,
+        strokeColor: '#fbbf24',
+        strokeOpacity: 0.5,
+        strokeWeight: 2,
+        strokeDashArray: [5, 5] // Dashed line for preview
+      })
+      mousePreviewLine.setMap(map)
+    }
+
+    const listener = map.addListener('mousemove', mouseMoveListener)
+    
+    return () => {
+      if (listener) {
+        google.maps.event.removeListener(listener)
+      }
+      if (mousePreviewLine) {
+        mousePreviewLine.setMap(null)
+      }
+    }
+  }, [map, isDrawing, currentPath])
+
   // Click handler for drawing
   useEffect(() => {
     if (!map || mode !== 'area') return
@@ -187,32 +227,26 @@ export function MapWithDrawing({
           map: map,
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: '#fbbf24',
+            scale: 10,
+            fillColor: '#f59e0b',
             fillOpacity: 1,
             strokeColor: '#ffffff',
             strokeWeight: 3
           },
-          title: 'Click here to close shape'
+          title: 'Click here to close shape',
+          cursor: 'pointer'
         })
+        
+        // Add click listener to start marker for closing shape
+        marker.addListener('click', () => {
+          if (currentPath.length >= 3) {
+            completeShape()
+          }
+        })
+        
         setStartMarker(marker)
       } else {
-        // Check if clicking on start point to close shape
-        const startPoint = currentPath[0]
-        if (startPoint && currentPath.length >= 3) {
-          const distance = google.maps.geometry.spherical.computeDistanceBetween(
-            new google.maps.LatLng(startPoint),
-            new google.maps.LatLng(newPoint)
-          )
-          
-          if (distance < 20) {
-            // Close the shape
-            completeShape()
-            return
-          }
-        }
-        
-        // Add point to current path
+        // Just add point to current path - no auto-closing
         setCurrentPath(prev => [...prev, newPoint])
         
         // Add vertex marker for this point

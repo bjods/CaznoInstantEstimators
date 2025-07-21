@@ -160,13 +160,6 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         </div>
       </footer>
 
-      {/* Debug Info - Remove in production */}
-      <div className="fixed bottom-4 right-4 w-80 p-4 bg-gray-100 rounded-lg shadow-lg opacity-50 hover:opacity-100 transition-opacity">
-        <h3 className="font-medium mb-2 text-sm">Form Data (Debug):</h3>
-        <pre className="text-xs text-gray-600 max-h-40 overflow-auto">
-          {JSON.stringify(formData, null, 2)}
-        </pre>
-      </div>
     </div>
   )
 }

@@ -90,19 +90,11 @@ export function MapWithDrawing({
             addressMarker.setMap(null)
           }
           
-          // Add marker at property location
+          // Add simple default marker
           const marker = new google.maps.Marker({
             position: location,
             map: mapInstance,
-            title: address,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 8,
-              fillColor: '#ef4444',
-              fillOpacity: 1,
-              strokeColor: '#ffffff',
-              strokeWeight: 3,
-            }
+            title: address
           })
           
           setAddressMarker(marker)

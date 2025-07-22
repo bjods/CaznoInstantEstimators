@@ -17,6 +17,7 @@ import { EmailInput } from './inputs/EmailInput'
 import { PhoneInput } from './inputs/PhoneInput'
 import { ServiceSelection } from './inputs/ServiceSelection'
 import { MeasurementHub } from './inputs/MeasurementHub'
+import { ServiceDetailsHub } from './inputs/ServiceDetailsHub'
 
 export const ComponentMap = {
   'text_input': TextInput,
@@ -38,6 +39,7 @@ export const ComponentMap = {
   'phone_input': PhoneInput,
   'service_selection': ServiceSelection,
   'measurement_hub': MeasurementHub,
+  'service_details_hub': ServiceDetailsHub,
 } as const
 
 export type ComponentType = keyof typeof ComponentMap
@@ -62,5 +64,6 @@ export {
   EmailInput,
   PhoneInput,
   ServiceSelection,
-  MeasurementHub
+  MeasurementHub,
+  ServiceDetailsHub
 }

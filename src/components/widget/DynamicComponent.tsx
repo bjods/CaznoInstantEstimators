@@ -39,5 +39,17 @@ export function DynamicComponent({ type, props, value, onChange, formData }: Dyn
     return <Component {...props} value={value} onChange={onChange} address={address} selectedServices={servicesArray} />
   }
   
+  // Special handling for service details hub
+  if (type === 'service_details_hub' && formData) {
+    // Find selected services from form data
+    const selectedServices = formData.selected_services || formData.services || formData.service_type || []
+    const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices]
+    
+    // Extract servicesConfig from props (it's passed in the widget configuration)
+    const { servicesConfig, ...otherProps } = props
+    
+    return <Component {...otherProps} value={value} onChange={onChange} selectedServices={servicesArray} servicesConfig={servicesConfig} />
+  }
+  
   return <Component {...props} value={value} onChange={onChange} />
 }

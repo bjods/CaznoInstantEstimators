@@ -33,6 +33,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     phone: '',
     address: ''
   })
+  const [componentState, setComponentState] = useState<any>(null)
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => ({
@@ -70,9 +71,46 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   const handleNext = () => {
+    // Special handling for component-driven navigation
+    if (componentState) {
+      if (componentState.type === 'measurement_hub' && !componentState.canProceed) {
+        // Don't advance if measurements aren't complete
+        return
+      }
+      if (componentState.type === 'service_details_hub' && !componentState.canProceed) {
+        // Don't advance if service details aren't complete
+        return
+      }
+    }
+    
     if (currentStep < config.steps.length - 1) {
       setCurrentStep(currentStep + 1)
+      setComponentState(null) // Reset component state for new step
     }
+  }
+
+  const getNextButtonText = () => {
+    if (componentState) {
+      if (componentState.type === 'measurement_hub') {
+        if (componentState.allServicesComplete) {
+          return 'Continue to Details'
+        } else if (componentState.currentServiceIndex < componentState.totalServices - 1) {
+          return `Measure Next Service`
+        } else {
+          return 'Finish Measurements'
+        }
+      }
+      if (componentState.type === 'service_details_hub') {
+        if (componentState.allServicesComplete) {
+          return 'Continue'
+        } else if (componentState.currentServiceIndex < componentState.totalServices - 1) {
+          return `Next Service Details`
+        } else {
+          return 'Complete Details'
+        }
+      }
+    }
+    return 'Next'
   }
 
   const handlePrevious = () => {
@@ -185,6 +223,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
                   onChange={(value) => updateField(component.props.name, value)}
                   formData={formData}
                   onNavigateNext={handleNext}
+                  onComponentStateChange={setComponentState}
                 />
               </div>
             ))}
@@ -193,10 +232,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       </main>
 
       {/* Footer with Navigation */}
-      {/* Hide navigation for measurement and service details steps */}
-      {currentStepConfig.id !== 'project-measurement' && currentStepConfig.id !== 'service-details' && (
-        <footer className="bg-white border-t border-gray-200 px-6 py-6">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <footer className="bg-white border-t border-gray-200 px-6 py-6">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}
             disabled={currentStep === -1}
@@ -215,14 +252,14 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
           ) : (
             <button
               onClick={handleNext}
-              className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg"
+              disabled={componentState && !componentState.canProceed}
+              className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Next
+              {getNextButtonText()}
             </button>
           )}
         </div>
-        </footer>
-      )}
+      </footer>
 
     </div>
   )

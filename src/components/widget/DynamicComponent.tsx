@@ -7,9 +7,10 @@ interface DynamicComponentProps {
   onChange: (value: any) => void
   formData?: Record<string, any>
   onNavigateNext?: () => void
+  onComponentStateChange?: (componentState: any) => void
 }
 
-export function DynamicComponent({ type, props, value, onChange, formData, onNavigateNext }: DynamicComponentProps) {
+export function DynamicComponent({ type, props, value, onChange, formData, onNavigateNext, onComponentStateChange }: DynamicComponentProps) {
   const Component = ComponentMap[type as keyof typeof ComponentMap]
   
   if (!Component) {
@@ -37,7 +38,7 @@ export function DynamicComponent({ type, props, value, onChange, formData, onNav
     const selectedServices = formData.selected_services || formData.services || formData.service_type || []
     const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices]
     
-    return <Component {...props} value={value} onChange={onChange} address={address} selectedServices={servicesArray} onNavigateNext={onNavigateNext} />
+    return <Component {...props} value={value} onChange={onChange} address={address} selectedServices={servicesArray} onNavigateNext={onNavigateNext} onComponentStateChange={onComponentStateChange} />
   }
   
   // Special handling for service details hub
@@ -49,7 +50,7 @@ export function DynamicComponent({ type, props, value, onChange, formData, onNav
     // Extract servicesConfig from props (it's passed in the widget configuration)
     const { servicesConfig, ...otherProps } = props
     
-    return <Component {...otherProps} value={value} onChange={onChange} selectedServices={servicesArray} servicesConfig={servicesConfig} onNavigateNext={onNavigateNext} />
+    return <Component {...otherProps} value={value} onChange={onChange} selectedServices={servicesArray} servicesConfig={servicesConfig} onNavigateNext={onNavigateNext} onComponentStateChange={onComponentStateChange} />
   }
   
   return <Component {...props} value={value} onChange={onChange} />

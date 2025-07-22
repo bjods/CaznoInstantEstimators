@@ -35,6 +35,7 @@ export interface MeasurementHubProps {
   helpText?: string
   required?: boolean
   onNavigateNext?: () => void
+  onComponentStateChange?: (state: any) => void
 }
 
 export function MeasurementHub({
@@ -46,7 +47,8 @@ export function MeasurementHub({
   label,
   helpText,
   required,
-  onNavigateNext
+  onNavigateNext,
+  onComponentStateChange
 }: MeasurementHubProps) {
   const [activeService, setActiveService] = useState<string>(selectedServices[0] || '')
   const [activeMethod, setActiveMethod] = useState<string>('')
@@ -106,22 +108,26 @@ export function MeasurementHub({
     setTempMapData(null)
     setTempManualValue(0)
     
-    // Check if all services are now measured
+    // Auto-advance to next service if available
+    const currentIndex = servicesNeedingMeasurement.indexOf(activeService)
+    if (currentIndex < servicesNeedingMeasurement.length - 1) {
+      setActiveService(servicesNeedingMeasurement[currentIndex + 1])
+    }
+    
+    // Expose component state for external navigation
     const allMeasured = servicesNeedingMeasurement.every(service => 
       newValue[service]?.value && newValue[service].value > 0
     )
     
-    if (allMeasured && onNavigateNext) {
-      // All services measured, navigate to next step
-      setTimeout(() => {
-        onNavigateNext()
-      }, 1000) // Small delay to show completion state
-    } else {
-      // Auto-advance to next service if available
-      const currentIndex = servicesNeedingMeasurement.indexOf(activeService)
-      if (currentIndex < servicesNeedingMeasurement.length - 1) {
-        setActiveService(servicesNeedingMeasurement[currentIndex + 1])
-      }
+    if (onComponentStateChange) {
+      onComponentStateChange({
+        type: 'measurement_hub',
+        activeService,
+        allServicesComplete: allMeasured,
+        currentServiceIndex: currentIndex,
+        totalServices: servicesNeedingMeasurement.length,
+        canProceed: allMeasured
+      })
     }
   }
 

@@ -23,6 +23,7 @@ export interface ServiceDetailsHubProps {
   helpText?: string
   required?: boolean
   onNavigateNext?: () => void
+  onComponentStateChange?: (state: any) => void
 }
 
 export function ServiceDetailsHub({
@@ -33,7 +34,8 @@ export function ServiceDetailsHub({
   label,
   helpText,
   required,
-  onNavigateNext
+  onNavigateNext,
+  onComponentStateChange
 }: ServiceDetailsHubProps) {
   const [activeService, setActiveService] = useState<string>(selectedServices[0] || '')
   const [tempAnswers, setTempAnswers] = useState<Record<string, any>>({})
@@ -113,17 +115,22 @@ export function ServiceDetailsHub({
       }
     })
     
-    if (allServicesComplete && onNavigateNext) {
-      // All services completed - trigger navigation
-      setTimeout(() => {
-        onNavigateNext()
-      }, 1000) // Small delay to show completion state
-    } else {
-      // Auto-advance to next service if available
-      const currentIndex = selectedServices.indexOf(activeService)
-      if (currentIndex < selectedServices.length - 1) {
-        setActiveService(selectedServices[currentIndex + 1])
-      }
+    // Auto-advance to next service if available
+    const currentIndex = selectedServices.indexOf(activeService)
+    if (!allServicesComplete && currentIndex < selectedServices.length - 1) {
+      setActiveService(selectedServices[currentIndex + 1])
+    }
+    
+    // Expose component state for external navigation
+    if (onComponentStateChange) {
+      onComponentStateChange({
+        type: 'service_details_hub',
+        activeService,
+        allServicesComplete,
+        currentServiceIndex: currentIndex,
+        totalServices: selectedServices.length,
+        canProceed: allServicesComplete
+      })
     }
   }
 

@@ -429,10 +429,10 @@ Advanced measurement component that handles multiple services with different mea
 - Auto-advances to next service after measurement
 
 **Measurement Method Types:**
-- `map_area`: Draw polygons on map for area measurement
-- `map_linear`: Draw lines on map for linear measurement (coming soon)
+- `map_area`: Draw polygons on map for area measurement (returns square footage)
+- `map_linear`: Draw polylines on map for linear measurement (returns linear feet)
 - `manual_sqft`: Manual input for square footage
-- `manual_linear`: Manual input for linear feet (coming soon)
+- `manual_linear`: Manual input for linear feet
 - `preset_sizes`: Pre-defined size options
 
 **Important Notes:**
@@ -725,6 +725,11 @@ Advanced measurement component that handles multiple services with different mea
                 "requires_measurement": true,
                 "unit": "linear_ft",
                 "measurement_methods": [
+                  {
+                    "type": "map_linear",
+                    "label": "Draw on Map",
+                    "description": "Draw fence line path"
+                  },
                   {
                     "type": "manual_linear",
                     "label": "Enter Linear Feet",

@@ -118,7 +118,9 @@ export function MeasurementHub({
   }
 
   const handleConfirmMap = () => {
-    const measurement = tempMapData?.measurements?.totalArea || 0
+    const measurement = activeMethod === 'map_linear' 
+      ? tempMapData?.measurements?.totalLength || 0
+      : tempMapData?.measurements?.totalArea || 0
     handleMeasurementComplete(Math.round(measurement), tempMapData)
   }
 
@@ -232,22 +234,32 @@ export function MeasurementHub({
           )}
 
           {/* Measurement Interface */}
-          {activeMethod === 'map_area' && (
+          {(activeMethod === 'map_area' || activeMethod === 'map_linear') && (
             <div className="space-y-4">
               <MapWithDrawing
                 value={tempMapData || serviceMeasurement?.mapData || { shapes: [], measurements: {} }}
                 onChange={handleMapChange}
                 address={address}
-                mode="area"
-                helpText="Click to draw areas on the map. You can draw multiple shapes."
+                mode={activeMethod === 'map_linear' ? 'linear' : 'area'}
+                helpText={activeMethod === 'map_linear' 
+                  ? "Click to draw lines on the map. Draw curves and bends as needed." 
+                  : "Click to draw areas on the map. You can draw multiple shapes."
+                }
               />
-              {tempMapData && tempMapData.measurements?.totalArea > 0 && (
+              {tempMapData && (
+                (activeMethod === 'map_linear' ? tempMapData.measurements?.totalLength > 0 : tempMapData.measurements?.totalArea > 0)
+              ) && (
                 <div className="text-center space-y-4">
                   <div className="inline-block p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="text-2xl font-bold text-blue-800">
-                      {Math.round(tempMapData.measurements.totalArea).toLocaleString()} sq ft
+                      {activeMethod === 'map_linear' 
+                        ? Math.round(tempMapData.measurements.totalLength || 0).toLocaleString() + ' ft'
+                        : Math.round(tempMapData.measurements.totalArea || 0).toLocaleString() + ' sq ft'
+                      }
                     </div>
-                    <p className="text-blue-700 text-sm">Total area drawn</p>
+                    <p className="text-blue-700 text-sm">
+                      {activeMethod === 'map_linear' ? 'Total length drawn' : 'Total area drawn'}
+                    </p>
                   </div>
                   <div className="flex gap-3 justify-center">
                     <button

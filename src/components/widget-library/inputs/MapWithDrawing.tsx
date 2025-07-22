@@ -40,6 +40,7 @@ export function MapWithDrawing({
   const [drawMode, setDrawMode] = useState(false)
   const [currentPolygon, setCurrentPolygon] = useState<google.maps.Polygon | null>(null)
   const [polygons, setPolygons] = useState<google.maps.Polygon[]>([])
+  const [polylines, setPolylines] = useState<google.maps.Polyline[]>([])
   
   // Load Google Maps
   useEffect(() => {
@@ -97,10 +98,13 @@ export function MapWithDrawing({
 
   // Drawing manager
   useEffect(() => {
-    if (!map || mode !== 'area') return
+    if (!map || (mode !== 'area' && mode !== 'linear')) return
+
+    const isLinear = mode === 'linear'
+    const drawingMode = drawMode ? (isLinear ? google.maps.drawing.OverlayType.POLYLINE : google.maps.drawing.OverlayType.POLYGON) : null
 
     const drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: drawMode ? google.maps.drawing.OverlayType.POLYGON : null,
+      drawingMode,
       drawingControl: false,
       polygonOptions: {
         fillColor: '#fbbf24',
@@ -109,55 +113,104 @@ export function MapWithDrawing({
         strokeWeight: 3,
         clickable: true,
         editable: false
+      },
+      polylineOptions: {
+        strokeColor: '#ef4444',
+        strokeWeight: 4,
+        clickable: true,
+        editable: false
       }
     })
 
     drawingManager.setMap(map)
 
-    // Listen for polygon completion
-    const polygonCompleteListener = google.maps.event.addListener(
-      drawingManager,
-      'polygoncomplete',
-      (polygon: google.maps.Polygon) => {
-        // Calculate area
-        const path = polygon.getPath()
-        const area = google.maps.geometry.spherical.computeArea(path.getArray()) * 10.764 // to sq ft
-        
-        // Add to polygons array
-        const newPolygon = polygon
-        setPolygons(prev => [...prev, newPolygon])
-        
-        // Update value
-        const shapeId = `shape-${Date.now()}`
-        const coordinates = path.getArray().map(latLng => ({
-          lat: latLng.lat(),
-          lng: latLng.lng()
-        }))
-        
-        const updatedShapes = [...value.shapes, { id: shapeId, coordinates, area }]
-        const totalArea = updatedShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
-        
-        onChange({
-          shapes: updatedShapes,
-          measurements: { totalArea }
-        })
-        
-        // Add click listener for deletion
-        polygon.addListener('click', () => {
-          polygon.setMap(null)
-          setPolygons(prev => prev.filter(p => p !== polygon))
-          
-          // Update value
-          const filteredShapes = updatedShapes.filter(s => s.id !== shapeId)
-          const newTotalArea = filteredShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
-          
-          onChange({
-            shapes: filteredShapes,
-            measurements: { totalArea: newTotalArea }
-          })
-        })
-      }
-    )
+    // Listen for shape completion
+    const shapeCompleteListener = isLinear 
+      ? google.maps.event.addListener(
+          drawingManager,
+          'polylinecomplete',
+          (polyline: google.maps.Polyline) => {
+            // Calculate length
+            const path = polyline.getPath()
+            const length = google.maps.geometry.spherical.computeLength(path.getArray()) * 3.28084 // to feet
+            
+            // Add to polylines array
+            setPolylines(prev => [...prev, polyline])
+            
+            // Update value
+            const shapeId = `shape-${Date.now()}`
+            const coordinates = path.getArray().map(latLng => ({
+              lat: latLng.lat(),
+              lng: latLng.lng()
+            }))
+            
+            const updatedShapes = [...value.shapes, { id: shapeId, coordinates, length }]
+            const totalLength = updatedShapes.reduce((sum, shape) => sum + (shape.length || 0), 0)
+            
+            onChange({
+              shapes: updatedShapes,
+              measurements: { totalLength }
+            })
+            
+            // Add click listener for deletion
+            polyline.addListener('click', () => {
+              polyline.setMap(null)
+              setPolylines(prev => prev.filter(p => p !== polyline))
+              
+              // Update value
+              const filteredShapes = updatedShapes.filter(s => s.id !== shapeId)
+              const newTotalLength = filteredShapes.reduce((sum, shape) => sum + (shape.length || 0), 0)
+              
+              onChange({
+                shapes: filteredShapes,
+                measurements: { totalLength: newTotalLength }
+              })
+            })
+          }
+        )
+      : google.maps.event.addListener(
+          drawingManager,
+          'polygoncomplete',
+          (polygon: google.maps.Polygon) => {
+            // Calculate area
+            const path = polygon.getPath()
+            const area = google.maps.geometry.spherical.computeArea(path.getArray()) * 10.764 // to sq ft
+            
+            // Add to polygons array
+            const newPolygon = polygon
+            setPolygons(prev => [...prev, newPolygon])
+            
+            // Update value
+            const shapeId = `shape-${Date.now()}`
+            const coordinates = path.getArray().map(latLng => ({
+              lat: latLng.lat(),
+              lng: latLng.lng()
+            }))
+            
+            const updatedShapes = [...value.shapes, { id: shapeId, coordinates, area }]
+            const totalArea = updatedShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
+            
+            onChange({
+              shapes: updatedShapes,
+              measurements: { totalArea }
+            })
+            
+            // Add click listener for deletion
+            polygon.addListener('click', () => {
+              polygon.setMap(null)
+              setPolygons(prev => prev.filter(p => p !== polygon))
+              
+              // Update value
+              const filteredShapes = updatedShapes.filter(s => s.id !== shapeId)
+              const newTotalArea = filteredShapes.reduce((sum, shape) => sum + (shape.area || 0), 0)
+              
+              onChange({
+                shapes: filteredShapes,
+                measurements: { totalArea: newTotalArea }
+              })
+            })
+          }
+        )
 
     // Change cursor when in draw mode
     if (drawMode) {
@@ -168,13 +221,15 @@ export function MapWithDrawing({
 
     return () => {
       drawingManager.setMap(null)
-      google.maps.event.removeListener(polygonCompleteListener)
+      google.maps.event.removeListener(shapeCompleteListener)
     }
   }, [map, mode, drawMode, value.shapes, onChange])
 
   const clearAll = () => {
     polygons.forEach(polygon => polygon.setMap(null))
+    polylines.forEach(polyline => polyline.setMap(null))
     setPolygons([])
+    setPolylines([])
     onChange({
       shapes: [],
       measurements: {}
@@ -255,11 +310,15 @@ export function MapWithDrawing({
       {value.shapes.length > 0 && (
         <div className="mt-3 space-y-2">
           <div className="text-sm font-medium text-gray-900">
-            Total Area: {(value.measurements.totalArea || 0).toFixed(0)} sq ft
+            {mode === 'linear' ? (
+              <>Total Length: {(value.measurements.totalLength || 0).toFixed(0)} ft</>
+            ) : (
+              <>Total Area: {(value.measurements.totalArea || 0).toFixed(0)} sq ft</>
+            )}
           </div>
           {value.shapes.length > 1 && (
             <div className="text-xs text-gray-500">
-              {value.shapes.length} shapes drawn (click a shape to delete)
+              {value.shapes.length} {mode === 'linear' ? 'lines' : 'shapes'} drawn (click a {mode === 'linear' ? 'line' : 'shape'} to delete)
             </div>
           )}
         </div>

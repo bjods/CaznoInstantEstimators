@@ -192,9 +192,11 @@ export function MeasurementHub({
       {/* Current Service Content */}
       {currentServiceConfig && (
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h4 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-            Measure your {currentServiceConfig.display_name.toLowerCase()}
-          </h4>
+          {!serviceMeasurement && (
+            <h4 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+              Measure your {currentServiceConfig.display_name.toLowerCase()}
+            </h4>
+          )}
 
           {/* Method Selection */}
           {!activeMethod && !serviceMeasurement && (

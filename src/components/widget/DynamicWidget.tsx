@@ -101,7 +101,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         {/* Header with Progress */}
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="max-w-7xl mx-auto">
-            <div className="flex justify-center items-center mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-xl font-semibold text-gray-900">Personal Information</h1>
               <div className="text-sm text-gray-500">
                 Step 1 of {totalSteps} (14%)
               </div>
@@ -148,7 +149,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       {/* Header with Progress */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center mb-4">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-xl font-semibold text-gray-900">{currentStepConfig.title}</h1>
             <div className="text-sm text-gray-500">
               Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
             </div>
@@ -171,7 +173,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
               <div key={`${currentStep}-${idx}`} className="space-y-4">
                 {/* Component Subheading */}
                 {(component.props.label || component.props.helpText) && (
-                  <h2 className="text-lg font-medium text-gray-600 text-left">
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide text-left">
                     {component.props.label || component.props.helpText}
                   </h2>
                 )}

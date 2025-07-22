@@ -70,7 +70,7 @@ export function PersonalInfoStep({ formData, updateField, onComplete }: Personal
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-lg font-medium text-gray-600 text-left">Let's get started</h2>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide text-left">Let's get started</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <NameInput
             value={formData.firstName}

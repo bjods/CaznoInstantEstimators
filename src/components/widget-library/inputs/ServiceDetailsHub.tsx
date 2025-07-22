@@ -163,16 +163,6 @@ export function ServiceDetailsHub({
 
   return (
     <div className="space-y-6">
-      {label && (
-        <h3 className="text-2xl font-bold text-gray-900 text-center">
-          {label}
-          
-        </h3>
-      )}
-
-      {helpText && (
-        <p className="text-lg text-gray-600 text-center">{helpText}</p>
-      )}
 
       {/* Service Tabs */}
       <div className="flex flex-wrap gap-2 justify-center">

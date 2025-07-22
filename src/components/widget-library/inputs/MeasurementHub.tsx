@@ -83,11 +83,7 @@ export function MeasurementHub({
     setTempMapData(null)
     setTempManualValue(0)
     
-    // Auto-select first measurement method if service has no existing measurement
-    const serviceConfig = servicesConfig[service]
-    if (!value[service] && serviceConfig?.measurement_methods?.length > 0) {
-      setActiveMethod(serviceConfig.measurement_methods[0].type)
-    }
+    // Don't auto-select measurement method - let user choose from menu
   }
 
   const [tempMapData, setTempMapData] = useState<any>(null)
@@ -150,12 +146,6 @@ export function MeasurementHub({
 
   return (
     <div className="space-y-6">
-      {label && (
-        <h3 className="text-2xl font-bold text-gray-900 text-center">
-          {label}
-          
-        </h3>
-      )}
 
       {/* Service Tabs */}
       <div className="flex flex-wrap gap-2 justify-center">

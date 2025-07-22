@@ -41,17 +41,6 @@ export function ServiceSelection({
 
   return (
     <div className="space-y-6">
-      {label && (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {label}
-            
-          </h2>
-          {helpText && (
-            <p className="text-lg text-gray-600">{helpText}</p>
-          )}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {options.map((service) => {

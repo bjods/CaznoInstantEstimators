@@ -70,7 +70,7 @@ export function AddressAutocomplete({
         {label && (
           <label className="block text-lg font-medium text-gray-700">
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            
           </label>
         )}
         <div className="p-3 border border-red-200 rounded-lg bg-red-50">
@@ -85,7 +85,7 @@ export function AddressAutocomplete({
       {label && (
         <label className="block text-lg font-medium text-gray-700">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          
         </label>
       )}
       

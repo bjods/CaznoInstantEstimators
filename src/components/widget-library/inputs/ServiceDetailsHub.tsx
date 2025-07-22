@@ -166,7 +166,7 @@ export function ServiceDetailsHub({
       {label && (
         <h3 className="text-2xl font-bold text-gray-900 text-center">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          
         </h3>
       )}
 
@@ -188,7 +188,7 @@ export function ServiceDetailsHub({
               onClick={() => handleServiceSwitch(service)}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
                 isActive
-                  ? 'bg-blue-500 text-white shadow-lg'
+                  ? 'bg-blue-100 text-blue-800 border-2 border-blue-500 shadow-lg'
                   : isComplete
                   ? 'bg-green-100 text-green-800 border-2 border-green-300'
                   : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400'

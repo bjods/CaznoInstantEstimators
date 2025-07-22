@@ -45,7 +45,7 @@ export function ServiceSelection({
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            
           </h2>
           {helpText && (
             <p className="text-lg text-gray-600">{helpText}</p>

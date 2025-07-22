@@ -36,7 +36,7 @@ export function EmailInput({
     <div className="space-y-2">
       <label className="block text-lg font-medium text-gray-700">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        
       </label>
       <input
         type="email"

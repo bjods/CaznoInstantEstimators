@@ -386,6 +386,61 @@ Interactive map for area/line drawing. Always shows satellite view with top-down
 - Always pair with an `address_autocomplete` component in a previous step for proper map centering
 - Map automatically uses satellite view with no option to change
 
+### 15. measurement_hub
+Advanced measurement component that handles multiple services with different measurement methods. Automatically adapts based on selected services from previous steps.
+
+```json
+{
+  "type": "measurement_hub",
+  "props": {
+    "name": "measurements",
+    "label": "Measure Your Project Areas",
+    "helpText": "We need measurements to provide an accurate estimate",
+    "required": true,
+    "servicesConfig": {
+      "service_value": {
+        "display_name": "Service Display Name",
+        "icon": "🏠", // Optional emoji icon
+        "requires_measurement": true, // Set to false for services that don't need measurement
+        "unit": "sqft", // or "linear_ft"
+        "measurement_methods": [
+          {
+            "type": "map_area", // or "map_linear", "manual_sqft", "manual_linear", "preset_sizes"
+            "label": "Draw on Map",
+            "description": "Most accurate", // Optional description
+            "options": [ // Only for preset_sizes type
+              {"label": "10' × 10'", "value": 100},
+              {"label": "12' × 12'", "value": 144}
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**Features:**
+- Automatically displays tabs for each selected service
+- Shows completion status for each service
+- Allows multiple measurement methods per service
+- Services can be marked as not requiring measurement
+- Supports different units (square feet vs linear feet)
+- Auto-advances to next service after measurement
+
+**Measurement Method Types:**
+- `map_area`: Draw polygons on map for area measurement
+- `map_linear`: Draw lines on map for linear measurement (coming soon)
+- `manual_sqft`: Manual input for square footage
+- `manual_linear`: Manual input for linear feet (coming soon)
+- `preset_sizes`: Pre-defined size options
+
+**Important Notes:**
+- Requires `selected_services` or similar field from previous step
+- Address is automatically passed from personal info step
+- Services not in `servicesConfig` will be ignored
+- Set `requires_measurement: false` for services like consultations
+
 ## Configuration Examples
 
 ### Fencing Estimator
@@ -561,6 +616,128 @@ Interactive map for area/line drawing. Always shows satellite view with top-down
             "mode": "placement",
             "required": true,
             "helpText": "Click twice to place a rectangle where the dumpster should go"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Complete Multi-Service Estimator with MeasurementHub
+```json
+{
+  "steps": [
+    {
+      "id": "service-selection",
+      "title": "Select Services",
+      "components": [
+        {
+          "type": "service_selection",
+          "props": {
+            "name": "selected_services",
+            "label": "What services do you need?",
+            "multiple": true,
+            "required": true,
+            "options": [
+              {
+                "value": "lawn_care",
+                "title": "Lawn Care",
+                "description": "Regular maintenance and treatment"
+              },
+              {
+                "value": "patio",
+                "title": "Patio Installation",
+                "description": "Custom patio design and installation"
+              },
+              {
+                "value": "fence",
+                "title": "Fence Installation",
+                "description": "Privacy and security fencing"
+              },
+              {
+                "value": "consultation",
+                "title": "Design Consultation",
+                "description": "Professional landscape design advice"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "measurements",
+      "title": "Project Measurements",
+      "components": [
+        {
+          "type": "measurement_hub",
+          "props": {
+            "name": "measurements",
+            "label": "Measure Your Project Areas",
+            "required": true,
+            "servicesConfig": {
+              "lawn_care": {
+                "display_name": "Lawn",
+                "icon": "🌱",
+                "requires_measurement": true,
+                "unit": "sqft",
+                "measurement_methods": [
+                  {
+                    "type": "map_area",
+                    "label": "Draw on Map",
+                    "description": "Most accurate"
+                  },
+                  {
+                    "type": "manual_sqft",
+                    "label": "Enter Size"
+                  }
+                ]
+              },
+              "patio": {
+                "display_name": "Patio",
+                "icon": "🏠",
+                "requires_measurement": true,
+                "unit": "sqft",
+                "measurement_methods": [
+                  {
+                    "type": "map_area",
+                    "label": "Draw on Map"
+                  },
+                  {
+                    "type": "manual_sqft",
+                    "label": "Enter Size"
+                  },
+                  {
+                    "type": "preset_sizes",
+                    "label": "Common Sizes",
+                    "options": [
+                      {"label": "10' × 10'", "value": 100},
+                      {"label": "12' × 12'", "value": 144},
+                      {"label": "15' × 15'", "value": 225},
+                      {"label": "20' × 20'", "value": 400}
+                    ]
+                  }
+                ]
+              },
+              "fence": {
+                "display_name": "Fence",
+                "icon": "🚧",
+                "requires_measurement": true,
+                "unit": "linear_ft",
+                "measurement_methods": [
+                  {
+                    "type": "manual_linear",
+                    "label": "Enter Linear Feet",
+                    "description": "Measure perimeter"
+                  }
+                ]
+              },
+              "consultation": {
+                "display_name": "Consultation",
+                "icon": "💬",
+                "requires_measurement": false
+              }
+            }
           }
         }
       ]

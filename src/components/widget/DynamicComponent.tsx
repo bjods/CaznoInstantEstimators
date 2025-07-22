@@ -29,5 +29,15 @@ export function DynamicComponent({ type, props, value, onChange, formData }: Dyn
     return <Component {...props} value={value} onChange={onChange} address={address} />
   }
   
+  // Special handling for measurement hub
+  if (type === 'measurement_hub' && formData) {
+    const address = formData.address || formData.property_address || formData.location || formData.site_address
+    // Find selected services from form data
+    const selectedServices = formData.selected_services || formData.services || formData.service_type || []
+    const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices]
+    
+    return <Component {...props} value={value} onChange={onChange} address={address} selectedServices={servicesArray} />
+  }
+  
   return <Component {...props} value={value} onChange={onChange} />
 }

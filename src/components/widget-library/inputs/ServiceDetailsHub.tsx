@@ -176,7 +176,7 @@ export function ServiceDetailsHub({
               key={service}
               type="button"
               onClick={() => handleServiceSwitch(service)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              className={`px-8 py-4 min-w-[200px] rounded-lg font-medium transition-all ${
                 isActive
                   ? 'bg-blue-100 text-blue-800 border-2 border-blue-500 shadow-lg'
                   : isComplete

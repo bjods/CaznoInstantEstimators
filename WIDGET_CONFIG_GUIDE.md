@@ -62,7 +62,7 @@ VALUES (
   "steps": [
     {
       "id": "unique-step-id",
-      "title": "Step Title",
+      "title": "Step Title",  // This title appears above the progress bar
       "components": [
         {
           "type": "component_type",
@@ -81,6 +81,8 @@ VALUES (
   "showInstantQuote": true
 }
 ```
+
+**Important**: The `title` field in each step is displayed as the main heading above the progress bar. This helps users understand what information they're providing at each stage of the form.
 
 ### SQL Insert Example
 ```sql

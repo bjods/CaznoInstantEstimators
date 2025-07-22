@@ -102,9 +102,9 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-xl font-semibold text-gray-900">Get Your Instant Estimate</h1>
+              <h1 className="text-xl font-semibold text-gray-900">Personal Information</h1>
               <div className="text-sm text-gray-500">
-                Step 1 of {totalSteps} (Personal Information)
+                Step 1 of {totalSteps} (14%)
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -150,7 +150,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-semibold text-gray-900">Get Your Instant Estimate</h1>
+            <h1 className="text-xl font-semibold text-gray-900">{currentStepConfig.title}</h1>
             <div className="text-sm text-gray-500">
               Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
             </div>

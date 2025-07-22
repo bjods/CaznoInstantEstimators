@@ -68,6 +68,9 @@ export function MeasurementHub({
     setActiveMethod(method)
   }
 
+  const [tempMapData, setTempMapData] = useState<any>(null)
+  const [tempManualValue, setTempManualValue] = useState<number>(0)
+
   const handleMeasurementComplete = (measurement: number, mapData?: any) => {
     onChange({
       ...value,
@@ -78,6 +81,8 @@ export function MeasurementHub({
       }
     })
     setActiveMethod('')
+    setTempMapData(null)
+    setTempManualValue(0)
     
     // Auto-advance to next service if available
     const currentIndex = servicesNeedingMeasurement.indexOf(activeService)
@@ -87,12 +92,22 @@ export function MeasurementHub({
   }
 
   const handleMapChange = (mapData: any) => {
-    const measurement = mapData.measurements?.totalArea || 0
-    handleMeasurementComplete(Math.round(measurement), mapData)
+    setTempMapData(mapData)
   }
 
-  const handleManualInput = (measurement: number) => {
-    handleMeasurementComplete(measurement)
+  const handleConfirmMap = () => {
+    const measurement = tempMapData?.measurements?.totalArea || 0
+    handleMeasurementComplete(Math.round(measurement), tempMapData)
+  }
+
+  const handleManualInputChange = (value: number) => {
+    setTempManualValue(value)
+  }
+
+  const handleConfirmManual = () => {
+    if (tempManualValue > 0) {
+      handleMeasurementComplete(tempManualValue)
+    }
   }
 
   const handlePresetSelect = (preset: number) => {
@@ -190,21 +205,49 @@ export function MeasurementHub({
 
           {/* Measurement Interface */}
           {activeMethod === 'map_area' && (
-            <div>
+            <div className="space-y-4">
               <MapWithDrawing
-                value={serviceMeasurement?.mapData || { shapes: [], measurements: {} }}
+                value={tempMapData || serviceMeasurement?.mapData || { shapes: [], measurements: {} }}
                 onChange={handleMapChange}
                 address={address}
                 mode="area"
-                helpText="Click to draw the area on the map"
+                helpText="Click to draw areas on the map. You can draw multiple shapes."
               />
-              <button
-                type="button"
-                onClick={() => setActiveMethod('')}
-                className="mt-4 text-gray-600 hover:text-gray-800 underline"
-              >
-                Use a different method
-              </button>
+              {tempMapData && tempMapData.measurements?.totalArea > 0 && (
+                <div className="text-center space-y-4">
+                  <div className="inline-block p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-800">
+                      {Math.round(tempMapData.measurements.totalArea).toLocaleString()} sq ft
+                    </div>
+                    <p className="text-blue-700 text-sm">Total area drawn</p>
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      type="button"
+                      onClick={handleConfirmMap}
+                      className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                    >
+                      Confirm Measurement
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMethod('')}
+                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                    >
+                      Use Different Method
+                    </button>
+                  </div>
+                </div>
+              )}
+              {!tempMapData && (
+                <button
+                  type="button"
+                  onClick={() => setActiveMethod('')}
+                  className="text-gray-600 hover:text-gray-800 underline text-sm"
+                >
+                  Use a different method
+                </button>
+              )}
             </div>
           )}
 
@@ -215,10 +258,11 @@ export function MeasurementHub({
                   type="number"
                   placeholder="0"
                   min="0"
+                  value={tempManualValue || ''}
                   className="w-40 px-4 py-3 text-xl text-center border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   onChange={(e) => {
                     const val = parseInt(e.target.value) || 0
-                    if (val > 0) handleManualInput(val)
+                    handleManualInputChange(val)
                   }}
                 />
                 <span className="text-lg font-medium text-gray-700">square feet</span>
@@ -226,13 +270,30 @@ export function MeasurementHub({
               <p className="text-sm text-gray-500">
                 💡 Tip: A typical 2-car garage is about 400-600 sq ft
               </p>
-              <button
-                type="button"
-                onClick={() => setActiveMethod('')}
-                className="text-gray-600 hover:text-gray-800 underline"
-              >
-                Use a different method
-              </button>
+              <div className="flex gap-3 justify-center">
+                <button
+                  type="button"
+                  onClick={handleConfirmManual}
+                  disabled={tempManualValue <= 0}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                    tempManualValue > 0
+                      ? 'bg-blue-500 text-white hover:bg-blue-600'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Confirm Measurement
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMethod('')
+                    setTempManualValue(0)
+                  }}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Use Different Method
+                </button>
+              </div>
             </div>
           )}
 
@@ -243,10 +304,11 @@ export function MeasurementHub({
                   type="number"
                   placeholder="0"
                   min="0"
+                  value={tempManualValue || ''}
                   className="w-40 px-4 py-3 text-xl text-center border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   onChange={(e) => {
                     const val = parseInt(e.target.value) || 0
-                    if (val > 0) handleManualInput(val)
+                    handleManualInputChange(val)
                   }}
                 />
                 <span className="text-lg font-medium text-gray-700">linear feet</span>
@@ -254,13 +316,30 @@ export function MeasurementHub({
               <p className="text-sm text-gray-500">
                 💡 Tip: Measure the total length of all sides
               </p>
-              <button
-                type="button"
-                onClick={() => setActiveMethod('')}
-                className="text-gray-600 hover:text-gray-800 underline"
-              >
-                Use a different method
-              </button>
+              <div className="flex gap-3 justify-center">
+                <button
+                  type="button"
+                  onClick={handleConfirmManual}
+                  disabled={tempManualValue <= 0}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                    tempManualValue > 0
+                      ? 'bg-blue-500 text-white hover:bg-blue-600'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Confirm Measurement
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMethod('')
+                    setTempManualValue(0)
+                  }}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Use Different Method
+                </button>
+              </div>
             </div>
           )}
 
@@ -293,13 +372,13 @@ export function MeasurementHub({
 
           {/* Show existing measurement */}
           {serviceMeasurement && !activeMethod && (
-            <div className="text-center space-y-4">
-              <div className="p-6 bg-green-50 border border-green-200 rounded-xl inline-block">
-                <div className="text-3xl font-bold text-green-800">
+            <div className="text-center space-y-6">
+              <div className="p-8 bg-green-50 border-2 border-green-200 rounded-xl inline-block">
+                <div className="text-4xl font-bold text-green-800 mb-2">
                   {serviceMeasurement.value.toLocaleString()} {currentServiceConfig.unit === 'linear_ft' ? 'ft' : 'sq ft'}
                 </div>
-                <p className="text-green-700 font-medium">
-                  {currentServiceConfig.display_name} measured
+                <p className="text-green-700 font-semibold text-lg">
+                  {currentServiceConfig.display_name} Measured ✓
                 </p>
               </div>
               <button
@@ -308,10 +387,12 @@ export function MeasurementHub({
                   const newValue = { ...value }
                   delete newValue[activeService]
                   onChange(newValue)
+                  setTempMapData(null)
+                  setTempManualValue(0)
                 }}
-                className="text-gray-600 hover:text-gray-800 underline"
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
               >
-                Re-measure
+                Re-measure This Service
               </button>
             </div>
           )}

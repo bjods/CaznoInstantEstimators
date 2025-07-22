@@ -34,6 +34,7 @@ export interface MeasurementHubProps {
   label?: string
   helpText?: string
   required?: boolean
+  onNavigateNext?: () => void
 }
 
 export function MeasurementHub({
@@ -44,7 +45,8 @@ export function MeasurementHub({
   address,
   label,
   helpText,
-  required
+  required,
+  onNavigateNext
 }: MeasurementHubProps) {
   const [activeService, setActiveService] = useState<string>(selectedServices[0] || '')
   const [activeMethod, setActiveMethod] = useState<string>('')
@@ -90,22 +92,36 @@ export function MeasurementHub({
   const [tempManualValue, setTempManualValue] = useState<number>(0)
 
   const handleMeasurementComplete = (measurement: number, mapData?: any) => {
-    onChange({
+    const newValue = {
       ...value,
       [activeService]: {
         method: activeMethod,
         value: measurement,
         mapData
       }
-    })
+    }
+    
+    onChange(newValue)
     setActiveMethod('')
     setTempMapData(null)
     setTempManualValue(0)
     
-    // Auto-advance to next service if available
-    const currentIndex = servicesNeedingMeasurement.indexOf(activeService)
-    if (currentIndex < servicesNeedingMeasurement.length - 1) {
-      setActiveService(servicesNeedingMeasurement[currentIndex + 1])
+    // Check if all services are now measured
+    const allMeasured = servicesNeedingMeasurement.every(service => 
+      newValue[service]?.value && newValue[service].value > 0
+    )
+    
+    if (allMeasured && onNavigateNext) {
+      // All services measured, navigate to next step
+      setTimeout(() => {
+        onNavigateNext()
+      }, 1000) // Small delay to show completion state
+    } else {
+      // Auto-advance to next service if available
+      const currentIndex = servicesNeedingMeasurement.indexOf(activeService)
+      if (currentIndex < servicesNeedingMeasurement.length - 1) {
+        setActiveService(servicesNeedingMeasurement[currentIndex + 1])
+      }
     }
   }
 

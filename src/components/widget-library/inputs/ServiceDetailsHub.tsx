@@ -22,6 +22,7 @@ export interface ServiceDetailsHubProps {
   label?: string
   helpText?: string
   required?: boolean
+  onNavigateNext?: () => void
 }
 
 export function ServiceDetailsHub({
@@ -31,7 +32,8 @@ export function ServiceDetailsHub({
   servicesConfig,
   label,
   helpText,
-  required
+  required,
+  onNavigateNext
 }: ServiceDetailsHubProps) {
   const [activeService, setActiveService] = useState<string>(selectedServices[0] || '')
   const [tempAnswers, setTempAnswers] = useState<Record<string, any>>({})
@@ -72,20 +74,56 @@ export function ServiceDetailsHub({
 
   const handleCompleteService = () => {
     // Save answers for current service
-    onChange({
+    const updatedValue = {
       ...value,
       [activeService]: {
         ...serviceAnswers,
         ...tempAnswers
       }
-    })
+    }
+    onChange(updatedValue)
     
     setTempAnswers({})
     
-    // Auto-advance to next service if available
-    const currentIndex = selectedServices.indexOf(activeService)
-    if (currentIndex < selectedServices.length - 1) {
-      setActiveService(selectedServices[currentIndex + 1])
+    // Check if all services are now complete
+    const allServicesComplete = selectedServices.every(service => {
+      if (service === activeService) {
+        // For the current service, check against the temp answers we just saved
+        const config = servicesConfig[service]
+        const answers = { ...serviceAnswers, ...tempAnswers }
+        
+        if (!config?.questions) return true
+        
+        return config.questions.every(question => {
+          const questionName = question.props.name
+          const isRequired = question.props.required !== false
+          const answer = answers[questionName]
+          
+          if (!isRequired) return true
+          
+          if (answer === undefined || answer === null) return false
+          if (typeof answer === 'string' && answer.trim() === '') return false
+          if (Array.isArray(answer) && answer.length === 0) return false
+          
+          return true
+        })
+      } else {
+        // For other services, use the existing isServiceComplete function
+        return isServiceComplete(service)
+      }
+    })
+    
+    if (allServicesComplete && onNavigateNext) {
+      // All services completed - trigger navigation
+      setTimeout(() => {
+        onNavigateNext()
+      }, 1000) // Small delay to show completion state
+    } else {
+      // Auto-advance to next service if available
+      const currentIndex = selectedServices.indexOf(activeService)
+      if (currentIndex < selectedServices.length - 1) {
+        setActiveService(selectedServices[currentIndex + 1])
+      }
     }
   }
 

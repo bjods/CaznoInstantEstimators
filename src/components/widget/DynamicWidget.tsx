@@ -184,6 +184,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
                   value={getFieldValue(component.props.name, component.type)}
                   onChange={(value) => updateField(component.props.name, value)}
                   formData={formData}
+                  onNavigateNext={handleNext}
                 />
               </div>
             ))}
@@ -192,8 +193,10 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       </main>
 
       {/* Footer with Navigation */}
-      <footer className="bg-white border-t border-gray-200 px-6 py-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      {/* Hide navigation for measurement and service details steps */}
+      {currentStepConfig.id !== 'project-measurement' && currentStepConfig.id !== 'service-details' && (
+        <footer className="bg-white border-t border-gray-200 px-6 py-6">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}
             disabled={currentStep === -1}
@@ -218,7 +221,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
             </button>
           )}
         </div>
-      </footer>
+        </footer>
+      )}
 
     </div>
   )

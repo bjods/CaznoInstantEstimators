@@ -54,18 +54,40 @@ export function MeasurementHub({
     service => servicesConfig[service]?.requires_measurement !== false
   )
 
-  // Set initial active service
+  // Set initial active service and method
   useEffect(() => {
     if (!activeService && servicesNeedingMeasurement.length > 0) {
-      setActiveService(servicesNeedingMeasurement[0])
+      const firstService = servicesNeedingMeasurement[0]
+      const firstServiceConfig = servicesConfig[firstService]
+      setActiveService(firstService)
+      
+      // Auto-select first measurement method if service has no existing measurement
+      if (!value[firstService] && firstServiceConfig?.measurement_methods?.length > 0) {
+        setActiveMethod(firstServiceConfig.measurement_methods[0].type)
+      }
     }
-  }, [servicesNeedingMeasurement, activeService])
+  }, [servicesNeedingMeasurement, activeService, value, servicesConfig])
 
   const currentServiceConfig = servicesConfig[activeService]
   const serviceMeasurement = value[activeService]
 
   const handleMethodSelect = (method: string) => {
     setActiveMethod(method)
+    setTempMapData(null)
+    setTempManualValue(0)
+  }
+
+  const handleServiceSwitch = (service: string) => {
+    setActiveService(service)
+    setActiveMethod('')
+    setTempMapData(null)
+    setTempManualValue(0)
+    
+    // Auto-select first measurement method if service has no existing measurement
+    const serviceConfig = servicesConfig[service]
+    if (!value[service] && serviceConfig?.measurement_methods?.length > 0) {
+      setActiveMethod(serviceConfig.measurement_methods[0].type)
+    }
   }
 
   const [tempMapData, setTempMapData] = useState<any>(null)
@@ -145,7 +167,7 @@ export function MeasurementHub({
             <button
               key={service}
               type="button"
-              onClick={() => setActiveService(service)}
+              onClick={() => handleServiceSwitch(service)}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
                 isActive
                   ? 'bg-blue-500 text-white shadow-lg'
@@ -154,16 +176,22 @@ export function MeasurementHub({
                   : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400'
               }`}
             >
-              <span className="flex items-center gap-2">
-                {config.icon && <span className="text-lg">{config.icon}</span>}
-                {config.display_name}
-                {isComplete && <span>✓</span>}
-              </span>
-              {isComplete && (
-                <span className="text-sm block mt-1">
-                  {measurement.value.toLocaleString()} {config.unit === 'linear_ft' ? 'ft' : 'sq ft'}
+              <div className="text-center">
+                <span className="flex items-center gap-2 justify-center">
+                  {config.icon && <span className="text-lg">{config.icon}</span>}
+                  {config.display_name}
+                  {isComplete && <span>✓</span>}
                 </span>
-              )}
+                {isComplete ? (
+                  <span className="text-sm block mt-1 font-semibold">
+                    {measurement.value.toLocaleString()} {config.unit === 'linear_ft' ? 'ft' : 'sq ft'}
+                  </span>
+                ) : (
+                  <span className="text-xs block mt-1 text-red-500">
+                    needs measurement
+                  </span>
+                )}
+              </div>
             </button>
           )
         })}
@@ -372,28 +400,33 @@ export function MeasurementHub({
 
           {/* Show existing measurement */}
           {serviceMeasurement && !activeMethod && (
-            <div className="text-center space-y-6">
-              <div className="p-8 bg-green-50 border-2 border-green-200 rounded-xl inline-block">
-                <div className="text-4xl font-bold text-green-800 mb-2">
+            <div className="max-w-md mx-auto">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                <div className="text-green-600 text-4xl mb-2">✓</div>
+                <div className="text-2xl font-bold text-green-800 mb-1">
                   {serviceMeasurement.value.toLocaleString()} {currentServiceConfig.unit === 'linear_ft' ? 'ft' : 'sq ft'}
                 </div>
-                <p className="text-green-700 font-semibold text-lg">
-                  {currentServiceConfig.display_name} Measured ✓
+                <p className="text-green-700 font-medium mb-4">
+                  {currentServiceConfig.display_name} Complete
                 </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newValue = { ...value }
+                    delete newValue[activeService]
+                    onChange(newValue)
+                    setTempMapData(null)
+                    setTempManualValue(0)
+                    // Auto-select first measurement method when re-measuring
+                    if (currentServiceConfig?.measurement_methods?.length > 0) {
+                      setActiveMethod(currentServiceConfig.measurement_methods[0].type)
+                    }
+                  }}
+                  className="px-4 py-2 text-sm bg-white text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Change Measurement
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const newValue = { ...value }
-                  delete newValue[activeService]
-                  onChange(newValue)
-                  setTempMapData(null)
-                  setTempManualValue(0)
-                }}
-                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-              >
-                Re-measure This Service
-              </button>
             </div>
           )}
         </div>

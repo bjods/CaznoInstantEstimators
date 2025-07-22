@@ -264,9 +264,19 @@ export function MapWithDrawing({
       <div className="flex justify-between items-center mb-2">
         <div className="text-sm text-gray-600">
           {drawMode ? (
-            <span className="text-blue-600">Draw mode active - Click to create shapes</span>
+            <span className="text-blue-600">
+              {mode === 'linear' 
+                ? 'Draw mode active - Click to create lines, double-click to finish a line'
+                : 'Draw mode active - Click to create shapes, click original point to finish shape'
+              }
+            </span>
           ) : (
-            <span>Click "Draw" to start drawing areas</span>
+            <span>
+              {mode === 'linear' 
+                ? 'Click "Draw" to start drawing lines'
+                : 'Click "Draw" to start drawing areas'
+              }
+            </span>
           )}
         </div>
         <div className="flex gap-2">

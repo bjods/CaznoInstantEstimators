@@ -50,13 +50,13 @@ export function MeasurementHub({
   onNavigateNext,
   onComponentStateChange
 }: MeasurementHubProps) {
-  const [activeService, setActiveService] = useState<string>(selectedServices[0] || '')
-  const [activeMethod, setActiveMethod] = useState<string>('')
-
   // Get services that need measurement
   const servicesNeedingMeasurement = selectedServices.filter(
     service => servicesConfig[service]?.requires_measurement !== false
   )
+
+  const [activeService, setActiveService] = useState<string>(servicesNeedingMeasurement[0] || '')
+  const [activeMethod, setActiveMethod] = useState<string>('')
 
   // Set initial active service and method
   useEffect(() => {
@@ -156,12 +156,23 @@ export function MeasurementHub({
     handleMeasurementComplete(preset)
   }
 
-  // If no services need measurement, show success message
+  // Auto-skip page if no services need measurement
+  useEffect(() => {
+    if (servicesNeedingMeasurement.length === 0 && onNavigateNext) {
+      // Small delay to show brief message before auto-advancing
+      setTimeout(() => {
+        onNavigateNext()
+      }, 1000)
+    }
+  }, [servicesNeedingMeasurement.length, onNavigateNext])
+
+  // If no services need measurement, show brief success message before auto-advancing
   if (servicesNeedingMeasurement.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-2xl mb-2">✅</div>
+        <div className="text-4xl mb-4">✅</div>
         <p className="text-lg text-gray-700">No measurements needed for your selected services</p>
+        <p className="text-sm text-gray-500 mt-2">Advancing automatically...</p>
       </div>
     )
   }

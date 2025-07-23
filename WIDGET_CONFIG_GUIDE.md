@@ -78,7 +78,12 @@ VALUES (
   ],
   "priceDisplay": "instant",
   "thankYouMessage": "Thank you message here",
-  "showInstantQuote": true
+  "showInstantQuote": true,
+  
+  "pricingCalculator": {
+    // Optional: Add real-time pricing to your widget
+    // See Pricing Calculator section below for full documentation
+  }
 }
 ```
 
@@ -773,3 +778,350 @@ For local testing:
 ```
 http://localhost:3000/widget/[embed_key]
 ```
+
+## Pricing Calculator Configuration
+
+The pricing calculator allows you to display real-time pricing estimates as users fill out your widget. It's completely configurable through JSON and supports complex pricing logic.
+
+### Basic Structure
+
+```json
+{
+  "steps": [...], // Your existing form steps
+  
+  "pricingCalculator": {
+    "basePricing": {
+      "service_field": "field_name",  // Which form field determines the service
+      "prices": {
+        "service_option_1": {
+          "amount": 45,
+          "unit": "linear_foot",
+          "minCharge": 500
+        },
+        "service_option_2": {
+          "amount": 25,
+          "unit": "sqft",
+          "minCharge": 300
+        }
+      }
+    },
+    
+    "modifiers": [
+      // Optional: Price adjustments based on form data
+    ],
+    
+    "display": {
+      "showCalculation": true,     // Show detailed breakdown
+      "format": "range",           // "fixed", "range", or "minimum"
+      "rangeMultiplier": 1.2       // For range: show price to price×1.2
+    }
+  }
+}
+```
+
+### Base Pricing Configuration
+
+The `basePricing` section defines your core service pricing:
+
+- **service_field**: The form field that determines which service was selected
+- **prices**: Object mapping service values to pricing config
+- **amount**: Price per unit
+- **unit**: What unit the pricing is based on (see supported units below)
+- **minCharge**: Optional minimum charge (overrides calculated price if lower)
+
+#### Supported Units
+
+- `linear_foot` / `linear_feet` - Maps to form fields: linearFeet, linear_feet, feet
+- `sqft` / `square_feet` - Maps to form fields: sqft, square_feet, area
+- `cubic_yard` - Maps to form fields: cubic_yards, yards
+- `days` - Maps to form fields: days, rentalDays, duration
+- `hours` - Maps to form fields: hours, duration
+- `units` - Maps to form fields: quantity, count, units
+
+### Modifiers
+
+Modifiers allow you to adjust pricing based on additional form data. There are three types:
+
+#### 1. Per Unit Modifiers
+
+Multiplies a form field value by a price amount:
+
+```json
+{
+  "id": "gates",
+  "type": "perUnit",
+  "field": "gateCount",
+  "calculation": {
+    "operation": "add",
+    "amount": 200,
+    "perUnit": true          // $200 × gateCount
+  }
+}
+```
+
+#### 2. Conditional Modifiers
+
+Applies when a condition is met:
+
+```json
+{
+  "id": "difficult_access",
+  "type": "conditional",
+  "field": "hasdifficultAccess",
+  "condition": "equals",
+  "value": true,
+  "calculation": {
+    "operation": "multiply",
+    "amount": 1.25           // 25% increase
+  }
+}
+```
+
+#### 3. Threshold Modifiers
+
+Applies when a field value crosses a threshold:
+
+```json
+{
+  "id": "large_project_discount",
+  "type": "threshold",
+  "field": "linearFeet",
+  "condition": "greaterThan",
+  "value": 500,
+  "calculation": {
+    "operation": "multiply",
+    "amount": 0.9            // 10% discount for projects > 500ft
+  }
+}
+```
+
+### Calculation Operations
+
+- **add**: Adds the amount to current price
+- **multiply**: Multiplies current price by amount (use for percentages)
+- **subtract**: Subtracts the amount from current price
+
+### Display Options
+
+#### Format Types
+
+- **fixed**: Shows exact calculated price
+- **range**: Shows price range (price to price × rangeMultiplier)
+- **minimum**: Shows "Starting at $X" format
+
+#### Show Calculation
+
+When `showCalculation: true`, displays:
+- Base price calculation
+- Each applied modifier
+- Minimum charge (if applied)
+- Final total
+
+### Complete Examples
+
+#### Fencing Estimator with Pricing
+
+```json
+{
+  "steps": [
+    {
+      "id": "fence-type",
+      "title": "Fence Type",
+      "components": [
+        {
+          "type": "radio_group",
+          "props": {
+            "name": "fenceType",
+            "label": "What type of fence do you need?",
+            "options": [
+              {
+                "value": "wood_privacy",
+                "label": "Wood Privacy",
+                "description": "6ft cedar privacy fence"
+              },
+              {
+                "value": "chain_link",
+                "label": "Chain Link", 
+                "description": "Galvanized chain link"
+              }
+            ],
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "measurements",
+      "title": "Measurements",
+      "components": [
+        {
+          "type": "linear_feet_input",
+          "props": {
+            "name": "linearFeet",
+            "label": "Total Linear Feet",
+            "min": 10,
+            "max": 1000,
+            "required": true
+          }
+        },
+        {
+          "type": "number_input", 
+          "props": {
+            "name": "gateCount",
+            "label": "Number of Gates",
+            "min": 0,
+            "max": 10,
+            "step": 1
+          }
+        }
+      ]
+    }
+  ],
+  
+  "showInstantQuote": true,
+  
+  "pricingCalculator": {
+    "basePricing": {
+      "service_field": "fenceType",
+      "prices": {
+        "wood_privacy": {
+          "amount": 45,
+          "unit": "linear_foot",
+          "minCharge": 500
+        },
+        "chain_link": {
+          "amount": 25,
+          "unit": "linear_foot",
+          "minCharge": 300
+        }
+      }
+    },
+    
+    "modifiers": [
+      {
+        "id": "gates",
+        "type": "perUnit",
+        "field": "gateCount",
+        "calculation": {
+          "operation": "add",
+          "amount": 200,
+          "perUnit": true
+        }
+      },
+      {
+        "id": "large_project_discount",
+        "type": "threshold",
+        "field": "linearFeet", 
+        "condition": "greaterThan",
+        "value": 500,
+        "calculation": {
+          "operation": "multiply",
+          "amount": 0.9
+        }
+      }
+    ],
+    
+    "display": {
+      "showCalculation": true,
+      "format": "range",
+      "rangeMultiplier": 1.2
+    }
+  }
+}
+```
+
+#### Bin Rental with Time-Based Pricing
+
+```json
+{
+  "pricingCalculator": {
+    "basePricing": {
+      "service_field": "binSize",
+      "prices": {
+        "10_yard": { "amount": 300, "unit": "days", "minCharge": 300 },
+        "20_yard": { "amount": 400, "unit": "days", "minCharge": 400 },
+        "30_yard": { "amount": 500, "unit": "days", "minCharge": 500 }
+      }
+    },
+    "modifiers": [
+      {
+        "id": "extra_days",
+        "type": "threshold",
+        "field": "rentalDays",
+        "condition": "greaterThan",
+        "value": 7,
+        "calculation": {
+          "operation": "add",
+          "amount": 25,
+          "perUnit": true
+        }
+      },
+      {
+        "id": "concrete_surcharge",
+        "type": "conditional",
+        "field": "wasteType",
+        "condition": "equals",
+        "value": "concrete",
+        "calculation": {
+          "operation": "add",
+          "amount": 150
+        }
+      }
+    ],
+    "display": {
+      "showCalculation": true,
+      "format": "fixed"
+    }
+  }
+}
+```
+
+#### Landscaping with Area-Based Pricing
+
+```json
+{
+  "pricingCalculator": {
+    "basePricing": {
+      "service_field": "serviceType",
+      "prices": {
+        "lawn_install": { "amount": 2.50, "unit": "sqft" },
+        "mulch_delivery": { "amount": 45, "unit": "cubic_yard" }
+      }
+    },
+    "modifiers": [
+      {
+        "id": "prep_work",
+        "type": "conditional",
+        "field": "needsPrepWork",
+        "condition": "equals", 
+        "value": true,
+        "calculation": {
+          "operation": "add",
+          "amount": 0.75,
+          "perUnit": true
+        }
+      }
+    ],
+    "display": {
+      "showCalculation": false,
+      "format": "minimum"
+    }
+  }
+}
+```
+
+### Testing Your Pricing
+
+1. Set up your widget with pricing configuration
+2. Fill out the form to see real-time price updates
+3. Check the final estimate includes pricing breakdown
+4. Verify pricing data is stored in the estimates table
+
+### Pricing Best Practices
+
+1. **Start Simple**: Begin with base pricing only, add modifiers as needed
+2. **Test Thoroughly**: Try edge cases and different form combinations
+3. **Clear Units**: Make sure your form fields match the pricing units
+4. **Reasonable Minimums**: Set minimum charges to avoid unrealistic low prices
+5. **User Experience**: Consider whether to show detailed breakdowns or simple totals
+6. **A/B Testing**: The JSON configuration makes it easy to test different pricing approaches

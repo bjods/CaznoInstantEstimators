@@ -3,22 +3,8 @@
 import { useState } from 'react'
 import { DynamicComponent } from './DynamicComponent'
 import { PersonalInfoStep } from './PersonalInfoStep'
-
-interface WidgetStep {
-  id: string
-  title: string
-  components: Array<{
-    type: string
-    props: Record<string, any>
-  }>
-}
-
-interface WidgetConfig {
-  steps: WidgetStep[]
-  priceDisplay?: string
-  thankYouMessage?: string
-  showInstantQuote?: boolean
-}
+import { PriceCalculator, CompactPriceDisplay } from './PriceCalculator'
+import { WidgetConfig } from '@/types'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
@@ -120,8 +106,21 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   const handleSubmit = async () => {
-    console.log('Submitting form data:', formData)
-    // TODO: Submit to API
+    // Calculate final pricing if pricing calculator is configured
+    let pricingBreakdown = null
+    if (config.pricingCalculator) {
+      const { calculatePrice } = await import('@/lib/pricingCalculator')
+      pricingBreakdown = calculatePrice(formData, config.pricingCalculator)
+    }
+
+    const submissionData = {
+      formData,
+      pricing: pricingBreakdown,
+      timestamp: new Date().toISOString()
+    }
+
+    console.log('Submitting form data:', submissionData)
+    // TODO: Submit to API with pricing breakdown
   }
 
   const completePersonalInfo = () => {
@@ -189,8 +188,17 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-xl font-semibold text-gray-900">{currentStepConfig.title}</h1>
-            <div className="text-sm text-gray-500">
-              Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
+            <div className="flex items-center gap-4">
+              {/* Show compact price if pricing calculator is configured and showInstantQuote is true */}
+              {config.pricingCalculator && config.showInstantQuote && (
+                <CompactPriceDisplay 
+                  pricingCalculator={config.pricingCalculator}
+                  formData={formData}
+                />
+              )}
+              <div className="text-sm text-gray-500">
+                Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
+              </div>
             </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -228,6 +236,16 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
               </div>
             ))}
           </div>
+
+          {/* Show full price calculator on the last step */}
+          {isLastStep && config.pricingCalculator && config.showInstantQuote && (
+            <div className="mb-12">
+              <PriceCalculator 
+                pricingCalculator={config.pricingCalculator}
+                formData={formData}
+              />
+            </div>
+          )}
         </div>
       </main>
 

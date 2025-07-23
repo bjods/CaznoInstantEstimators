@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const body = await request.json()
-    const { widgetId, businessId, formData } = body
+    const { widgetId, businessId, formData, pricing } = body
 
     if (!widgetId || !businessId || !formData) {
       return NextResponse.json(
@@ -59,11 +59,13 @@ export async function POST(
         customer,
         service,
         measurements,
+        pricing: pricing || null, // Include pricing breakdown if available
         status: 'new',
         metadata: {
           source: 'widget',
           widgetKey: (await params).embedKey,
-          submittedAt: new Date().toISOString()
+          submittedAt: new Date().toISOString(),
+          hasPricing: !!pricing
         }
       })
       .select()

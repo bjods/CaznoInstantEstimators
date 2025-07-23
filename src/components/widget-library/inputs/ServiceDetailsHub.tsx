@@ -121,6 +121,13 @@ export function ServiceDetailsHub({
       setActiveService(selectedServices[currentIndex + 1])
     }
     
+    // Navigate to next page if all services are complete
+    if (allServicesComplete && onNavigateNext) {
+      setTimeout(() => {
+        onNavigateNext()
+      }, 500) // Small delay to show completion state
+    }
+    
     // Expose component state for external navigation
     if (onComponentStateChange) {
       onComponentStateChange({

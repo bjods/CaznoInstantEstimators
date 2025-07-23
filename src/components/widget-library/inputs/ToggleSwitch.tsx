@@ -27,10 +27,10 @@ export function ToggleSwitch({
           type="button"
           onClick={() => onChange(true)}
           className={`
-            px-4 py-3 font-medium text-sm transition-colors
+            px-4 py-3 font-medium text-sm transition-all border-2
             ${value 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'bg-blue-100 text-blue-800 border-blue-500' 
+              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
             }
           `}
         >
@@ -42,10 +42,10 @@ export function ToggleSwitch({
           type="button"
           onClick={() => onChange(false)}
           className={`
-            px-4 py-3 font-medium text-sm transition-colors
+            px-4 py-3 font-medium text-sm transition-all border-2
             ${!value 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'bg-blue-100 text-blue-800 border-blue-500' 
+              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
             }
           `}
         >

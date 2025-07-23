@@ -26,24 +26,27 @@ export function RadioGroup({
       
       <div className="space-y-3">
         {options.map((option) => (
-          <label
+          <button
             key={option.value}
-            className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={`
+              w-full text-left p-4 rounded-lg transition-all border-2 font-medium
+              ${value === option.value
+                ? 'bg-blue-100 text-blue-800 border-blue-500'
+                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+              }
+            `}
           >
-            <input
-              type="radio"
-              value={option.value}
-              checked={value === option.value}
-              onChange={(e) => onChange(e.target.value)}
-              className="mt-1 mr-4 text-blue-500 focus:ring-blue-500"
-            />
-            <div className="flex-1">
-              <div className="font-medium text-gray-900">{option.label}</div>
-              {option.description && (
-                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
-              )}
-            </div>
-          </label>
+            <div className="font-medium">{option.label}</div>
+            {option.description && (
+              <div className={`text-sm mt-1 ${
+                value === option.value ? 'text-blue-600' : 'text-gray-500'
+              }`}>
+                {option.description}
+              </div>
+            )}
+          </button>
         ))}
       </div>
       

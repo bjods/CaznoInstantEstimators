@@ -43,34 +43,25 @@ export function PersonalInfoStep({ formData, updateField, onComplete }: Personal
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
+      {/* Debug Skip Button */}
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Let's Get Started
-        </h2>
-        <p className="text-lg text-gray-600">
-          We'll need some basic information to provide you with an accurate estimate
-        </p>
-        
-        {/* Debug Skip Button */}
-        <div className="mt-6">
-          <button
-            onClick={() => {
-              updateField('firstName', 'John')
-              updateField('lastName', 'Doe')
-              updateField('email', 'john.doe@example.com')
-              updateField('phone', '(555) 123-4567')
-              updateField('address', '123 Main St, Toronto, ON')
-              setTimeout(() => onComplete(), 100)
-            }}
-            className="text-sm text-gray-500 hover:text-blue-600 underline transition-colors"
-          >
-            🚀 Skip for Testing (Auto-fill & Continue)
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            updateField('firstName', 'John')
+            updateField('lastName', 'Doe')
+            updateField('email', 'john.doe@example.com')
+            updateField('phone', '(555) 123-4567')
+            updateField('address', '123 Main St, Toronto, ON')
+            setTimeout(() => onComplete(), 100)
+          }}
+          className="text-sm text-gray-500 hover:text-blue-600 underline transition-colors"
+        >
+          🚀 Skip for Testing (Auto-fill & Continue)
+        </button>
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide text-left">Let's get started</h2>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide text-left">Enter your contact info to start building a quote</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <NameInput
             value={formData.firstName}
@@ -135,11 +126,8 @@ export function PersonalInfoStep({ formData, updateField, onComplete }: Personal
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          Start Your Estimate
+          Continue
         </button>
-        <p className="mt-3 text-sm text-gray-500">
-          Press Enter to move to the next field
-        </p>
       </div>
     </div>
   )

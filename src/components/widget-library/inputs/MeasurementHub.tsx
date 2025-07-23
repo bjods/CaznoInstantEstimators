@@ -156,25 +156,16 @@ export function MeasurementHub({
     handleMeasurementComplete(preset)
   }
 
-  // Auto-skip page if no services need measurement
+  // Auto-skip page if no services need measurement  
   useEffect(() => {
     if (servicesNeedingMeasurement.length === 0 && onNavigateNext) {
-      // Small delay to show brief message before auto-advancing
-      setTimeout(() => {
-        onNavigateNext()
-      }, 1000)
+      onNavigateNext()
     }
   }, [servicesNeedingMeasurement.length, onNavigateNext])
 
-  // If no services need measurement, show brief success message before auto-advancing
+  // If no services need measurement, skip the page entirely
   if (servicesNeedingMeasurement.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="text-4xl mb-4">✅</div>
-        <p className="text-lg text-gray-700">No measurements needed for your selected services</p>
-        <p className="text-sm text-gray-500 mt-2">Advancing automatically...</p>
-      </div>
-    )
+    return null
   }
 
   return (

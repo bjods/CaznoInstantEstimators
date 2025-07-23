@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { DynamicComponent } from './DynamicComponent'
 import { PersonalInfoStep } from './PersonalInfoStep'
 import { PriceCalculator, CompactPriceDisplay } from './PriceCalculator'
-import { WidgetConfig } from '@/types'
+import { QuoteStep } from './QuoteStep'
+import { WidgetConfig, CTAButton } from '@/types'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
@@ -69,9 +70,14 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       }
     }
     
-    if (currentStep < config.steps.length - 1) {
+    // Navigate through config steps and then to quote step if configured
+    const maxConfigStep = config.steps.length - 1
+    if (currentStep < maxConfigStep) {
       setCurrentStep(currentStep + 1)
       setComponentState(null) // Reset component state for new step
+    } else if (currentStep === maxConfigStep && hasQuoteStep) {
+      setCurrentStep(config.steps.length) // Move to quote step
+      setComponentState(null)
     }
   }
 
@@ -123,13 +129,50 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     // TODO: Submit to API with pricing breakdown
   }
 
+  const handleCTAButtonClick = (button: CTAButton) => {
+    switch (button.action) {
+      case 'submit':
+        handleSubmit()
+        break
+      case 'phone':
+        if (button.config?.phoneNumber) {
+          window.location.href = `tel:${button.config.phoneNumber}`
+        }
+        break
+      case 'calendar':
+        if (button.config?.calendarUrl) {
+          if (button.config.newTab) {
+            window.open(button.config.calendarUrl, '_blank')
+          } else {
+            window.location.href = button.config.calendarUrl
+          }
+        }
+        break
+      case 'custom':
+        if (button.config?.customUrl) {
+          if (button.config.newTab) {
+            window.open(button.config.customUrl, '_blank')
+          } else {
+            window.location.href = button.config.customUrl
+          }
+        }
+        break
+      default:
+        console.log('Unknown button action:', button.action)
+    }
+  }
+
   const completePersonalInfo = () => {
     setCurrentStep(0) // Move to first config step
   }
 
-  const totalSteps = config.steps.length + 1 // +1 for personal info step
+  // Calculate total steps: personal info + config steps + quote step (if configured)
+  const hasQuoteStep = !!config.quoteStep
+  const totalSteps = config.steps.length + 1 + (hasQuoteStep ? 1 : 0) // +1 for personal info, +1 for quote step if exists
   const currentStepForProgress = currentStep + 1 // Adjust for display
-  const isLastStep = currentStep === config.steps.length - 1
+  const isLastConfigStep = currentStep === config.steps.length - 1
+  const isQuoteStep = hasQuoteStep && currentStep === config.steps.length
+  const isLastStep = isQuoteStep || (!hasQuoteStep && isLastConfigStep)
 
   // Show personal info step
   if (currentStep === -1) {
@@ -167,6 +210,54 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
             onComplete={completePersonalInfo}
           />
         </main>
+      </div>
+    )
+  }
+
+  // Show quote step if we're at that position
+  if (isQuoteStep && config.quoteStep) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header with Progress */}
+        <header className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-xl font-semibold text-gray-900">{config.quoteStep.title}</h1>
+              <div className="text-sm text-gray-500">
+                Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((currentStepForProgress + 1) / totalSteps) * 100}%` }}
+              />
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 px-6 py-8">
+          <QuoteStep
+            config={config.quoteStep}
+            pricingCalculator={config.pricingCalculator}
+            formData={formData}
+            onButtonClick={handleCTAButtonClick}
+          />
+        </main>
+
+        {/* Footer with Navigation */}
+        <footer className="bg-white border-t border-gray-200 px-6 py-6">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <button
+              onClick={handlePrevious}
+              className="px-8 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              Previous
+            </button>
+            <div></div> {/* Empty div to maintain spacing */}
+          </div>
+        </footer>
       </div>
     )
   }
@@ -237,8 +328,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
             ))}
           </div>
 
-          {/* Show full price calculator on the last step */}
-          {isLastStep && config.pricingCalculator && config.showInstantQuote && (
+          {/* Show full price calculator on the last config step (if no quote step) */}
+          {isLastConfigStep && !hasQuoteStep && config.pricingCalculator && config.showInstantQuote && (
             <div className="mb-12">
               <PriceCalculator 
                 pricingCalculator={config.pricingCalculator}
@@ -260,7 +351,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
             Previous
           </button>
 
-          {isLastStep ? (
+          {(isLastStep && !hasQuoteStep) ? (
             <button
               onClick={handleSubmit}
               className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg"
@@ -273,7 +364,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
               disabled={componentState && !componentState.canProceed}
               className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {getNextButtonText()}
+              {isLastConfigStep && hasQuoteStep ? 'View Quote' : getNextButtonText()}
             </button>
           )}
         </div>

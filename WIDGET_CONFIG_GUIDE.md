@@ -83,6 +83,11 @@ VALUES (
   "pricingCalculator": {
     // Optional: Add real-time pricing to your widget
     // See Pricing Calculator section below for full documentation
+  },
+  
+  "quoteStep": {
+    // Optional: Add a dedicated quote/estimate step at the end
+    // See Quote Step Configuration section below for full documentation
   }
 }
 ```
@@ -778,6 +783,260 @@ For local testing:
 ```
 http://localhost:3000/widget/[embed_key]
 ```
+
+## Quote Step Configuration
+
+The quote step creates a dedicated final page that displays a comprehensive estimate with customizable call-to-action buttons. This step appears after all form steps and provides a professional quote presentation.
+
+### Basic Structure
+
+```json
+{
+  "steps": [...], // Your existing form steps
+  
+  "quoteStep": {
+    "title": "Your Estimate",
+    "subtitle": "Based on the information you provided",
+    "showDetailedBreakdown": true,
+    "ctaButtons": [
+      {
+        "id": "submit",
+        "text": "Get This Quote",
+        "type": "primary",
+        "action": "submit"
+      },
+      {
+        "id": "call",
+        "text": "Call Us Now",
+        "type": "secondary", 
+        "action": "phone",
+        "config": {
+          "phoneNumber": "+1-555-123-4567"
+        }
+      }
+    ]
+  }
+}
+```
+
+### Quote Step Properties
+
+#### Core Settings
+
+- **title**: Main heading displayed on the quote page
+- **subtitle**: Optional subheading for additional context
+- **showDetailedBreakdown**: Whether to show itemized pricing breakdown (requires pricingCalculator)
+
+#### CTA Buttons Configuration
+
+Each button in the `ctaButtons` array supports:
+
+- **id**: Unique identifier for the button
+- **text**: Button label text
+- **type**: Visual style - `"primary"` (blue background) or `"secondary"` (white with blue border)
+- **action**: Button behavior - see actions below
+- **config**: Additional configuration based on action type
+
+### CTA Button Actions
+
+#### 1. Submit Action
+Submits the form data and pricing to your system.
+
+```json
+{
+  "id": "submit",
+  "text": "Get This Quote",
+  "type": "primary",
+  "action": "submit"
+}
+```
+
+#### 2. Phone Action
+Opens the phone dialer with a pre-filled number.
+
+```json
+{
+  "id": "call",
+  "text": "Call Us Now",
+  "type": "secondary",
+  "action": "phone",
+  "config": {
+    "phoneNumber": "+1-555-123-4567"
+  }
+}
+```
+
+#### 3. Calendar Action
+Opens a calendar booking system (like Calendly, Acuity, etc.)
+
+```json
+{
+  "id": "schedule",
+  "text": "Schedule Site Visit",  
+  "type": "primary",
+  "action": "calendar",
+  "config": {
+    "calendarUrl": "https://calendly.com/your-business/consultation",
+    "newTab": true
+  }
+}
+```
+
+#### 4. Custom Action
+Opens any custom URL for specialized workflows.
+
+```json
+{
+  "id": "payment",
+  "text": "Pay Deposit",
+  "type": "primary", 
+  "action": "custom",
+  "config": {
+    "customUrl": "https://your-payment-system.com/deposit",
+    "newTab": false
+  }
+}
+```
+
+### Quote Step Features
+
+#### Service Summary
+Automatically displays:
+- Selected services with labels
+- Key measurements (linear feet, square feet, days, etc.)
+- Additional options (gates, prep work, waste type, etc.)
+
+#### Pricing Display  
+Shows pricing based on your pricingCalculator configuration:
+- **Fixed**: Exact calculated price
+- **Range**: Price range with multiplier
+- **Minimum**: "Starting at" format
+- **Custom**: For services without pricing calculator
+
+#### Detailed Breakdown
+When `showDetailedBreakdown: true`:
+- Base price calculation
+- Applied modifiers with descriptions
+- Minimum charge notation (if applied)
+- Total with clear formatting
+
+### Business Flow Examples
+
+#### Bin Rental Service
+```json
+{
+  "quoteStep": {
+    "title": "Your Bin Rental Quote",
+    "subtitle": "Ready to deliver to your location",
+    "showDetailedBreakdown": true,
+    "ctaButtons": [
+      {
+        "id": "schedule_delivery",
+        "text": "Schedule Delivery",
+        "type": "primary",
+        "action": "calendar",
+        "config": {
+          "calendarUrl": "https://calendly.com/bin-rentals/delivery",
+          "newTab": true
+        }
+      },
+      {
+        "id": "call_questions",
+        "text": "Have Questions? Call Us",
+        "type": "secondary",
+        "action": "phone",
+        "config": {
+          "phoneNumber": "+1-555-BIN-RENT"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Landscaping Service
+```json
+{
+  "quoteStep": {
+    "title": "Your Landscaping Estimate",
+    "subtitle": "Professional design and installation services",
+    "showDetailedBreakdown": false,
+    "ctaButtons": [
+      {
+        "id": "book_consultation",
+        "text": "Book Free Consultation",
+        "type": "primary",
+        "action": "calendar",
+        "config": {
+          "calendarUrl": "https://acuityscheduling.com/landscaping/consultation",
+          "newTab": true
+        }
+      },
+      {
+        "id": "submit_quote",
+        "text": "Request Detailed Quote",
+        "type": "secondary",
+        "action": "submit"
+      }
+    ]
+  }
+}
+```
+
+#### Fencing Service  
+```json
+{
+  "quoteStep": {
+    "title": "Your Fencing Quote",
+    "subtitle": "Professional installation with warranty",
+    "showDetailedBreakdown": true,
+    "ctaButtons": [
+      {
+        "id": "get_quote",
+        "text": "Get This Quote",
+        "type": "primary", 
+        "action": "submit"
+      },
+      {
+        "id": "schedule_measurement",
+        "text": "Schedule Free Measurement",
+        "type": "secondary",
+        "action": "calendar",
+        "config": {
+          "calendarUrl": "https://calendly.com/fence-company/measurement",
+          "newTab": true
+        }
+      },
+      {
+        "id": "call_now",
+        "text": "Call for Questions",
+        "type": "secondary",
+        "action": "phone", 
+        "config": {
+          "phoneNumber": "+1-555-FENCING"
+        }
+      }
+    ]
+  }
+}
+```
+
+### Quote Step Best Practices
+
+1. **Clear Messaging**: Use titles and subtitles that match your business tone
+2. **Action Hierarchy**: Put the most important action first with `"primary"` type
+3. **Multiple Options**: Offer 2-3 different ways for customers to proceed
+4. **Contact Methods**: Always provide a way to ask questions (phone/email)
+5. **Booking Integration**: Use calendar links for services requiring appointments
+6. **Payment Flows**: Link to payment systems for services requiring deposits
+
+### Integration Notes
+
+- Quote step appears automatically after the last configured form step
+- Works with or without pricing calculator
+- Service summary adapts to single or multi-service forms
+- All customer data is preserved through the quote step
+- CTA actions can trigger form submission with full pricing data
 
 ## Pricing Calculator Configuration
 

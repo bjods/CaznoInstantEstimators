@@ -5,6 +5,29 @@ export interface WidgetConfig {
   showProgressBar?: boolean
   thankYouMessage?: string
   pricingCalculator?: PricingCalculator
+  quoteStep?: QuoteStepConfig
+}
+
+export interface QuoteStepConfig {
+  title: string
+  subtitle?: string
+  showDetailedBreakdown: boolean
+  ctaButtons: CTAButton[]
+}
+
+export interface CTAButton {
+  id: string
+  text: string
+  type: 'primary' | 'secondary'
+  action: 'submit' | 'calendar' | 'phone' | 'custom'
+  config?: CTAButtonConfig
+}
+
+export interface CTAButtonConfig {
+  phoneNumber?: string
+  calendarUrl?: string
+  customUrl?: string
+  newTab?: boolean
 }
 
 export interface PricingCalculator {

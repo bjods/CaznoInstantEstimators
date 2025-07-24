@@ -12,6 +12,7 @@
     "@googlemaps/js-api-loader": "^1.16.10",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/mcp-server-supabase": "^0.4.5",
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.2",
     "clsx": "^2.1.1",
     "lucide-react": "^0.523.0",

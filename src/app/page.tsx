@@ -66,9 +66,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Logo at top */}
+        {/* Logo and Auth buttons at top */}
         <div className="absolute top-8 left-8">
           <span className="text-xl font-bold">Cazno</span>
+        </div>
+        <div className="absolute top-8 right-8 flex gap-4">
+          <Link href="/login" className="text-white hover:text-lime-400 transition-colors">
+            Sign In
+          </Link>
+          <Link href="/login" className="bg-lime-400 text-black px-4 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">
+            Get Started
+          </Link>
         </div>
 
         {/* Main Content */}

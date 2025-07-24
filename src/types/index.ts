@@ -8,6 +8,8 @@ export interface WidgetConfig {
   pricingCalculator?: PricingCalculator
   quoteStep?: QuoteStepConfig
   notifications?: NotificationConfig
+  scheduling?: SchedulingConfig
+  inventory?: InventoryConfig
 }
 
 export interface NotificationConfig {
@@ -159,4 +161,68 @@ export interface Widget {
   embed_key: string
   is_active: boolean
   config: WidgetConfig
+}
+
+// Calendar and scheduling types
+export interface SchedulingConfig {
+  enabled: boolean
+  business_hours: BusinessHours
+  google_calendars?: string[]
+  duration: number // minutes per appointment
+  buffer: number // minutes between appointments
+  timezone: string
+  max_days_ahead?: number
+  min_hours_notice?: number
+}
+
+export interface BusinessHours {
+  monday?: BusinessHoursDay | null
+  tuesday?: BusinessHoursDay | null
+  wednesday?: BusinessHoursDay | null
+  thursday?: BusinessHoursDay | null
+  friday?: BusinessHoursDay | null
+  saturday?: BusinessHoursDay | null
+  sunday?: BusinessHoursDay | null
+}
+
+export interface BusinessHoursDay {
+  start: string // "09:00"
+  end: string // "17:00"
+}
+
+export interface InventoryConfig {
+  enabled: boolean
+  items: InventoryItem[]
+}
+
+export interface InventoryItem {
+  id?: string
+  type: 'bin' | 'equipment' | 'vehicle' | 'material'
+  name: string
+  sku?: string
+  quantity: number
+  metadata?: Record<string, any>
+}
+
+export interface TimeSlot {
+  datetime: Date
+  available: boolean
+  inventoryAvailable?: number
+}
+
+export interface Booking {
+  id: string
+  business_id: string
+  widget_id: string
+  submission_id?: string
+  customer_email?: string
+  customer_name?: string
+  inventory_item_id?: string
+  service_type: string
+  appointment_datetime: string
+  duration: number
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+  notes?: string
+  created_at: string
+  updated_at: string
 }

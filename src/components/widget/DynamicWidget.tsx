@@ -358,6 +358,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
                   value={getFieldValue(component.props.name, component.type)}
                   onChange={(value) => updateField(component.props.name, value)}
                   formData={formData}
+                  config={config}
                   onNavigateNext={handleNext}
                   onComponentStateChange={setComponentState}
                 />

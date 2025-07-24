@@ -245,6 +245,40 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Create booking if appointment slot was selected
+    if (formData.appointmentSlot && widget.config?.scheduling?.enabled) {
+      try {
+        const bookingData = {
+          widgetId: widgetId,
+          submissionId: submission.id,
+          customerEmail: email,
+          customerName: fullName,
+          serviceType: formData.service || formData.service_type || 'unknown',
+          appointmentDatetime: new Date(formData.appointmentSlot.datetime).toISOString(),
+          duration: widget.config.scheduling.duration || 60,
+          notes: formData.specialRequests || formData.notes
+        }
+
+        const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '')}/api/bookings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(bookingData)
+        })
+
+        if (!bookingResponse.ok) {
+          console.error('Failed to create booking:', await bookingResponse.text())
+        } else {
+          const bookingResult = await bookingResponse.json()
+          console.log('Booking created:', bookingResult.data?.bookingId)
+        }
+      } catch (bookingError) {
+        console.error('Booking creation error:', bookingError)
+        // Don't fail the submission if booking fails
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {

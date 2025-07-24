@@ -7,7 +7,8 @@ This guide explains how to create and configure widgets in Supabase for each com
 2. [Creating a New Business](#creating-a-new-business)
 3. [Creating a Widget](#creating-a-widget)
 4. [Component Reference](#component-reference)
-5. [Configuration Examples](#configuration-examples)
+5. [Scheduling Configuration](#scheduling-configuration)
+6. [Configuration Examples](#configuration-examples)
 
 ## Database Structure
 
@@ -457,6 +458,225 @@ Advanced measurement component that handles multiple services with different mea
 - Address is automatically passed from personal info step
 - Services not in `servicesConfig` will be ignored
 - Set `requires_measurement: false` for services like consultations
+
+## Scheduling Configuration
+
+The scheduling system enables businesses to integrate appointment booking directly into their estimation widgets. This feature supports business hours, Google Calendar integration, and inventory management for rental businesses.
+
+### Basic Scheduling Setup
+
+Add scheduling configuration to your widget config:
+
+```json
+{
+  "scheduling": {
+    "enabled": true,
+    "business_hours": {
+      "monday": { "start": "09:00", "end": "17:00" },
+      "tuesday": { "start": "09:00", "end": "17:00" },
+      "wednesday": { "start": "09:00", "end": "17:00" },
+      "thursday": { "start": "09:00", "end": "17:00" },
+      "friday": { "start": "09:00", "end": "17:00" },
+      "saturday": { "start": "10:00", "end": "14:00" },
+      "sunday": null
+    },
+    "duration": 60,
+    "buffer": 15,
+    "timezone": "America/New_York",
+    "max_days_ahead": 30,
+    "min_hours_notice": 2
+  }
+}
+```
+
+### Scheduling Configuration Properties
+
+- **enabled**: `boolean` - Enable/disable scheduling for this widget
+- **business_hours**: `object` - Define operating hours for each day of the week
+  - Set to `null` for closed days
+  - Use 24-hour format for start/end times ("HH:MM")
+- **duration**: `number` - Default appointment duration in minutes
+- **buffer**: `number` - Buffer time between appointments in minutes
+- **timezone**: `string` - Business timezone (e.g., "America/New_York", "UTC")
+- **max_days_ahead**: `number` - Maximum days in advance customers can book (default: 30)
+- **min_hours_notice**: `number` - Minimum hours notice required for booking (default: 2)
+
+### Google Calendar Integration
+
+To integrate with Google Calendar for real-time availability:
+
+1. **Service Account Setup**: The system uses the service account `calendar-reader@daring-harmony-429818-q6.iam.gserviceaccount.com`
+
+2. **Calendar Sharing**: Share your Google Calendars with the service account:
+   - Open Google Calendar
+   - Go to Settings > [Your Calendar] > Share with specific people
+   - Add: `calendar-reader@daring-harmony-429818-q6.iam.gserviceaccount.com`
+   - Grant "See all event details" permission
+
+3. **Add Calendar Emails to Configuration**:
+```json
+{
+  "scheduling": {
+    "enabled": true,
+    "google_calendars": [
+      "sales@yourcompany.com",
+      "john@yourcompany.com",
+      "dispatch@yourcompany.com"
+    ],
+    "business_hours": { ... },
+    "duration": 60,
+    "buffer": 15,
+    "timezone": "America/New_York"
+  }
+}
+```
+
+### Inventory Management
+
+For rental businesses that need to track item availability:
+
+```json
+{
+  "scheduling": {
+    "enabled": true,
+    "business_hours": { ... },
+    "duration": 30,
+    "buffer": 15,
+    "timezone": "America/New_York"
+  },
+  "inventory": {
+    "enabled": true,
+    "items": [
+      {
+        "type": "bin",
+        "name": "10 Yard Dumpster",
+        "sku": "BIN-10Y",
+        "quantity": 5
+      },
+      {
+        "type": "bin",
+        "name": "20 Yard Dumpster", 
+        "sku": "BIN-20Y",
+        "quantity": 3
+      },
+      {
+        "type": "equipment",
+        "name": "Bobcat S70",
+        "sku": "EQ-BOB-S70",
+        "quantity": 2
+      }
+    ]
+  }
+}
+```
+
+### Scheduling Input Component
+
+Add the scheduling component to your widget steps:
+
+```json
+{
+  "steps": [
+    {
+      "id": "service_selection",
+      "title": "Select Service",
+      "components": [
+        {
+          "type": "service_selection",
+          "props": {
+            "name": "service",
+            "label": "What service do you need?",
+            "services": ["bin_rental", "concrete_demolition"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "scheduling",
+      "title": "Schedule Appointment",
+      "components": [
+        {
+          "type": "scheduling_input",
+          "props": {
+            "name": "appointmentSlot",
+            "label": "Select a convenient time",
+            "serviceType": "bin_rental",
+            "inventoryType": "bin",
+            "requiredQuantity": 1
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Scheduling Component Properties
+
+- **name**: `string` - Field name to store the selected appointment
+- **label**: `string` - Display label for the scheduling component
+- **serviceType**: `string` - Optional service type for context
+- **inventoryType**: `string` - Optional inventory type to check availability ("bin", "equipment", "vehicle")
+- **requiredQuantity**: `number` - Number of inventory items needed (default: 1)
+
+### Environment Variables
+
+Set these environment variables for Google Calendar integration:
+
+```env
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GOOGLE_PRIVATE_KEY_ID="your_private_key_id"
+GOOGLE_CLIENT_ID="your_client_id"
+```
+
+### Testing Calendar Integration
+
+Use the test endpoint to validate your Google Calendar setup:
+
+```bash
+curl -X POST /api/calendar/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "calendars": ["sales@yourcompany.com", "dispatch@yourcompany.com"],
+    "timezone": "America/New_York"
+  }'
+```
+
+### Database Tables
+
+The scheduling system uses these additional tables:
+
+#### inventory_items
+```sql
+CREATE TABLE inventory_items (
+  id UUID PRIMARY KEY,
+  business_id UUID REFERENCES businesses(id),
+  type TEXT CHECK (type IN ('bin', 'equipment', 'vehicle', 'material')),
+  name TEXT NOT NULL,
+  sku TEXT,
+  quantity INTEGER DEFAULT 1,
+  metadata JSONB DEFAULT '{}',
+  is_active BOOLEAN DEFAULT true
+);
+```
+
+#### bookings
+```sql
+CREATE TABLE bookings (
+  id UUID PRIMARY KEY,
+  business_id UUID REFERENCES businesses(id),
+  widget_id UUID REFERENCES widgets(id),
+  submission_id UUID REFERENCES submissions(id),
+  customer_email TEXT,
+  customer_name TEXT,
+  inventory_item_id UUID REFERENCES inventory_items(id),
+  service_type TEXT NOT NULL,
+  appointment_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
+  duration INTEGER DEFAULT 60,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
+  notes TEXT
+);
+```
 
 ## Configuration Examples
 

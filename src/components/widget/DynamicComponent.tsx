@@ -1,4 +1,5 @@
 import { ComponentMap } from '@/components/widget-library'
+import { WidgetConfig } from '@/types'
 
 interface DynamicComponentProps {
   type: string
@@ -6,11 +7,12 @@ interface DynamicComponentProps {
   value: any
   onChange: (value: any) => void
   formData?: Record<string, any>
+  config?: WidgetConfig
   onNavigateNext?: () => void
   onComponentStateChange?: (componentState: any) => void
 }
 
-export function DynamicComponent({ type, props, value, onChange, formData, onNavigateNext, onComponentStateChange }: DynamicComponentProps) {
+export function DynamicComponent({ type, props, value, onChange, formData, config, onNavigateNext, onComponentStateChange }: DynamicComponentProps) {
   const Component = ComponentMap[type as keyof typeof ComponentMap]
   
   if (!Component) {
@@ -51,6 +53,22 @@ export function DynamicComponent({ type, props, value, onChange, formData, onNav
     const { servicesConfig, ...otherProps } = props
     
     return <Component {...otherProps} value={value} onChange={onChange} selectedServices={servicesArray} servicesConfig={servicesConfig} onNavigateNext={onNavigateNext} onComponentStateChange={onComponentStateChange} />
+  }
+  
+  // Special handling for scheduling input
+  if (type === 'scheduling_input' && config) {
+    const { serviceType, inventoryType, requiredQuantity, ...otherProps } = props
+    
+    return <Component 
+      {...otherProps}
+      widgetId={config.id || ''}
+      scheduling={config.scheduling || { enabled: false, business_hours: {}, duration: 60, buffer: 15, timezone: 'America/New_York' }}
+      serviceType={serviceType || formData?.service || formData?.service_type}
+      inventoryType={inventoryType}
+      requiredQuantity={requiredQuantity || 1}
+      value={value} 
+      onChange={onChange} 
+    />
   }
   
   return <Component {...props} value={value} onChange={onChange} />

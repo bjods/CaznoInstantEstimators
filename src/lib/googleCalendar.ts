@@ -175,3 +175,113 @@ export async function testGoogleCalendarConnection(
     }
   }
 }
+
+export async function createGoogleCalendarEvent(
+  calendarId: string,
+  eventDetails: {
+    summary: string
+    description: string
+    startTime: string // ISO string
+    endTime: string // ISO string
+    attendeeEmail?: string
+    location?: string
+    createMeetLink?: boolean
+  }
+): Promise<{
+  success: boolean
+  eventId?: string
+  meetLink?: string
+  error?: string
+}> {
+  try {
+    // Return failure if no Google credentials configured
+    if (!process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_PRIVATE_KEY_ID) {
+      console.warn('Google Calendar credentials not configured, cannot create event')
+      return {
+        success: false,
+        error: 'Google Calendar credentials not configured'
+      }
+    }
+
+    const auth = getGoogleAuth()
+    const authClient = await auth.getClient()
+
+    // Prepare the event data
+    const eventData: any = {
+      summary: eventDetails.summary,
+      description: eventDetails.description,
+      start: {
+        dateTime: eventDetails.startTime,
+        timeZone: 'UTC'
+      },
+      end: {
+        dateTime: eventDetails.endTime,
+        timeZone: 'UTC'
+      }
+    }
+
+    // Add location if provided
+    if (eventDetails.location) {
+      eventData.location = eventDetails.location
+    }
+
+    // Add attendee if provided
+    if (eventDetails.attendeeEmail) {
+      eventData.attendees = [
+        { email: eventDetails.attendeeEmail }
+      ]
+    }
+
+    // Add Google Meet link if requested
+    if (eventDetails.createMeetLink) {
+      eventData.conferenceData = {
+        createRequest: {
+          requestId: crypto.randomUUID(),
+          conferenceSolution: {
+            key: {
+              type: 'hangoutsMeet'
+            }
+          }
+        }
+      }
+    }
+
+    // Create the event
+    const response = await authClient.request({
+      url: `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      params: eventDetails.createMeetLink ? { conferenceDataVersion: 1 } : {},
+      data: eventData
+    })
+
+    const createdEvent = response.data as any
+
+    return {
+      success: true,
+      eventId: createdEvent.id,
+      meetLink: createdEvent.conferenceData?.entryPoints?.find((ep: any) => ep.entryPointType === 'video')?.uri
+    }
+
+  } catch (error: any) {
+    console.error('Failed to create Google Calendar event:', error)
+    
+    // Parse common error messages
+    let errorMessage = 'Failed to create calendar event'
+    
+    if (error.response?.status === 404) {
+      errorMessage = 'Calendar not found or not accessible'
+    } else if (error.response?.status === 403) {
+      errorMessage = 'Permission denied - calendar not shared with service account'
+    } else if (error.response?.data?.error?.message) {
+      errorMessage = error.response.data.error.message
+    }
+
+    return {
+      success: false,
+      error: errorMessage
+    }
+  }
+}

@@ -245,33 +245,76 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create booking if appointment slot was selected
+    // Handle appointment booking based on configuration
     if (formData.appointmentSlot && widget.config?.scheduling?.enabled) {
+      const schedulingConfig = widget.config.scheduling
+      const appointmentDatetime = new Date(formData.appointmentSlot.datetime).toISOString()
+      const duration = schedulingConfig.duration || 60
+      const serviceType = formData.service || formData.service_type || 'unknown'
+      
       try {
-        const bookingData = {
-          widgetId: widgetId,
-          submissionId: submission.id,
-          customerEmail: email,
-          customerName: fullName,
-          serviceType: formData.service || formData.service_type || 'unknown',
-          appointmentDatetime: new Date(formData.appointmentSlot.datetime).toISOString(),
-          duration: widget.config.scheduling.duration || 60,
-          notes: formData.specialRequests || formData.notes
+        // Create inventory booking if inventory tracking is enabled and inventory item is specified
+        if (schedulingConfig.features?.inventory_booking && formData.inventoryItemId) {
+          const inventoryBookingData = {
+            widgetId: widgetId,
+            submissionId: submission.id,
+            customerEmail: email,
+            customerName: fullName,
+            inventoryItemId: formData.inventoryItemId,
+            serviceType,
+            startDate: appointmentDatetime.split('T')[0], // Convert to YYYY-MM-DD
+            endDate: formData.endDate ? formData.endDate.split('T')[0] : undefined,
+            quantity: formData.quantity || 1,
+            notes: formData.specialRequests || formData.notes
+          }
+
+          const inventoryResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '')}/api/inventory-bookings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(inventoryBookingData)
+          })
+
+          if (!inventoryResponse.ok) {
+            console.error('Failed to create inventory booking:', await inventoryResponse.text())
+          } else {
+            const inventoryResult = await inventoryResponse.json()
+            console.log('Inventory booking created:', inventoryResult.data?.bookingId)
+          }
         }
 
-        const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '')}/api/bookings`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(bookingData)
-        })
+        // Create meeting event if meeting booking is enabled
+        if (schedulingConfig.features?.meeting_booking && schedulingConfig.primary_calendar) {
+          const meetingEventData = {
+            widgetId: widgetId,
+            submissionId: submission.id,
+            customerEmail: email,
+            customerName: fullName,
+            serviceType,
+            appointmentDatetime,
+            duration,
+            location: formData.address,
+            notes: formData.specialRequests || formData.notes,
+            createMeetLink: schedulingConfig.features.create_meet_links,
+            sendCalendarInvite: schedulingConfig.features.send_calendar_invites
+          }
 
-        if (!bookingResponse.ok) {
-          console.error('Failed to create booking:', await bookingResponse.text())
-        } else {
-          const bookingResult = await bookingResponse.json()
-          console.log('Booking created:', bookingResult.data?.bookingId)
+          const meetingResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '')}/api/meeting-events`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(meetingEventData)
+          })
+
+          if (!meetingResponse.ok) {
+            console.error('Failed to create meeting event:', await meetingResponse.text())
+          } else {
+            const meetingResult = await meetingResponse.json()
+            console.log('Meeting event created:', meetingResult.data?.googleEventId)
+            
+            // Add meet link to formatted data for emails if available
+            if (meetingResult.data?.meetLink) {
+              formattedData.meetLink = meetingResult.data.meetLink
+            }
+          }
         }
       } catch (bookingError) {
         console.error('Booking creation error:', bookingError)

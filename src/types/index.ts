@@ -167,12 +167,22 @@ export interface Widget {
 export interface SchedulingConfig {
   enabled: boolean
   business_hours: BusinessHours
-  google_calendars?: string[]
+  google_calendars?: string[] // For availability checking
+  primary_calendar?: string // Where meetings get created
   duration: number // minutes per appointment
   buffer: number // minutes between appointments
   timezone: string
   max_days_ahead?: number
   min_hours_notice?: number
+  
+  // Feature toggles
+  features: {
+    inventory_booking: boolean // Track inventory items (bins, equipment)
+    meeting_booking: boolean // Create Google Calendar events for meetings
+    availability_checking: boolean // Check Google Calendar for conflicts
+    send_calendar_invites: boolean // Send calendar invites to customers
+    create_meet_links: boolean // Include Google Meet links in events
+  }
 }
 
 export interface BusinessHours {
@@ -210,19 +220,38 @@ export interface TimeSlot {
   inventoryAvailable?: number
 }
 
-export interface Booking {
+export interface InventoryBooking {
   id: string
   business_id: string
-  widget_id: string
+  widget_id?: string
   submission_id?: string
+  inventory_item_id: string
   customer_email?: string
   customer_name?: string
-  inventory_item_id?: string
+  service_type: string
+  start_date: string // YYYY-MM-DD
+  end_date?: string // YYYY-MM-DD for multi-day rentals
+  quantity: number
+  status: 'active' | 'completed' | 'cancelled'
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MeetingEvent {
+  id: string
+  business_id: string
+  widget_id?: string
+  submission_id?: string
+  google_calendar_id: string
+  google_event_id: string
+  customer_email?: string
+  customer_name?: string
   service_type: string
   appointment_datetime: string
   duration: number
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-  notes?: string
+  meet_link?: string
+  status: 'scheduled' | 'completed' | 'cancelled'
   created_at: string
   updated_at: string
 }

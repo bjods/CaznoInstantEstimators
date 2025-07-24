@@ -133,7 +133,7 @@ async function checkInventoryAvailability(
   // Get total inventory for this type
   const { data: inventory, error: inventoryError } = await supabase
     .from('inventory_items')
-    .select('quantity')
+    .select('id, quantity')
     .eq('business_id', businessId)
     .eq('type', inventoryType)
     .eq('is_active', true)
@@ -144,25 +144,30 @@ async function checkInventoryAvailability(
   
   const totalInventory = inventory.reduce((sum: number, item: any) => sum + item.quantity, 0)
   
-  // Get bookings for this date
-  const startOfDay = `${date}T00:00:00.000Z`
-  const endOfDay = `${date}T23:59:59.999Z`
-  
-  const { data: bookings, error: bookingsError } = await supabase
-    .from('bookings')
-    .select('*')
+  // Get inventory bookings that overlap with this date
+  const { data: inventoryBookings, error: bookingsError } = await supabase
+    .from('inventory_bookings')
+    .select('quantity, inventory_item_id')
     .eq('business_id', businessId)
-    .gte('appointment_datetime', startOfDay)
-    .lte('appointment_datetime', endOfDay)
-    .in('status', ['pending', 'confirmed'])
+    .lte('start_date', date)
+    .or(`end_date.is.null,end_date.gte.${date}`) // Single day bookings (end_date null) or multi-day that include this date
+    .eq('status', 'active')
   
   if (bookingsError) {
-    console.error('Error checking bookings:', bookingsError)
+    console.error('Error checking inventory bookings:', bookingsError)
     return 0
   }
   
-  // Calculate used inventory for this date
-  const usedInventory = bookings?.length || 0
+  // Calculate used inventory for this date by type
+  let usedInventory = 0
+  const inventoryIds = inventory.map(item => item.id)
+  
+  inventoryBookings?.forEach(booking => {
+    // Only count bookings for this inventory type
+    if (inventoryIds.includes(booking.inventory_item_id)) {
+      usedInventory += booking.quantity
+    }
+  })
   
   return Math.max(0, totalInventory - usedInventory)
 }

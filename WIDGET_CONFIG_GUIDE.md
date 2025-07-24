@@ -480,11 +480,21 @@ Add scheduling configuration to your widget config:
       "saturday": { "start": "10:00", "end": "14:00" },
       "sunday": null
     },
+    "google_calendars": ["sales@company.com"], // For availability checking
+    "primary_calendar": "appointments@company.com", // Where meeting events are created
     "duration": 60,
     "buffer": 15,
     "timezone": "America/New_York",
     "max_days_ahead": 30,
-    "min_hours_notice": 2
+    "min_hours_notice": 2,
+    
+    "features": {
+      "inventory_booking": false, // Track inventory items (bins, equipment)
+      "meeting_booking": true, // Create Google Calendar events for meetings
+      "availability_checking": true, // Check Google Calendar for conflicts
+      "send_calendar_invites": true, // Send calendar invites to customers
+      "create_meet_links": true // Include Google Meet links in events
+    }
   }
 }
 ```
@@ -495,11 +505,21 @@ Add scheduling configuration to your widget config:
 - **business_hours**: `object` - Define operating hours for each day of the week
   - Set to `null` for closed days
   - Use 24-hour format for start/end times ("HH:MM")
+- **google_calendars**: `string[]` - Calendar emails to check for availability conflicts
+- **primary_calendar**: `string` - Calendar email where meeting events will be created
 - **duration**: `number` - Default appointment duration in minutes
-- **buffer**: `number` - Buffer time between appointments in minutes
+- **buffer**: `number` - Buffer time between appointments in minutes  
 - **timezone**: `string` - Business timezone (e.g., "America/New_York", "UTC")
 - **max_days_ahead**: `number` - Maximum days in advance customers can book (default: 30)
 - **min_hours_notice**: `number` - Minimum hours notice required for booking (default: 2)
+
+### Feature Configuration
+
+- **inventory_booking**: `boolean` - Track inventory items in our database (for rentals)
+- **meeting_booking**: `boolean` - Create Google Calendar events for appointments
+- **availability_checking**: `boolean` - Check Google Calendar for scheduling conflicts
+- **send_calendar_invites**: `boolean` - Send calendar invites to customers
+- **create_meet_links**: `boolean` - Include Google Meet links in calendar events
 
 ### Google Calendar Integration
 

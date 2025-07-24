@@ -120,6 +120,11 @@ export function useFormAutosave({
         status: 'error',
         error: 'Failed to save form data'
       }))
+      
+      // If this was early capture and it failed, mark it as attempted to prevent infinite retries
+      if (isEarlyCapture) {
+        hasTriggeredEarlyCaptureRef.current = true
+      }
     } finally {
       isSavingRef.current = false
     }

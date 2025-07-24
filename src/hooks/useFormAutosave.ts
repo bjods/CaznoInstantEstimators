@@ -123,10 +123,15 @@ export function useFormAutosave({
     } finally {
       isSavingRef.current = false
     }
-  }, [widgetId, autosaveState.sessionId, formData, currentStep, submissionFlowConfig?.autosave_enabled, onSubmissionCreated])
+  }, [widgetId, submissionFlowConfig?.autosave_enabled, onSubmissionCreated])
 
   // Effect to handle form data changes
   useEffect(() => {
+    // Skip if already saving
+    if (isSavingRef.current) {
+      return
+    }
+
     // Clear existing timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
@@ -159,7 +164,7 @@ export function useFormAutosave({
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [formData, currentStep, submissionFlowConfig?.early_capture, submissionFlowConfig?.autosave_enabled, submissionFlowConfig?.min_fields_for_capture, saveSubmission])
+  }, [formData, currentStep])
 
   const completeSubmission = useCallback(async (
     trigger: 'quote_viewed' | 'meeting_booked' | 'cta_clicked' | 'form_submitted',

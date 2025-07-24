@@ -1175,8 +1175,62 @@ Applies when a field value crosses a threshold:
 #### Format Types
 
 - **fixed**: Shows exact calculated price
-- **range**: Shows price range (price to price × rangeMultiplier)
+- **range**: Shows price range (configured with rangeMultiplier or rangeConfig)
 - **minimum**: Shows "Starting at $X" format
+
+#### Range Pricing Configuration
+
+Range pricing allows businesses to show price ranges instead of exact prices, helping qualify leads while keeping actual pricing private.
+
+**Method 1: Simple Range Multiplier (Legacy)**
+```json
+{
+  "display": {
+    "format": "range",
+    "rangeMultiplier": 1.2  // Shows $1000 - $1200 for $1000 base price
+  }
+}
+```
+
+**Method 2: Percentage-Based Range (Recommended)**
+```json
+{
+  "display": {
+    "format": "range",
+    "rangeConfig": {
+      "type": "percentage",
+      "lowerBound": 85,   // 85% of actual price
+      "upperBound": 115   // 115% of actual price
+    }
+  }
+}
+```
+
+**Method 3: Multiplier-Based Range**
+```json
+{
+  "display": {
+    "format": "range", 
+    "rangeConfig": {
+      "type": "multiplier",
+      "lowerBound": 0.85,   // 85% of actual price
+      "upperBound": 1.15    // 115% of actual price
+    }
+  }
+}
+```
+
+**Range Examples:**
+- Base price: $1000, Range config: 85%-115% → Shows: "$850 - $1,150"
+- Base price: $2500, Range config: 90%-120% → Shows: "$2,250 - $3,000"  
+- Base price: $500, Range config: 80%-110% → Shows: "$400 - $550"
+
+**Benefits of Range Pricing:**
+- Protects exact pricing from competitors
+- Still provides value indication for lead qualification
+- Allows for site-specific adjustments
+- Creates room for negotiations
+- Reduces price shopping between providers
 
 #### Show Calculation
 
@@ -1188,13 +1242,13 @@ When `showCalculation: true`, displays:
 
 ### Complete Examples
 
-#### Fencing Estimator with Pricing
+#### Fencing Estimator with Range Pricing
 
 ```json
 {
   "steps": [
     {
-      "id": "fence-type",
+      "id": "fence-type", 
       "title": "Fence Type",
       "components": [
         {
@@ -1293,7 +1347,11 @@ When `showCalculation: true`, displays:
     "display": {
       "showCalculation": true,
       "format": "range",
-      "rangeMultiplier": 1.2
+      "rangeConfig": {
+        "type": "percentage",
+        "lowerBound": 85,
+        "upperBound": 115
+      }
     }
   }
 }

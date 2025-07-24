@@ -406,8 +406,29 @@ export function calculatePriceSync(
  */
 export function calculatePriceRange(
   result: PricingResult,
-  rangeMultiplier: number = 1.2
+  rangeMultiplier: number = 1.2,
+  rangeConfig?: { type: 'multiplier' | 'percentage'; lowerBound: number; upperBound: number }
 ): { min: number; max: number } {
+  if (rangeConfig) {
+    if (rangeConfig.type === 'percentage') {
+      // Convert percentages to multipliers (85% = 0.85, 115% = 1.15)
+      const lowerMultiplier = rangeConfig.lowerBound / 100
+      const upperMultiplier = rangeConfig.upperBound / 100
+      
+      const min = Math.round(result.finalPrice * lowerMultiplier)
+      const max = Math.round(result.finalPrice * upperMultiplier)
+      
+      return { min, max }
+    } else {
+      // Direct multiplier values (0.85, 1.15)
+      const min = Math.round(result.finalPrice * rangeConfig.lowerBound)
+      const max = Math.round(result.finalPrice * rangeConfig.upperBound)
+      
+      return { min, max }
+    }
+  }
+  
+  // Fallback to original behavior
   const min = result.finalPrice
   const max = Math.round(result.finalPrice * rangeMultiplier)
   

@@ -12,6 +12,7 @@ export interface WidgetConfig {
 
 export interface NotificationConfig {
   email?: EmailNotificationConfig
+  sms?: SMSNotificationConfig
 }
 
 export interface EmailNotificationConfig {
@@ -19,6 +20,12 @@ export interface EmailNotificationConfig {
   business_emails: string[]
   send_customer_confirmation: boolean
   send_business_alert: boolean
+}
+
+export interface SMSNotificationConfig {
+  enabled: boolean
+  send_lead_captured: boolean
+  send_lead_abandoned: boolean
 }
 
 export interface QuoteStepConfig {
@@ -101,6 +108,13 @@ export interface PricingDisplay {
   showCalculation: boolean
   format: 'fixed' | 'range' | 'minimum'
   rangeMultiplier?: number
+  rangeConfig?: PricingRangeConfig
+}
+
+export interface PricingRangeConfig {
+  type: 'multiplier' | 'percentage'
+  lowerBound: number  // For percentage: 85 (means 85%), for multiplier: 0.85
+  upperBound: number  // For percentage: 115 (means 115%), for multiplier: 1.15
 }
 
 export interface PricingResult {

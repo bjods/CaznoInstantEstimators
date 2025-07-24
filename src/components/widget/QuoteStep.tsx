@@ -74,7 +74,8 @@ export function QuoteStep({
         case 'range': {
           const { min, max } = calculatePriceRange(
             pricingResult, 
-            display.rangeMultiplier || 1.2
+            display.rangeMultiplier || 1.2,
+            display.rangeConfig
           )
           return (
             <div className="text-4xl font-bold text-green-600">

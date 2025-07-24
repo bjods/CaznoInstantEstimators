@@ -6,6 +6,7 @@ interface LeadSubmission {
   pricing?: any
   timestamp: string
   widgetId: string
+  sessionId?: string
 }
 
 async function queueEmail(
@@ -94,12 +95,40 @@ function formatFormDataForEmail(formData: Record<string, any>): Record<string, a
   return formatted
 }
 
+// Handle CORS preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
     const body: LeadSubmission = await request.json()
     
-    const { formData, pricing, timestamp, widgetId } = body
+    const { formData, pricing, timestamp, widgetId, sessionId } = body
+    
+    console.log('Received lead submission:', {
+      widgetId,
+      formData: { ...formData, email: formData.email ? '***' : undefined },
+      timestamp
+    })
 
     // Get widget configuration to check email settings
     const { data: widget, error: widgetError } = await supabase
@@ -119,29 +148,58 @@ export async function POST(request: NextRequest) {
     if (widgetError || !widget) {
       return NextResponse.json(
         { success: false, error: 'Widget not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       )
     }
 
-    // Save the lead
-    const { data: lead, error: leadError } = await supabase
-      .from('leads')
-      .insert({
-        widget_id: widgetId,
-        business_id: widget.business_id,
-        form_data: formData,
-        pricing_data: pricing,
-        status: 'new',
-        source: 'widget'
-      })
+    // Extract contact info
+    const email = formData.email || null
+    const phone = formData.phone || null
+    const fullName = formData.name || 
+      (formData.firstName && formData.lastName ? `${formData.firstName} ${formData.lastName}` : null)
+    const address = formData.address || null
+
+    // Update or create the submission as complete
+    const submissionData = {
+      session_id: sessionId || crypto.randomUUID(),
+      widget_id: widgetId,
+      business_id: widget.business_id,
+      email,
+      phone,
+      full_name: fullName,
+      address,
+      form_data: formData,
+      contact_data: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address
+      },
+      service_data: formData,
+      pricing_data: pricing,
+      completion_status: 'complete',
+      estimate_completed_at: new Date().toISOString(),
+      source: 'widget'
+    }
+
+    const { data: submission, error: submissionError } = await supabase
+      .from('submissions')
+      .upsert(
+        submissionData,
+        { 
+          onConflict: 'session_id',
+          ignoreDuplicates: false 
+        }
+      )
       .select()
       .single()
 
-    if (leadError) {
-      console.error('Failed to save lead:', leadError)
+    if (submissionError) {
+      console.error('Failed to save submission:', submissionError)
       return NextResponse.json(
-        { success: false, error: 'Failed to save lead' },
-        { status: 500 }
+        { success: false, error: 'Failed to save submission' },
+        { status: 500, headers: corsHeaders }
       )
     }
 
@@ -208,16 +266,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        leadId: lead.id,
+        submissionId: submission.id,
+        sessionId: submission.session_id,
         emailsQueued: emailConfig?.enabled || false
       }
-    })
+    }, { headers: corsHeaders })
 
   } catch (error) {
     console.error('Lead submission error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     )
   }
 }

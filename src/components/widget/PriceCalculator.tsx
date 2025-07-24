@@ -47,7 +47,8 @@ export function PriceCalculator({
       case 'range': {
         const { min, max } = calculatePriceRange(
           pricingResult, 
-          display.rangeMultiplier || 1.2
+          display.rangeMultiplier || 1.2,
+          display.rangeConfig
         )
         return (
           <div className="text-3xl font-bold text-green-600">
@@ -171,7 +172,8 @@ export function CompactPriceDisplay({
       case 'range': {
         const { min, max } = calculatePriceRange(
           pricingResult, 
-          display.rangeMultiplier || 1.2
+          display.rangeMultiplier || 1.2,
+          display.rangeConfig
         )
         return `${formatPrice(min)} - ${formatPrice(max)}`
       }

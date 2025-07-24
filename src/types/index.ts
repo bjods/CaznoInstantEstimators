@@ -10,6 +10,7 @@ export interface WidgetConfig {
   notifications?: NotificationConfig
   scheduling?: SchedulingConfig
   inventory?: InventoryConfig
+  submissionFlow?: SubmissionFlowConfig
 }
 
 export interface NotificationConfig {
@@ -254,4 +255,13 @@ export interface MeetingEvent {
   status: 'scheduled' | 'completed' | 'cancelled'
   created_at: string
   updated_at: string
+}
+
+// Submission flow configuration
+export interface SubmissionFlowConfig {
+  early_capture: boolean // Create submission on first page with contact info
+  completion_trigger: 'quote_viewed' | 'meeting_booked' | 'cta_clicked' | 'form_submitted'
+  autosave_enabled: boolean // Update submission as user progresses
+  partial_lead_notifications: boolean // Notify business of incomplete submissions
+  min_fields_for_capture: string[] // Required fields to create initial submission (e.g., ['email'])
 }

@@ -7,8 +7,9 @@ This guide explains how to create and configure widgets in Supabase for each com
 2. [Creating a New Business](#creating-a-new-business)
 3. [Creating a Widget](#creating-a-widget)
 4. [Component Reference](#component-reference)
-5. [Scheduling Configuration](#scheduling-configuration)
-6. [Configuration Examples](#configuration-examples)
+5. [Submission Flow Configuration](#submission-flow-configuration)
+6. [Scheduling Configuration](#scheduling-configuration)
+7. [Configuration Examples](#configuration-examples)
 
 ## Database Structure
 
@@ -458,6 +459,135 @@ Advanced measurement component that handles multiple services with different mea
 - Address is automatically passed from personal info step
 - Services not in `servicesConfig` will be ignored
 - Set `requires_measurement: false` for services like consultations
+
+## Submission Flow Configuration
+
+The submission flow system enables early capture of leads and flexible completion triggers based on business needs. This ensures you capture partial submissions even if users don't complete the entire form.
+
+### Early Capture & Autosave System
+
+```json
+{
+  "submissionFlow": {
+    "early_capture": true,
+    "completion_trigger": "quote_viewed",
+    "autosave_enabled": true,
+    "partial_lead_notifications": true,
+    "min_fields_for_capture": ["email"]
+  }
+}
+```
+
+### Submission Flow Properties
+
+- **early_capture**: `boolean` - Create submission record as soon as minimum fields are entered
+- **completion_trigger**: `string` - When to mark submission as complete and send notifications
+  - `"quote_viewed"` - Complete when user reaches quote page (default)
+  - `"meeting_booked"` - Complete when user books an appointment
+  - `"cta_clicked"` - Complete when user clicks any CTA button
+  - `"form_submitted"` - Complete only when final form is submitted
+- **autosave_enabled**: `boolean` - Continuously save form progress as user fills it out
+- **partial_lead_notifications**: `boolean` - Send alerts for incomplete submissions
+- **min_fields_for_capture**: `string[]` - Required fields to create initial submission (typically `["email"]`)
+
+### Completion Trigger Examples
+
+#### Quote Viewed (Most Common)
+```json
+{
+  "submissionFlow": {
+    "early_capture": true,
+    "completion_trigger": "quote_viewed",
+    "autosave_enabled": true,
+    "partial_lead_notifications": true,
+    "min_fields_for_capture": ["email"]
+  }
+}
+```
+**Use Case**: Most service businesses want to be notified as soon as someone sees their quote, even if they don't take further action.
+
+#### Meeting Booked (Consultation Businesses)
+```json
+{
+  "submissionFlow": {
+    "early_capture": true,
+    "completion_trigger": "meeting_booked",
+    "autosave_enabled": true,
+    "partial_lead_notifications": true,
+    "min_fields_for_capture": ["email"]
+  }
+}
+```
+**Use Case**: Businesses that require in-person consultations (landscaping, custom work) only want notifications for actual appointments.
+
+#### CTA Clicked (Lead Qualification)
+```json
+{
+  "submissionFlow": {
+    "early_capture": true,
+    "completion_trigger": "cta_clicked",
+    "autosave_enabled": true,
+    "partial_lead_notifications": true,
+    "min_fields_for_capture": ["email"]
+  }
+}
+```
+**Use Case**: Businesses that want to know when someone is interested enough to click "Call Me" or "Get Quote" buttons.
+
+#### Form Submitted (Traditional)
+```json
+{
+  "submissionFlow": {
+    "early_capture": true,
+    "completion_trigger": "form_submitted",
+    "autosave_enabled": true,
+    "partial_lead_notifications": false,
+    "min_fields_for_capture": ["email"]
+  }
+}
+```
+**Use Case**: Businesses that only want completed form submissions (like traditional contact forms).
+
+### How the System Works
+
+1. **Early Capture**: As soon as user enters email (or other required fields), a submission record is created with status `'started'`
+
+2. **Progressive Autosave**: Every form interaction updates the submission record with current form data
+
+3. **Completion Triggers**: Based on configuration, different actions trigger completion:
+   - User reaches quote page → `'quote_viewed'`
+   - User books appointment → `'meeting_booked'`
+   - User clicks CTA button → `'cta_clicked'`
+   - User submits final form → `'form_submitted'`
+
+4. **Notifications**: When completion trigger is met, business gets notified with full lead details
+
+5. **Abandoned Lead Recovery**: Submissions that don't reach completion trigger can still be followed up on using the captured contact information
+
+### Database Tracking
+
+The system tracks detailed submission progress:
+
+```sql
+-- submissions table includes these tracking fields:
+current_step TEXT                    -- Which step user is currently on
+last_interaction_at TIMESTAMP        -- When user last interacted
+quote_viewed_at TIMESTAMP           -- When user reached quote page  
+appointment_scheduled_at TIMESTAMP   -- When user booked appointment
+cta_clicked_at TIMESTAMP            -- When user clicked CTA button
+cta_button_id TEXT                  -- Which CTA button was clicked
+completed_at TIMESTAMP              -- When completion trigger was met
+completion_status TEXT              -- 'started', 'in_progress', 'complete', 'abandoned'
+```
+
+### Partial Lead Notifications
+
+When `partial_lead_notifications: true`, businesses receive alerts for:
+- Users who view quotes but don't complete the trigger action
+- Users who abandon forms partway through
+- Users who complete contact info but don't finish
+
+This enables proactive follow-up on warm leads.
 
 ## Scheduling Configuration
 

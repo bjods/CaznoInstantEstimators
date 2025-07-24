@@ -14,6 +14,7 @@ interface SchedulingInputProps {
     time: string
   }
   onChange: (value: { datetime: Date; time: string } | null) => void
+  onMeetingBooked?: (appointmentSlot: { datetime: Date; time: string }) => void
   error?: string
 }
 
@@ -25,8 +26,17 @@ export function SchedulingInput({
   requiredQuantity,
   value,
   onChange,
+  onMeetingBooked,
   error
 }: SchedulingInputProps) {
+  const handleSlotSelect = (slot: { datetime: Date; time: string } | null) => {
+    onChange(slot)
+    
+    // If meeting booking is enabled and a slot is selected, trigger completion
+    if (slot && scheduling.features?.meeting_booking && onMeetingBooked) {
+      onMeetingBooked(slot)
+    }
+  }
   if (!scheduling.enabled) {
     return null
   }
@@ -40,7 +50,7 @@ export function SchedulingInput({
         inventoryType={inventoryType}
         requiredQuantity={requiredQuantity}
         selectedSlot={value}
-        onSlotSelect={onChange}
+        onSlotSelect={handleSlotSelect}
       />
       
       {error && (

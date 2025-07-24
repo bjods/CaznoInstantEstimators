@@ -10,9 +10,10 @@ interface DynamicComponentProps {
   config?: WidgetConfig
   onNavigateNext?: () => void
   onComponentStateChange?: (componentState: any) => void
+  onMeetingBooked?: (appointmentSlot: { datetime: Date; time: string }) => void
 }
 
-export function DynamicComponent({ type, props, value, onChange, formData, config, onNavigateNext, onComponentStateChange }: DynamicComponentProps) {
+export function DynamicComponent({ type, props, value, onChange, formData, config, onNavigateNext, onComponentStateChange, onMeetingBooked }: DynamicComponentProps) {
   const Component = ComponentMap[type as keyof typeof ComponentMap]
   
   if (!Component) {
@@ -67,7 +68,8 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
       inventoryType={inventoryType}
       requiredQuantity={requiredQuantity || 1}
       value={value} 
-      onChange={onChange} 
+      onChange={onChange}
+      onMeetingBooked={onMeetingBooked}
     />
   }
   

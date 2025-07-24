@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DynamicComponent } from './DynamicComponent'
 import { PersonalInfoStep } from './PersonalInfoStep'
 import { PriceCalculator, CompactPriceDisplay } from './PriceCalculator'
 import { QuoteStep } from './QuoteStep'
 import { WidgetConfig, CTAButton } from '@/types'
+import { useFormAutosave } from '@/hooks/useFormAutosave'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
@@ -23,6 +24,28 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   })
   const [componentState, setComponentState] = useState<any>(null)
 
+  // Get current step name for tracking
+  const getCurrentStepName = () => {
+    if (currentStep === -1) return 'personal_info'
+    if (currentStep === config.steps.length) return 'quote'
+    return config.steps[currentStep]?.id || `step_${currentStep}`
+  }
+
+  // Initialize autosave system
+  const { autosaveState, completeSubmission } = useFormAutosave({
+    widgetId: config.id || '',
+    formData,
+    currentStep: getCurrentStepName(),
+    submissionFlowConfig: config.submissionFlow || {
+      early_capture: true,
+      autosave_enabled: true,
+      min_fields_for_capture: ['email']
+    },
+    onSubmissionCreated: (submissionId, sessionId) => {
+      console.log('Submission created:', submissionId, 'Session:', sessionId)
+    }
+  })
+
   const updateField = (name: string, value: any) => {
     setFormData(prev => {
       const updated = {
@@ -39,6 +62,23 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       
       return updated
     })
+  }
+
+  const handleMeetingBooked = async (appointmentSlot: { datetime: Date; time: string }) => {
+    try {
+      const result = await completeSubmission('meeting_booked', {
+        appointmentSlot,
+        additionalData: { ...formData, appointmentSlot }
+      })
+
+      if (result.success) {
+        console.log('Meeting booking completion triggered:', result.data)
+      } else {
+        console.error('Failed to complete meeting booking:', result.error)
+      }
+    } catch (error) {
+      console.error('Error completing meeting booking:', error)
+    }
   }
 
   const getFieldValue = (name: string, componentType: string) => {
@@ -134,30 +174,17 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         pricingBreakdown = await calculatePrice(formData, config.pricingCalculator)
       }
 
-      const submissionData = {
-        formData,
+      // Complete the submission using the new system
+      const result = await completeSubmission('form_submitted', {
         pricing: pricingBreakdown,
-        timestamp: new Date().toISOString(),
-        widgetId: config.id
-      }
-
-      console.log('Submitting form data:', submissionData)
-
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submissionData),
+        additionalData: formData
       })
 
-      const result = await response.json()
-
       if (result.success) {
-        console.log('Lead submitted successfully:', result.data)
+        console.log('Submission completed successfully:', result.data)
         // You can add success feedback here (e.g., show thank you message)
       } else {
-        console.error('Failed to submit lead:', result.error)
+        console.error('Failed to complete submission:', result.error)
         // You can add error feedback here
       }
     } catch (error) {
@@ -166,7 +193,22 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     }
   }
 
-  const handleCTAButtonClick = (button: CTAButton) => {
+  const handleCTAButtonClick = async (button: CTAButton) => {
+    // Complete submission for CTA click
+    try {
+      const result = await completeSubmission('cta_clicked', {
+        ctaButtonId: button.id,
+        additionalData: { clickedButton: button.text, buttonAction: button.action }
+      })
+
+      if (result.success) {
+        console.log('CTA click completion triggered:', result.data)
+      }
+    } catch (error) {
+      console.error('Error completing CTA click:', error)
+    }
+
+    // Execute the original button action
     switch (button.action) {
       case 'submit':
         handleSubmit()
@@ -253,6 +295,35 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
   // Show quote step if we're at that position
   if (isQuoteStep && config.quoteStep) {
+    // Trigger completion when quote step is viewed
+    useEffect(() => {
+      const triggerQuoteCompletion = async () => {
+        try {
+          // Calculate final pricing if pricing calculator is configured
+          let pricingBreakdown = null
+          if (config.pricingCalculator) {
+            const { calculatePrice } = await import('@/lib/pricingCalculator')
+            pricingBreakdown = await calculatePrice(formData, config.pricingCalculator)
+          }
+
+          // Complete the submission for quote viewing
+          const result = await completeSubmission('quote_viewed', {
+            pricing: pricingBreakdown,
+            additionalData: formData
+          })
+
+          if (result.success) {
+            console.log('Quote completion triggered successfully:', result.data)
+          } else {
+            console.error('Failed to trigger quote completion:', result.error)
+          }
+        } catch (error) {
+          console.error('Error triggering quote completion:', error)
+        }
+      }
+
+      triggerQuoteCompletion()
+    }, []) // Empty dependency array ensures this runs only once when quote step mounts
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* Header with Progress */}
@@ -361,6 +432,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
                   config={config}
                   onNavigateNext={handleNext}
                   onComponentStateChange={setComponentState}
+                  onMeetingBooked={handleMeetingBooked}
                 />
               </div>
             ))}

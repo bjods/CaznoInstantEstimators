@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 
 interface CompleteSubmissionRequest {
   submissionId: string
@@ -21,91 +21,8 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders })
 }
 
-function formatFormDataForEmail(formData: Record<string, any>): Record<string, any> {
-  const formatted: Record<string, any> = { ...formData }
-
-  // Format service selection
-  if (formData.service) {
-    if (Array.isArray(formData.service)) {
-      formatted.service = formData.service
-        .map((s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()))
-        .join(', ')
-    } else {
-      formatted.service = formData.service.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
-    }
-  }
-
-  // Format measurements
-  const measurements = []
-  if (formData.linearFeet) measurements.push(`${formData.linearFeet} linear feet`)
-  if (formData.sqft) measurements.push(`${formData.sqft} sq ft`)
-  if (formData.rentalDays) measurements.push(`${formData.rentalDays} days`)
-  if (measurements.length > 0) {
-    formatted.measurements = measurements.join(', ')
-  }
-
-  // Format additional options
-  const additionalInfo = []
-  if (formData.gateCount > 0) additionalInfo.push(`${formData.gateCount} gate${formData.gateCount > 1 ? 's' : ''}`)
-  if (formData.hasdifficultAccess) additionalInfo.push('Difficult access')
-  if (formData.needsPrepWork) additionalInfo.push('Site preparation required')
-  if (formData.wasteType) additionalInfo.push(`Waste type: ${formData.wasteType.replace(/_/g, ' ')}`)
-  if (additionalInfo.length > 0) {
-    formatted.additionalInfo = additionalInfo.join(', ')
-  }
-
-  // Format name
-  if (formData.firstName && formData.lastName) {
-    formatted.name = `${formData.firstName} ${formData.lastName}`
-  } else if (formData.name) {
-    formatted.name = formData.name
-  }
-
-  return formatted
-}
-
-async function queueEmail(
-  supabase: any,
-  businessId: string,
-  templateKey: string,
-  recipientEmail: string,
-  recipientName: string | undefined,
-  templateData: Record<string, any>
-) {
-  // Get the template for this business
-  const { data: template, error: templateError } = await supabase
-    .from('email_templates')
-    .select('*')
-    .eq('business_id', businessId)
-    .eq('template_key', templateKey)
-    .eq('is_active', true)
-    .single()
-
-  if (templateError || !template) {
-    console.error(`Template not found for business ${businessId}, template ${templateKey}:`, templateError)
-    return
-  }
-
-  // Queue the email
-  const { error: queueError } = await supabase
-    .from('email_queue')
-    .insert({
-      business_id: businessId,
-      template_id: template.id,
-      recipient_email: recipientEmail,
-      recipient_name: recipientName,
-      subject: template.subject,
-      template_data: templateData,
-      status: 'pending',
-      next_retry_at: new Date().toISOString()
-    })
-
-  if (queueError) {
-    console.error('Failed to queue email:', queueError)
-  } else {
-    console.log(`Queued ${templateKey} email for ${recipientEmail}`)
-  }
-}
+// TODO: Email formatting and queueing functions removed for now
+// These can be re-added when email/SMS notifications are implemented
 
 export async function POST(request: NextRequest) {
   try {
@@ -122,24 +39,13 @@ export async function POST(request: NextRequest) {
       ctaButtonId
     })
 
-    // Get the submission with widget and business info
+    // Get the submission and widget info
     const { data: submission, error: submissionError } = await supabase
       .from('submissions')
-      .select(`
-        *,
-        widgets!inner (
-          *,
-          businesses (
-            id,
-            name,
-            email,
-            phone
-          )
-        )
-      `)
+      .select('*')
       .eq('id', submissionId)
       .single()
-
+    
     if (submissionError || !submission) {
       return NextResponse.json(
         { success: false, error: 'Submission not found' },
@@ -147,8 +53,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const widget = submission.widgets
-    const business = widget.businesses
+    // Get widget info separately
+    const { data: widget, error: widgetError } = await supabase
+      .from('widgets')
+      .select('*')
+      .eq('id', submission.widget_id)
+      .single()
+
+    if (widgetError || !widget) {
+      return NextResponse.json(
+        { success: false, error: 'Widget not found' },
+        { status: 404, headers: corsHeaders }
+      )
+    }
+
     const submissionFlowConfig = widget.config?.submissionFlow
 
     // Check if this trigger should mark the submission as complete
@@ -161,7 +79,24 @@ export async function POST(request: NextRequest) {
     }
 
     if (pricing) {
-      updateData.pricing_data = pricing
+      // Structure pricing data for dashboard display
+      updateData.pricing_data = {
+        ...pricing,
+        calculated_at: new Date().toISOString(),
+        display_price: pricing.finalPrice ? `$${pricing.finalPrice.toFixed(2)}` : null,
+        trigger_source: trigger,
+        // Ensure breakdown is properly structured
+        breakdown: pricing.breakdown || {},
+        modifiers: pricing.modifiers || [],
+        // Add metadata for dashboard filtering/sorting
+        metadata: {
+          base_price: pricing.basePrice || 0,
+          final_price: pricing.finalPrice || 0,
+          has_drive_time: !!(pricing.driveTime),
+          modifier_count: pricing.modifiers?.length || 0,
+          calculation_version: '1.0'
+        }
+      }
     }
 
     if (appointmentSlot) {
@@ -210,67 +145,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send notifications if completion trigger is met
-    if (shouldComplete) {
-      const emailConfig = widget.config?.notifications?.email
-      if (emailConfig?.enabled) {
-        const formattedData = formatFormDataForEmail(updatedSubmission.form_data)
-        
-        // Add pricing to template data if available
-        if (pricing) {
-          formattedData.price = pricing.finalPrice ? `$${pricing.finalPrice.toFixed(2)}` : undefined
-        }
-
-        // Add trigger context
-        formattedData.completionTrigger = trigger
-        formattedData.widgetName = widget.name
-        formattedData.timestamp = new Date().toLocaleString()
-
-        // Send business notification emails
-        if (emailConfig.send_business_alert && emailConfig.business_emails?.length > 0) {
-          for (const businessEmail of emailConfig.business_emails) {
-            await queueEmail(
-              supabase,
-              widget.business_id,
-              'new_lead_alert',
-              businessEmail,
-              business.name,
-              formattedData
-            )
-          }
-        }
-
-        // Send customer confirmation email
-        if (emailConfig.send_customer_confirmation && updatedSubmission.email) {
-          await queueEmail(
-            supabase,
-            widget.business_id,
-            'customer_confirmation',
-            updatedSubmission.email,
-            formattedData.name,
-            formattedData
-          )
-        }
-
-        // Trigger the email processing function
-        try {
-          const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-emails`
-          const response = await fetch(functionUrl, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-              'Content-Type': 'application/json',
-            },
-          })
-
-          if (!response.ok) {
-            console.error('Failed to trigger email function:', await response.text())
-          }
-        } catch (triggerError) {
-          console.error('Failed to trigger email function:', triggerError)
-        }
-      }
-    }
+    // TODO: Email/SMS notifications disabled for now - implement when ready
+    // Notification system ready to be enabled with proper email templates and SMS setup
 
     return NextResponse.json({
       success: true,
@@ -279,7 +155,7 @@ export async function POST(request: NextRequest) {
         status: updatedSubmission.completion_status,
         trigger,
         completed: shouldComplete,
-        notificationsSent: shouldComplete && widget.config?.notifications?.email?.enabled
+        notificationsSent: false // Disabled for now
       }
     }, { headers: corsHeaders })
 

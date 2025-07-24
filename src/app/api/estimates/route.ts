@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     const { data, error } = await supabase
-      .from('estimates')
+      .from('submissions')
       .insert(body)
       .select()
       .single()
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const businessId = searchParams.get('business_id')
 
-    let query = supabase.from('estimates').select('*')
+    let query = supabase.from('submissions').select('*')
     
     if (businessId) {
       query = query.eq('business_id', businessId)

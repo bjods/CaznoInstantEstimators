@@ -50,9 +50,9 @@ export async function POST(
       )
     }
 
-    // Create estimate record
-    const { data: estimate, error: estimateError } = await supabase
-      .from('estimates')
+    // Create submission record
+    const { data: submission, error: submissionError } = await supabase
+      .from('submissions')
       .insert({
         business_id: businessId,
         widget_id: widgetId,
@@ -71,10 +71,10 @@ export async function POST(
       .select()
       .single()
 
-    if (estimateError) {
-      console.error('Error creating estimate:', estimateError)
+    if (submissionError) {
+      console.error('Error creating submission:', submissionError)
       return NextResponse.json(
-        { error: 'Failed to create estimate' },
+        { error: 'Failed to create submission' },
         { status: 500 }
       )
     }
@@ -85,8 +85,8 @@ export async function POST(
       .insert({
         business_id: businessId,
         widget_id: widgetId,
-        estimate_id: estimate.id,
-        event_type: 'estimate_submitted',
+        submission_id: submission.id,
+        event_type: 'submission_submitted',
         event_category: 'conversion',
         event_data: {
           formData: Object.keys(formData),
@@ -108,11 +108,11 @@ export async function POST(
 
     return NextResponse.json({ 
       success: true, 
-      estimateId: estimate.id,
-      message: 'Estimate submitted successfully'
+      submissionId: submission.id,
+      message: 'Submission submitted successfully'
     })
   } catch (error) {
-    console.error('Error submitting estimate:', error)
+    console.error('Error submitting submission:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

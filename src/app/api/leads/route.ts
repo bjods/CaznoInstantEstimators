@@ -6,7 +6,6 @@ interface LeadSubmission {
   pricing?: any
   timestamp: string
   widgetId: string
-  sessionId?: string
 }
 
 async function queueEmail(
@@ -111,7 +110,7 @@ export async function POST(request: NextRequest) {
     const supabase = createClient()
     const body: LeadSubmission = await request.json()
     
-    const { formData, pricing, timestamp, widgetId, sessionId } = body
+    const { formData, pricing, timestamp, widgetId } = body
     
     console.log('Received lead submission:', {
       widgetId,
@@ -148,9 +147,9 @@ export async function POST(request: NextRequest) {
       (formData.firstName && formData.lastName ? `${formData.firstName} ${formData.lastName}` : null)
     const address = formData.address || null
 
-    // Update or create the submission as complete
+    // Create the submission as complete
     const submissionData = {
-      session_id: sessionId || crypto.randomUUID(),
+      session_id: crypto.randomUUID(),
       widget_id: widgetId,
       business_id: widget.business_id,
       email,
@@ -174,13 +173,7 @@ export async function POST(request: NextRequest) {
 
     const { data: submission, error: submissionError } = await supabase
       .from('submissions')
-      .upsert(
-        submissionData,
-        { 
-          onConflict: 'session_id',
-          ignoreDuplicates: false 
-        }
-      )
+      .insert(submissionData)
       .select()
       .single()
 
@@ -256,7 +249,6 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         submissionId: submission.id,
-        sessionId: submission.session_id,
         emailsQueued: emailConfig?.enabled || false
       }
     }, { headers: corsHeaders })

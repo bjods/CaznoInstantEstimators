@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { DynamicComponent } from './DynamicComponent'
 import { PersonalInfoStep } from './PersonalInfoStep'
 import { PriceCalculator, CompactPriceDisplay } from './PriceCalculator'
 import { QuoteStep } from './QuoteStep'
 import { WidgetConfig, CTAButton } from '@/types'
-import { useLeadSession } from '@/hooks/useLeadSession'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
@@ -23,49 +22,6 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     name: '' // Combined name field for some components
   })
   const [componentState, setComponentState] = useState<any>(null)
-  const [showSaveIndicator, setShowSaveIndicator] = useState(false)
-
-  // Get current step ID for tracking
-  const currentStepId = currentStep === -1 
-    ? 'personal-info' 
-    : currentStep < config.steps.length 
-      ? config.steps[currentStep]?.id || `step-${currentStep}`
-      : 'quote'
-
-  // Initialize autosave session
-  const { 
-    sessionId, 
-    isSaving, 
-    lastSaved, 
-    saveOnStepComplete,
-    clearSession,
-    saveNow
-  } = useLeadSession({
-    widgetId: config.id || '',
-    formData,
-    currentStep: currentStepId,
-    onSessionRestored: (restoredData) => {
-      // Restore form data if user returns
-      setFormData(prev => ({ ...prev, ...restoredData }))
-      
-      // If they had completed personal info, skip to next step
-      const hasPersonalInfo = restoredData.email && restoredData.phone && restoredData.firstName
-      if (hasPersonalInfo && currentStep === -1) {
-        setCurrentStep(0)
-      }
-    }
-  })
-
-  // Show save indicator when saving
-  useEffect(() => {
-    if (isSaving) {
-      setShowSaveIndicator(true)
-    } else if (lastSaved) {
-      // Keep showing for 2 seconds after save
-      const timer = setTimeout(() => setShowSaveIndicator(false), 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [isSaving, lastSaved])
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => {
@@ -126,8 +82,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       }
     }
     
-    // Save progress before advancing
-    saveOnStepComplete()
+    // Progress saved automatically on step completion
     
     // Navigate through config steps and then to quote step if configured
     const maxConfigStep = config.steps.length - 1
@@ -183,8 +138,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         formData,
         pricing: pricingBreakdown,
         timestamp: new Date().toISOString(),
-        widgetId: config.id,
-        sessionId // Include session ID for final submission
+        widgetId: config.id
       }
 
       console.log('Submitting form data:', submissionData)
@@ -201,8 +155,6 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
       if (result.success) {
         console.log('Lead submitted successfully:', result.data)
-        // Clear the session since submission is complete
-        clearSession()
         // You can add success feedback here (e.g., show thank you message)
       } else {
         console.error('Failed to submit lead:', result.error)
@@ -248,8 +200,6 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   const completePersonalInfo = () => {
-    // Save personal info completion
-    saveOnStepComplete()
     setCurrentStep(0) // Move to first config step
   }
 
@@ -270,27 +220,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-xl font-semibold text-gray-900">Personal Information</h1>
-              <div className="flex items-center gap-2">
-                {showSaveIndicator && (
-                  <div className="flex items-center text-xs text-green-600">
-                    {isSaving ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600 mr-1"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Saved
-                      </>
-                    )}
-                  </div>
-                )}
-                <div className="text-sm text-gray-500">
-                  Step 1 of {totalSteps} (14%)
-                </div>
+              <div className="text-sm text-gray-500">
+                Step 1 of {totalSteps} (14%)
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -329,27 +260,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-xl font-semibold text-gray-900">{config.quoteStep.title}</h1>
-              <div className="flex items-center gap-2">
-                {showSaveIndicator && (
-                  <div className="flex items-center text-xs text-green-600">
-                    {isSaving ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600 mr-1"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Saved
-                      </>
-                    )}
-                  </div>
-                )}
-                <div className="text-sm text-gray-500">
-                  Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
-                </div>
+              <div className="text-sm text-gray-500">
+                Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -412,27 +324,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
                   formData={formData}
                 />
               )}
-              <div className="flex items-center gap-2">
-                {showSaveIndicator && (
-                  <div className="flex items-center text-xs text-green-600">
-                    {isSaving ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600 mr-1"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Saved
-                      </>
-                    )}
-                  </div>
-                )}
-                <div className="text-sm text-gray-500">
-                  Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
-                </div>
+              <div className="text-sm text-gray-500">
+                Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
               </div>
             </div>
           </div>

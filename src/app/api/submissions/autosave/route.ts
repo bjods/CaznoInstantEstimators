@@ -38,15 +38,7 @@ export async function POST(request: NextRequest) {
     // Get widget configuration
     const { data: widget, error: widgetError } = await supabase
       .from('widgets')
-      .select(`
-        *,
-        businesses (
-          id,
-          name,
-          email,
-          phone
-        )
-      `)
+      .select('*')
       .eq('id', widgetId)
       .single()
 

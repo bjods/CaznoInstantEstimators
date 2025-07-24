@@ -42,9 +42,11 @@ export async function POST(request: NextRequest) {
       .eq('id', widgetId)
       .single()
 
+    console.log('Widget query result:', { widget, widgetError })
+    
     if (widgetError || !widget) {
       return NextResponse.json(
-        { success: false, error: 'Widget not found' },
+        { success: false, error: `Widget not found: ${widgetError?.message || 'No widget returned'}` },
         { status: 404, headers: corsHeaders }
       )
     }

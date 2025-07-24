@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PricingCalculator, PricingResult } from '@/types'
-import { calculatePrice, formatPrice, calculatePriceRange } from '@/lib/pricingCalculator'
+import { calculatePriceSync, formatPrice, calculatePriceRange } from '@/lib/pricingCalculator'
 
 interface PriceCalculatorProps {
   pricingCalculator: PricingCalculator
@@ -19,8 +19,8 @@ export function PriceCalculator({
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Calculate price whenever form data changes
-    const result = calculatePrice(formData, pricingCalculator)
+    // Calculate price whenever form data changes (sync version for real-time display)
+    const result = calculatePriceSync(formData, pricingCalculator)
     setPricingResult(result)
     
     // Show price if we have a valid calculation
@@ -155,7 +155,7 @@ export function CompactPriceDisplay({
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null)
 
   useEffect(() => {
-    const result = calculatePrice(formData, pricingCalculator)
+    const result = calculatePriceSync(formData, pricingCalculator)
     setPricingResult(result)
   }, [formData, pricingCalculator])
 

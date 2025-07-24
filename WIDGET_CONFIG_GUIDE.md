@@ -88,6 +88,11 @@ VALUES (
   "quoteStep": {
     // Optional: Add a dedicated quote/estimate step at the end
     // See Quote Step Configuration section below for full documentation
+  },
+  
+  "notifications": {
+    // Optional: Configure email notifications for leads
+    // See Email Notifications section below for full documentation
   }
 }
 ```
@@ -1069,6 +1074,11 @@ The pricing calculator allows you to display real-time pricing estimates as user
       // Optional: Price adjustments based on form data
     ],
     
+    "driveTime": {
+      // Optional: Add drive time/distance-based pricing
+      // See Drive Time Pricing section below
+    },
+    
     "display": {
       "showCalculation": true,     // Show detailed breakdown
       "format": "range",           // "fixed", "range", or "minimum"
@@ -1376,6 +1386,256 @@ When `showCalculation: true`, displays:
 3. Check the final estimate includes pricing breakdown
 4. Verify pricing data is stored in the estimates table
 
+## Drive Time Pricing
+
+Add automatic distance-based pricing to account for travel costs from your yard/office to the job site. The system calculates driving distance using Google Maps and applies your configured pricing rules.
+
+### Basic Drive Time Configuration
+
+```json
+{
+  "pricingCalculator": {
+    "basePricing": {...},
+    "modifiers": [...],
+    
+    "driveTime": {
+      "enabled": true,
+      "yardAddress": "123 Main St, Your City, State 12345",
+      "addressField": "address",
+      "pricing": {
+        "type": "perMile",
+        "rate": 2.50,
+        "freeRadius": 15,
+        "maxDistance": 50
+      }
+    }
+  }
+}
+```
+
+### Drive Time Properties
+
+#### Core Settings
+
+- **enabled**: Whether drive time pricing is active
+- **yardAddress**: Your business address (yard, warehouse, office)
+- **addressField**: Form field containing customer address (usually "address")
+- **pricing**: Pricing configuration object
+
+### Drive Time Pricing Types
+
+#### 1. Per Mile Pricing
+
+Charges a fixed rate per mile of driving distance.
+
+```json
+{
+  "type": "perMile",
+  "rate": 2.50,           // $2.50 per mile
+  "freeRadius": 15,       // First 15 miles free
+  "maxDistance": 50       // Service limit: 50 miles max
+}
+```
+
+#### 2. Per Minute Pricing
+
+Charges based on estimated driving time.
+
+```json
+{
+  "type": "perMinute", 
+  "rate": 1.00,          // $1.00 per minute
+  "freeRadius": 10,      // ~10 miles free (varies by traffic)
+  "maxDistance": 60      // Service limit: 60 miles max
+}
+```
+
+#### 3. Tiered Distance Pricing
+
+Different flat rates for distance zones.
+
+```json
+{
+  "type": "tiered",
+  "tiers": [
+    {
+      "minDistance": 0,
+      "maxDistance": 15,
+      "rate": 0           // Free within 15 miles
+    },
+    {
+      "minDistance": 15,
+      "maxDistance": 30,
+      "rate": 50          // $50 flat rate for 15-30 miles
+    },
+    {
+      "minDistance": 30,
+      "maxDistance": 50,
+      "rate": 100         // $100 flat rate for 30-50 miles
+    }
+  ],
+  "maxDistance": 50
+}
+```
+
+### Drive Time Configuration Options
+
+#### Free Radius
+
+Set a distance within which you don't charge for travel:
+
+```json
+{
+  "type": "perMile",
+  "rate": 3.00,
+  "freeRadius": 20      // No charge within 20 miles
+}
+```
+
+#### Maximum Distance
+
+Limit service area to prevent unrealistic jobs:
+
+```json
+{
+  "type": "perMile", 
+  "rate": 2.00,
+  "maxDistance": 75     // No service beyond 75 miles
+}
+```
+
+#### Billable Distance Calculation
+
+- **With Free Radius**: Only distance beyond free radius is charged
+- **Without Free Radius**: Full distance from yard to job site is charged
+
+### Business Examples
+
+#### Local Fencing Company
+
+```json
+{
+  "driveTime": {
+    "enabled": true,
+    "yardAddress": "456 Industrial Dr, Springfield, IL 62701",
+    "addressField": "address",
+    "pricing": {
+      "type": "perMile",
+      "rate": 3.00,
+      "freeRadius": 20,
+      "maxDistance": 60
+    }
+  }
+}
+```
+
+**Result**: Free within 20 miles, then $3/mile for 21-60 miles. No service beyond 60 miles.
+
+#### Regional Bin Rental Service
+
+```json
+{
+  "driveTime": {
+    "enabled": true,
+    "yardAddress": "789 Depot Rd, Central City, TX 75001", 
+    "addressField": "address",
+    "pricing": {
+      "type": "tiered",
+      "tiers": [
+        {"minDistance": 0, "maxDistance": 25, "rate": 0},
+        {"minDistance": 25, "maxDistance": 50, "rate": 75},
+        {"minDistance": 50, "maxDistance": 100, "rate": 150}
+      ],
+      "maxDistance": 100
+    }
+  }
+}
+```
+
+**Result**: Free within 25 miles, $75 delivery fee for 25-50 miles, $150 for 50-100 miles.
+
+#### Metro Landscaping Service
+
+```json
+{
+  "driveTime": {
+    "enabled": true,
+    "yardAddress": "321 Garden Ave, Metro City, CA 90210",
+    "addressField": "address", 
+    "pricing": {
+      "type": "perMinute",
+      "rate": 1.25,
+      "freeRadius": 12,
+      "maxDistance": 40
+    }
+  }
+}
+```
+
+**Result**: Free within ~12 miles, then $1.25/minute drive time for longer distances.
+
+### Technical Implementation
+
+#### Distance Calculation
+
+- Uses Google Maps Distance Matrix API for accurate driving distances
+- Accounts for actual roads, traffic patterns, and route optimization
+- Returns both distance (miles) and duration (minutes)
+
+#### Fallback Behavior
+
+- Development mode uses mock distance calculations
+- If Google Maps API fails, drive time cost is skipped (no error to user)
+- Distance calculation happens when customer address is entered
+
+#### Performance
+
+- Distance calculated asynchronously on quote step
+- Real-time pricing shows estimated cost without drive time
+- Final quote includes accurate drive time calculation
+
+### Drive Time Display
+
+Drive time costs appear in pricing breakdowns as:
+
+- **Free Delivery**: "Free delivery within 15 miles"
+- **Per Mile**: "Drive time: 12.5 billable miles × $3.00/mile"
+- **Per Minute**: "Drive time: 25 minutes × $1.25/minute"  
+- **Tiered**: "Drive time: 25-50 mile zone - $75"
+- **Out of Range**: "Service not available beyond 50 miles"
+
+### Setup Requirements
+
+#### Google Maps API Key
+
+1. Get API key from [Google Cloud Console](https://console.cloud.google.com)
+2. Enable Distance Matrix API
+3. Add to environment: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_key`
+
+#### Address Field Configuration
+
+Ensure your widget has an address input field:
+
+```json
+{
+  "type": "address_autocomplete",
+  "props": {
+    "name": "address",
+    "label": "Service Address",
+    "required": true
+  }
+}
+```
+
+### Best Practices
+
+1. **Realistic Rates**: Research actual vehicle costs (IRS rate is ~65¢/mile)
+2. **Free Radius**: Set based on your typical service area
+3. **Maximum Distance**: Prevent quotes for unrealistic distances
+4. **Clear Communication**: Use descriptive labels in pricing breakdown
+5. **Test Addresses**: Verify calculations with known distances
+6. **Backup Plans**: Always handle API failures gracefully
+
 ### Pricing Best Practices
 
 1. **Start Simple**: Begin with base pricing only, add modifiers as needed
@@ -1384,3 +1644,187 @@ When `showCalculation: true`, displays:
 4. **Reasonable Minimums**: Set minimum charges to avoid unrealistic low prices
 5. **User Experience**: Consider whether to show detailed breakdowns or simple totals
 6. **A/B Testing**: The JSON configuration makes it easy to test different pricing approaches
+
+## Email Notifications
+
+Configure automatic email notifications when leads are submitted through your widgets. The system supports both business notifications and customer confirmations.
+
+### Configuration Structure
+
+```json
+{
+  "notifications": {
+    "email": {
+      "enabled": true,
+      "business_emails": ["owner@company.com", "sales@company.com"],
+      "send_customer_confirmation": true,
+      "send_business_alert": true
+    }
+  }
+}
+```
+
+### Configuration Options
+
+#### `enabled` (boolean)
+- Controls whether email notifications are active
+- Set to `false` to disable all email notifications for this widget
+
+#### `business_emails` (array of strings)
+- List of email addresses to receive new lead alerts
+- Can include multiple recipients (owner, sales team, etc.)
+- Each email gets the same notification content
+
+#### `send_customer_confirmation` (boolean)
+- When `true`, sends a confirmation email to the customer
+- Uses the customer's email address from the form
+- Professional thank you message with quote summary
+
+#### `send_business_alert` (boolean)
+- When `true`, sends new lead notifications to business emails
+- Includes all form data, pricing, and customer contact info
+- Formatted for quick review and follow-up
+
+### Email Templates
+ 
+The system includes two professional email templates:
+
+#### New Lead Alert (Business Notification)
+- **Recipients**: Business email addresses
+- **Subject**: "New Lead from {{service}} Widget - {{name}}"
+- **Content**: Complete lead information including contact details, service selection, pricing, and measurements
+- **Purpose**: Immediate notification to start follow-up process
+
+#### Customer Confirmation
+- **Recipients**: Customer email address from form
+- **Subject**: "Thank you for your {{service}} quote request"
+- **Content**: Professional confirmation with quote summary and next steps
+- **Purpose**: Build trust and set expectations
+
+### Template Variables
+
+Both templates support dynamic variables from the form data:
+
+- `{{name}}` - Customer's full name
+- `{{email}}` - Customer's email address
+- `{{phone}}` - Customer's phone number
+- `{{address}}` - Property/service address
+- `{{service}}` - Selected service(s)
+- `{{price}}` - Calculated estimate (if pricing enabled)
+- `{{measurements}}` - Any measurements (linear feet, square feet, etc.)
+- `{{additionalInfo}}` - Additional options selected
+- `{{timestamp}}` - When the quote was requested
+- `{{widgetName}}` - Name of the widget used
+- `{{businessName}}` - Your business name
+- `{{businessEmail}}` - Your business email
+- `{{businessPhone}}` - Your business phone
+
+### Setup Requirements
+
+#### 1. Resend API Key
+Set up your Resend account and add the API key to your Supabase Edge Functions environment:
+```bash
+RESEND_API_KEY=your_resend_api_key_here
+```
+
+#### 2. Email Templates
+Default templates are automatically created for each business. You can customize them in the `email_templates` table:
+
+```sql
+-- View current templates
+SELECT * FROM email_templates WHERE business_id = 'your-business-id';
+
+-- Update template content
+UPDATE email_templates 
+SET html_body = 'your custom HTML template'
+WHERE business_id = 'your-business-id' AND template_key = 'new_lead_alert';
+```
+
+### Email Processing
+
+Emails are processed automatically:
+1. When a lead is submitted, emails are queued in the `email_queue` table
+2. The system automatically triggers email processing
+3. Failed emails are retried with exponential backoff (1min, 5min, 30min)
+4. All email activity is logged in the `email_log` table
+
+### Monitoring and Analytics
+
+Track email performance through the database tables:
+
+```sql
+-- Check email queue status
+SELECT status, COUNT(*) FROM email_queue GROUP BY status;
+
+-- View recent email activity
+SELECT * FROM email_log ORDER BY created_at DESC LIMIT 10;
+
+-- Business email statistics
+SELECT 
+  b.name as business_name,
+  COUNT(el.*) as emails_sent,
+  COUNT(CASE WHEN el.status = 'sent' THEN 1 END) as successful_sends
+FROM businesses b
+LEFT JOIN email_log el ON b.id = el.business_id
+WHERE el.created_at > NOW() - INTERVAL '30 days'
+GROUP BY b.id, b.name;
+```
+
+### Example Configuration
+
+Here's a complete widget configuration with email notifications:
+
+```json
+{
+  "steps": [
+    {
+      "id": "service-selection",
+      "title": "Select Your Service",
+      "components": [
+        {
+          "type": "service_selection",
+          "props": {
+            "name": "service",
+            "label": "What service do you need?",
+            "options": ["fencing", "concrete", "landscaping"],
+            "required": true
+          }
+        }
+      ]
+    }
+  ],
+  "showInstantQuote": true,
+  "pricingCalculator": {
+    "basePricing": {
+      "service_field": "service",
+      "pricing_type": "per_unit",
+      "unit_field": "linearFeet",
+      "unit_label": "linear foot",
+      "base_prices": [
+        {"service": "fencing", "price": 25.00}
+      ]
+    },
+    "display": {
+      "format": "fixed",
+      "showCalculation": true
+    }
+  },
+  "notifications": {
+    "email": {
+      "enabled": true,
+      "business_emails": ["owner@example.com", "sales@example.com"],
+      "send_customer_confirmation": true,
+      "send_business_alert": true
+    }
+  }
+}
+```
+
+### Best Practices
+
+1. **Professional Email Addresses**: Use branded email addresses (not Gmail/Yahoo)
+2. **Multiple Recipients**: Include key team members in business_emails array
+3. **Timely Follow-up**: Monitor the email_queue table for any processing issues
+4. **Custom Templates**: Personalize email templates to match your brand voice
+5. **Testing**: Test with real email addresses before going live
+6. **Monitoring**: Regularly check email logs for delivery issues

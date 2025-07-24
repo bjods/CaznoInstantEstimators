@@ -5,14 +5,15 @@ import {
   AppliedModifier,
   PricingBreakdown 
 } from '@/types'
+import { getDriveTimeCost, DriveTimeCost } from './driveTimeCalculator'
 
 /**
  * Core pricing calculator engine that processes form data against pricing configuration
  */
-export function calculatePrice(
+export async function calculatePrice(
   formData: Record<string, any>, 
   pricingCalculator: PricingCalculator
-): PricingResult {
+): Promise<PricingResult> {
   // Step 1: Get base price
   const serviceField = pricingCalculator.basePricing.service_field
   const selectedService = formData[serviceField]
@@ -49,6 +50,28 @@ export function calculatePrice(
         
         currentPrice = modifierResult.newPrice
       }
+    }
+  }
+  
+  // Step 2.5: Apply drive time cost if configured
+  let driveTimeCost: DriveTimeCost | null = null
+  if (pricingCalculator.driveTime) {
+    try {
+      driveTimeCost = await getDriveTimeCost(formData, pricingCalculator.driveTime)
+      
+      if (driveTimeCost && driveTimeCost.cost > 0) {
+        appliedModifiers.push({
+          id: 'drive_time',
+          description: driveTimeCost.description,
+          amount: driveTimeCost.cost,
+          operation: 'add'
+        })
+        
+        currentPrice += driveTimeCost.cost
+      }
+    } catch (error) {
+      console.error('Drive time calculation failed:', error)
+      // Continue without drive time cost
     }
   }
   
@@ -290,6 +313,92 @@ export function formatPrice(price: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(price)
+}
+
+/**
+ * Synchronous version of calculatePrice for components that need immediate results
+ * Note: This does not include drive time calculations
+ */
+export function calculatePriceSync(
+  formData: Record<string, any>, 
+  pricingCalculator: PricingCalculator
+): PricingResult {
+  // Step 1: Get base price
+  const serviceField = pricingCalculator.basePricing.service_field
+  const selectedService = formData[serviceField]
+  
+  if (!selectedService) {
+    return createEmptyResult()
+  }
+  
+  const baseConfig = pricingCalculator.basePricing.prices[selectedService]
+  
+  if (!baseConfig) {
+    return createEmptyResult()
+  }
+  
+  // Get the quantity from form data (e.g., linearFeet, sqft, days)
+  const baseQuantity = getQuantityForUnit(formData, baseConfig.unit)
+  const basePrice = baseQuantity * baseConfig.amount
+  
+  // Step 2: Apply each modifier (excluding drive time)
+  const appliedModifiers: AppliedModifier[] = []
+  let currentPrice = basePrice
+  
+  if (pricingCalculator.modifiers) {
+    for (const modifier of pricingCalculator.modifiers) {
+      const modifierResult = applyModifier(formData, modifier, currentPrice, baseQuantity)
+      
+      if (modifierResult.applied) {
+        appliedModifiers.push({
+          id: modifier.id,
+          description: generateModifierDescription(modifier, formData),
+          amount: modifierResult.amount,
+          operation: modifier.calculation.operation
+        })
+        
+        currentPrice = modifierResult.newPrice
+      }
+    }
+  }
+  
+  // Step 3: Apply minimum charge
+  let finalPrice = currentPrice
+  let minChargeApplied = false
+  
+  if (baseConfig.minCharge && currentPrice < baseConfig.minCharge) {
+    finalPrice = baseConfig.minCharge
+    minChargeApplied = true
+  }
+  
+  // Calculate modifier total for breakdown
+  const modifierTotal = appliedModifiers.reduce((sum, mod) => {
+    switch (mod.operation) {
+      case 'add':
+      case 'subtract':
+        return sum + mod.amount
+      case 'multiply':
+        // For multiply operations, show the percentage change
+        return sum + (mod.amount - 1) * basePrice
+      default:
+        return sum
+    }
+  }, 0)
+  
+  return {
+    basePrice,
+    modifiers: appliedModifiers,
+    finalPrice,
+    breakdown: {
+      baseAmount: baseConfig.amount,
+      baseUnit: baseConfig.unit,
+      baseQuantity,
+      modifierTotal,
+      subtotal: currentPrice,
+      finalPrice,
+      minChargeApplied
+    }
+  }
 }
 
 /**

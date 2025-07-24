@@ -1,6 +1,7 @@
 'use client'
 
-import { QuoteStepConfig, PricingCalculator, CTAButton } from '@/types'
+import { useEffect, useState } from 'react'
+import { QuoteStepConfig, PricingCalculator, CTAButton, PricingResult } from '@/types'
 import { calculatePrice, formatPrice, calculatePriceRange } from '@/lib/pricingCalculator'
 
 interface QuoteStepProps {
@@ -16,12 +17,38 @@ export function QuoteStep({
   formData, 
   onButtonClick 
 }: QuoteStepProps) {
-  // Calculate pricing if available
-  const pricingResult = pricingCalculator 
-    ? calculatePrice(formData, pricingCalculator)
-    : null
+  const [pricingResult, setPricingResult] = useState<PricingResult | null>(null)
+  const [isCalculating, setIsCalculating] = useState(false)
+
+  // Calculate pricing if available (async version to include drive time)
+  useEffect(() => {
+    if (!pricingCalculator) {
+      setPricingResult(null)
+      return
+    }
+
+    setIsCalculating(true)
+    calculatePrice(formData, pricingCalculator)
+      .then(result => {
+        setPricingResult(result)
+        setIsCalculating(false)
+      })
+      .catch(error => {
+        console.error('Price calculation failed:', error)
+        setIsCalculating(false)
+      })
+  }, [formData, pricingCalculator])
 
   const renderPriceDisplay = () => {
+    if (isCalculating) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-2xl font-bold text-gray-700">Calculating...</div>
+          <p className="text-gray-600 mt-2">Including drive time and all options</p>
+        </div>
+      )
+    }
+
     if (!pricingResult || !pricingCalculator) {
       return (
         <div className="text-center py-8">

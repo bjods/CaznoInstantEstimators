@@ -1,4 +1,5 @@
 export interface WidgetConfig {
+  id?: string
   steps: WidgetStep[]
   showInstantQuote: boolean
   priceDisplay: 'exact' | 'range' | 'hidden'
@@ -6,6 +7,18 @@ export interface WidgetConfig {
   thankYouMessage?: string
   pricingCalculator?: PricingCalculator
   quoteStep?: QuoteStepConfig
+  notifications?: NotificationConfig
+}
+
+export interface NotificationConfig {
+  email?: EmailNotificationConfig
+}
+
+export interface EmailNotificationConfig {
+  enabled: boolean
+  business_emails: string[]
+  send_customer_confirmation: boolean
+  send_business_alert: boolean
 }
 
 export interface QuoteStepConfig {
@@ -33,7 +46,29 @@ export interface CTAButtonConfig {
 export interface PricingCalculator {
   basePricing: BasePricing
   modifiers?: PricingModifier[]
+  driveTime?: DriveTimeConfig
   display: PricingDisplay
+}
+
+export interface DriveTimeConfig {
+  enabled: boolean
+  yardAddress: string
+  pricing: DriveTimePricing
+  addressField: string
+}
+
+export interface DriveTimePricing {
+  type: 'perMile' | 'perMinute' | 'tiered'
+  rate?: number
+  tiers?: DriveTimeTier[]
+  freeRadius?: number
+  maxDistance?: number
+}
+
+export interface DriveTimeTier {
+  minDistance: number
+  maxDistance?: number
+  rate: number
 }
 
 export interface BasePricing {

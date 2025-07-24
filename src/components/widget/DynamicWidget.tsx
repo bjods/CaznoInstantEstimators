@@ -18,15 +18,27 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     lastName: '',
     email: '',
     phone: '',
-    address: ''
+    address: '',
+    name: '' // Combined name field for some components
   })
   const [componentState, setComponentState] = useState<any>(null)
 
   const updateField = (name: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: value
+      }
+      
+      // Update combined name field when firstName or lastName changes
+      if (name === 'firstName' || name === 'lastName') {
+        const firstName = name === 'firstName' ? value : prev.firstName
+        const lastName = name === 'lastName' ? value : prev.lastName
+        updated.name = `${firstName} ${lastName}`.trim()
+      }
+      
+      return updated
+    })
   }
 
   const getFieldValue = (name: string, componentType: string) => {
@@ -112,21 +124,44 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   const handleSubmit = async () => {
-    // Calculate final pricing if pricing calculator is configured
-    let pricingBreakdown = null
-    if (config.pricingCalculator) {
-      const { calculatePrice } = await import('@/lib/pricingCalculator')
-      pricingBreakdown = calculatePrice(formData, config.pricingCalculator)
-    }
+    try {
+      // Calculate final pricing if pricing calculator is configured
+      let pricingBreakdown = null
+      if (config.pricingCalculator) {
+        const { calculatePrice } = await import('@/lib/pricingCalculator')
+        pricingBreakdown = await calculatePrice(formData, config.pricingCalculator)
+      }
 
-    const submissionData = {
-      formData,
-      pricing: pricingBreakdown,
-      timestamp: new Date().toISOString()
-    }
+      const submissionData = {
+        formData,
+        pricing: pricingBreakdown,
+        timestamp: new Date().toISOString(),
+        widgetId: config.id // Assuming config has an id field
+      }
 
-    console.log('Submitting form data:', submissionData)
-    // TODO: Submit to API with pricing breakdown
+      console.log('Submitting form data:', submissionData)
+
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionData),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        console.log('Lead submitted successfully:', result.data)
+        // You can add success feedback here (e.g., show thank you message)
+      } else {
+        console.error('Failed to submit lead:', result.error)
+        // You can add error feedback here
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      // You can add error feedback here
+    }
   }
 
   const handleCTAButtonClick = (button: CTAButton) => {

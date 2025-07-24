@@ -102,5 +102,5 @@ export default function WidgetLoader({ embedKey }: WidgetLoaderProps) {
     )
   }
 
-  return <DynamicWidget config={widget.config} />
+  return <DynamicWidget config={{...widget.config, id: widget.id}} />
 }

@@ -44,6 +44,20 @@ export function AddressAutocomplete({
   useEffect(() => {
     if (!isLoaded || !inputRef.current) return
 
+    // Clean up previous autocomplete instance
+    if (autocompleteRef.current) {
+      google.maps.event.clearInstanceListeners(autocompleteRef.current)
+      autocompleteRef.current = null
+    }
+
+    // Remove any existing pac-containers for this input
+    const existingContainers = document.querySelectorAll('.pac-container')
+    existingContainers.forEach(container => {
+      if (container.parentNode) {
+        container.parentNode.removeChild(container)
+      }
+    })
+
     const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
       fields: ['formatted_address', 'geometry', 'address_components', 'place_id']
     })
@@ -61,8 +75,19 @@ export function AddressAutocomplete({
       if (listener) {
         google.maps.event.removeListener(listener)
       }
+      if (autocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(autocompleteRef.current)
+        autocompleteRef.current = null
+      }
+      // Clean up pac-containers on unmount
+      const containers = document.querySelectorAll('.pac-container')
+      containers.forEach(container => {
+        if (container.parentNode) {
+          container.parentNode.removeChild(container)
+        }
+      })
     }
-  }, [isLoaded, onChange])
+  }, [isLoaded]) // Removed onChange from dependencies to prevent re-creation
 
   if (error) {
     return (

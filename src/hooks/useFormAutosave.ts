@@ -40,30 +40,25 @@ export function useFormAutosave({
   const saveTimeoutRef = useRef<NodeJS.Timeout>()
   const lastSavedDataRef = useRef<string>('')
   const hasTriggeredEarlyCaptureRef = useRef(false)
-
-  const checkEarlyCapture = useCallback(() => {
-    if (!submissionFlowConfig?.early_capture || hasTriggeredEarlyCaptureRef.current) {
-      return false
-    }
-
-    const hasMinFields = submissionFlowConfig.min_fields_for_capture.every(
-      field => formData[field] && formData[field].toString().trim()
-    )
-
-    return hasMinFields
-  }, [formData, submissionFlowConfig])
+  const isCurrentlySavingRef = useRef(false)
 
   const saveSubmission = useCallback(async (isEarlyCapture = false) => {
+    // Prevent concurrent saves
+    if (isCurrentlySavingRef.current) {
+      return
+    }
+
     if (!submissionFlowConfig?.autosave_enabled && !isEarlyCapture) {
       return
     }
 
-    // Skip if data hasn't changed
+    // Skip if data hasn't changed (unless it's early capture)
     const currentDataString = JSON.stringify({ formData, currentStep })
     if (currentDataString === lastSavedDataRef.current && !isEarlyCapture) {
       return
     }
 
+    isCurrentlySavingRef.current = true
     setAutosaveState(prev => ({ ...prev, status: 'saving', error: null }))
 
     try {
@@ -123,39 +118,52 @@ export function useFormAutosave({
         status: 'error',
         error: 'Failed to save form data'
       }))
+    } finally {
+      isCurrentlySavingRef.current = false
     }
-  }, [widgetId, formData, currentStep, autosaveState.sessionId, submissionFlowConfig, onSubmissionCreated])
+  }, [widgetId, autosaveState.sessionId, submissionFlowConfig?.autosave_enabled, onSubmissionCreated])
 
-  // Handle early capture when minimum fields are met
+  // Handle autosave when form data changes
   useEffect(() => {
-    if (checkEarlyCapture() && !hasTriggeredEarlyCaptureRef.current) {
-      console.log('Triggering early capture with minimum fields')
-      saveSubmission(true)
-    }
-  }, [checkEarlyCapture, saveSubmission])
-
-  // Handle regular autosave with debouncing
-  useEffect(() => {
-    if (!hasTriggeredEarlyCaptureRef.current || !submissionFlowConfig?.autosave_enabled) {
+    // Skip if already saving to prevent loops
+    if (isCurrentlySavingRef.current) {
       return
     }
 
-    // Clear existing timeout
+    // Clear any existing timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
 
-    // Set new timeout for debounced save
-    saveTimeoutRef.current = setTimeout(() => {
-      saveSubmission(false)
-    }, 2000) // 2 second debounce
+    // Check for early capture first
+    if (!hasTriggeredEarlyCaptureRef.current && submissionFlowConfig?.early_capture) {
+      const hasMinFields = submissionFlowConfig.min_fields_for_capture?.every(
+        field => formData[field] && formData[field].toString().trim()
+      )
+
+      if (hasMinFields) {
+        console.log('Triggering early capture with minimum fields:', submissionFlowConfig.min_fields_for_capture)
+        saveSubmission(true)
+        return
+      }
+    }
+
+    // Handle regular autosave for existing submissions
+    if (hasTriggeredEarlyCaptureRef.current && submissionFlowConfig?.autosave_enabled) {
+      console.log('Scheduling autosave in 2 seconds...')
+      // Debounce the save
+      saveTimeoutRef.current = setTimeout(() => {
+        console.log('Executing autosave...')
+        saveSubmission(false)
+      }, 2000) // 2 second debounce
+    }
 
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [formData, currentStep, saveSubmission, submissionFlowConfig])
+  }, [formData, currentStep, saveSubmission, submissionFlowConfig?.early_capture, submissionFlowConfig?.autosave_enabled, submissionFlowConfig?.min_fields_for_capture])
 
   const completeSubmission = useCallback(async (
     trigger: 'quote_viewed' | 'meeting_booked' | 'cta_clicked' | 'form_submitted',

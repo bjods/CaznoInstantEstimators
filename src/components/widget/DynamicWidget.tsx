@@ -5,7 +5,7 @@ import { DynamicComponent } from './DynamicComponent'
 import { PersonalInfoStep } from './PersonalInfoStep'
 import { PriceCalculator, CompactPriceDisplay } from './PriceCalculator'
 import { QuoteStep } from './QuoteStep'
-import { WidgetConfig, CTAButton } from '@/types'
+import { WidgetConfig, CTAButton, SchedulingSelection } from '@/types'
 import { useFormAutosave } from '@/hooks/useFormAutosave'
 
 interface DynamicWidgetProps {
@@ -64,11 +64,11 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     })
   }
 
-  const handleMeetingBooked = async (appointmentSlot: { datetime: Date; time: string }) => {
+  const handleMeetingBooked = async (appointment: SchedulingSelection) => {
     try {
       const result = await completeSubmission('meeting_booked', {
-        appointmentSlot,
-        additionalData: { ...formData, appointmentSlot }
+        appointment,
+        additionalData: { ...formData, appointment }
       })
 
       if (result.success) {
@@ -104,6 +104,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         return null
       case 'area_measurement':
         return 0
+      case 'scheduling_input':
+        return null
       default:
         return ''
     }

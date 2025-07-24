@@ -591,65 +591,99 @@ This enables proactive follow-up on warm leads.
 
 ## Scheduling Configuration
 
-The scheduling system enables businesses to integrate appointment booking directly into their estimation widgets. This feature supports business hours, Google Calendar integration, and inventory management for rental businesses.
+The scheduling system supports two modes to handle different business needs:
 
-### Basic Scheduling Setup
+1. **Simple Mode**: For rentals, deliveries, and services where customers select date ranges (no real-time availability checking)
+2. **Meeting Mode**: For consultations and appointments with Google Calendar integration
 
-Add scheduling configuration to your widget config:
+### Simple Mode (Rentals/Deliveries)
+
+Use this for businesses like bin rentals, equipment rentals, or deliveries where customers need to specify date ranges but the business handles availability management externally.
 
 ```json
 {
   "scheduling": {
     "enabled": true,
+    "mode": "simple",
+    "timezone": "America/New_York",
+    "business_hours": {
+      "monday": { "start": "08:00", "end": "18:00" },
+      "tuesday": { "start": "08:00", "end": "18:00" },
+      "wednesday": { "start": "08:00", "end": "18:00" },
+      "thursday": { "start": "08:00", "end": "18:00" },
+      "friday": { "start": "08:00", "end": "18:00" },
+      "saturday": { "start": "09:00", "end": "15:00" },
+      "sunday": null
+    },
+    "max_days_ahead": 60,
+    "min_hours_notice": 24,
+    "simple_mode": {
+      "allow_date_ranges": true,
+      "min_duration_days": 1,
+      "max_duration_days": 30
+    }
+  }
+}
+```
+
+**Simple Mode Features:**
+- Customers select start and end dates
+- No inventory tracking or real-time availability
+- Business handles logistics outside the system
+- Date range preferences stored in form submission
+- No Google Calendar events created
+
+### Meeting Mode (Consultations/Appointments)
+
+Use this for businesses that offer consultations, estimates, or appointments where specific time slots need to be managed.
+
+```json
+{
+  "scheduling": {
+    "enabled": true,
+    "mode": "meeting",
+    "timezone": "America/New_York",
     "business_hours": {
       "monday": { "start": "09:00", "end": "17:00" },
       "tuesday": { "start": "09:00", "end": "17:00" },
       "wednesday": { "start": "09:00", "end": "17:00" },
       "thursday": { "start": "09:00", "end": "17:00" },
       "friday": { "start": "09:00", "end": "17:00" },
-      "saturday": { "start": "10:00", "end": "14:00" },
+      "saturday": null,
       "sunday": null
     },
-    "google_calendars": ["sales@company.com"], // For availability checking
-    "primary_calendar": "appointments@company.com", // Where meeting events are created
-    "duration": 60,
-    "buffer": 15,
-    "timezone": "America/New_York",
     "max_days_ahead": 30,
     "min_hours_notice": 2,
-    
-    "features": {
-      "inventory_booking": false, // Track inventory items (bins, equipment)
-      "meeting_booking": true, // Create Google Calendar events for meetings
-      "availability_checking": true, // Check Google Calendar for conflicts
-      "send_calendar_invites": true, // Send calendar invites to customers
-      "create_meet_links": true // Include Google Meet links in events
+    "meeting_mode": {
+      "duration": 60,
+      "buffer": 15,
+      "google_calendars": ["your-business-calendar@gmail.com"],
+      "primary_calendar": "your-business-calendar@gmail.com",
+      "send_calendar_invites": true,
+      "create_meet_links": true
     }
   }
 }
 ```
 
-### Scheduling Configuration Properties
+**Meeting Mode Features:**
+- Customers select specific appointment times
+- Google Calendar integration for availability checking
+- Automatic calendar event creation
+- Calendar invites sent to customers
+- Optional Google Meet links
+- Real-time availability validation
+
+### Common Configuration Properties
 
 - **enabled**: `boolean` - Enable/disable scheduling for this widget
+- **mode**: `string` - "simple" for date ranges, "meeting" for appointments
 - **business_hours**: `object` - Define operating hours for each day of the week
   - Set to `null` for closed days
   - Use 24-hour format for start/end times ("HH:MM")
-- **google_calendars**: `string[]` - Calendar emails to check for availability conflicts
-- **primary_calendar**: `string` - Calendar email where meeting events will be created
-- **duration**: `number` - Default appointment duration in minutes
-- **buffer**: `number` - Buffer time between appointments in minutes  
 - **timezone**: `string` - Business timezone (e.g., "America/New_York", "UTC")
-- **max_days_ahead**: `number` - Maximum days in advance customers can book (default: 30)
-- **min_hours_notice**: `number` - Minimum hours notice required for booking (default: 2)
-
-### Feature Configuration
-
-- **inventory_booking**: `boolean` - Track inventory items in our database (for rentals)
-- **meeting_booking**: `boolean` - Create Google Calendar events for appointments
-- **availability_checking**: `boolean` - Check Google Calendar for scheduling conflicts
-- **send_calendar_invites**: `boolean` - Send calendar invites to customers
-- **create_meet_links**: `boolean` - Include Google Meet links in calendar events
+- **max_days_ahead**: `number` - Maximum days in advance customers can select (default: 30)
+- **min_hours_notice**: `number` - Minimum hours notice required (default: 2)
 
 ### Google Calendar Integration
 
@@ -681,78 +715,50 @@ To integrate with Google Calendar for real-time availability:
 }
 ```
 
-### Inventory Management
+### Google Calendar Integration (Meeting Mode Only)
 
-For rental businesses that need to track item availability:
-
-```json
-{
-  "scheduling": {
-    "enabled": true,
-    "business_hours": { ... },
-    "duration": 30,
-    "buffer": 15,
-    "timezone": "America/New_York"
-  },
-  "inventory": {
-    "enabled": true,
-    "items": [
-      {
-        "type": "bin",
-        "name": "10 Yard Dumpster",
-        "sku": "BIN-10Y",
-        "quantity": 5
-      },
-      {
-        "type": "bin",
-        "name": "20 Yard Dumpster", 
-        "sku": "BIN-20Y",
-        "quantity": 3
-      },
-      {
-        "type": "equipment",
-        "name": "Bobcat S70",
-        "sku": "EQ-BOB-S70",
-        "quantity": 2
-      }
-    ]
-  }
-}
-```
+For businesses using meeting mode, Google Calendar integration enables real-time availability checking and automatic event creation.
 
 ### Scheduling Input Component
 
 Add the scheduling component to your widget steps:
 
+**Simple Mode Example (Date Range Selection):**
 ```json
 {
   "steps": [
     {
-      "id": "service_selection",
-      "title": "Select Service",
+      "id": "bin_dates",
+      "title": "Select Rental Period",
       "components": [
         {
-          "type": "service_selection",
+          "type": "scheduling_input",
           "props": {
-            "name": "service",
-            "label": "What service do you need?",
-            "services": ["bin_rental", "concrete_demolition"]
+            "name": "rentalPeriod",
+            "label": "When do you need the bin?",
+            "serviceType": "bin_rental"
           }
         }
       ]
-    },
+    }
+  ]
+}
+```
+
+**Meeting Mode Example (Appointment Booking):**
+```json
+{
+  "steps": [
     {
-      "id": "scheduling",
-      "title": "Schedule Appointment",
+      "id": "consultation",
+      "title": "Schedule Consultation",
       "components": [
         {
           "type": "scheduling_input",
           "props": {
             "name": "appointmentSlot",
-            "label": "Select a convenient time",
-            "serviceType": "bin_rental",
-            "inventoryType": "bin",
-            "requiredQuantity": 1
+            "label": "Select your preferred time",
+            "serviceType": "consultation"
           }
         }
       ]
@@ -763,11 +769,33 @@ Add the scheduling component to your widget steps:
 
 ### Scheduling Component Properties
 
-- **name**: `string` - Field name to store the selected appointment
+- **name**: `string` - Field name to store the scheduling selection
 - **label**: `string` - Display label for the scheduling component
-- **serviceType**: `string` - Optional service type for context
-- **inventoryType**: `string` - Optional inventory type to check availability ("bin", "equipment", "vehicle")
-- **requiredQuantity**: `number` - Number of inventory items needed (default: 1)
+- **serviceType**: `string` - Optional service type for context (used in analytics)
+
+### Data Storage
+
+**Simple Mode:** Stores date range selection in form submission:
+```json
+{
+  "rentalPeriod": {
+    "mode": "simple",
+    "start_date": "2024-07-28",
+    "end_date": "2024-08-02"
+  }
+}
+```
+
+**Meeting Mode:** Stores appointment details in form submission:
+```json
+{
+  "appointmentSlot": {
+    "mode": "meeting",
+    "appointment_datetime": "2024-07-28T14:00:00.000Z",
+    "duration": 60
+  }
+}
+```
 
 ### Environment Variables
 

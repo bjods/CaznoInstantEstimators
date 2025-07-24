@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import { DynamicWidget } from './DynamicWidget'
 import WidgetSkeleton from './WidgetSkeleton'
 
@@ -37,14 +36,13 @@ export default function WidgetLoader({ embedKey }: WidgetLoaderProps) {
   useEffect(() => {
     const fetchWidget = async () => {
       try {
-        const { data, error } = await supabase
-          .from('widgets')
-          .select('id, name, embed_key, config, theme')
-          .eq('embed_key', embedKey)
-          .eq('is_active', true)
-          .single()
-
-        if (error) throw error
+        const response = await fetch(`/api/widget-config/${embedKey}`)
+        
+        if (!response.ok) {
+          throw new Error('Widget not found')
+        }
+        
+        const data = await response.json()
         setWidget(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load widget')

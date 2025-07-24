@@ -1,5 +1,5 @@
 import { ComponentMap } from '@/components/widget-library'
-import { WidgetConfig } from '@/types'
+import { WidgetConfig, SchedulingSelection } from '@/types'
 
 interface DynamicComponentProps {
   type: string
@@ -10,7 +10,7 @@ interface DynamicComponentProps {
   config?: WidgetConfig
   onNavigateNext?: () => void
   onComponentStateChange?: (componentState: any) => void
-  onMeetingBooked?: (appointmentSlot: { datetime: Date; time: string }) => void
+  onMeetingBooked?: (appointment: SchedulingSelection) => void
 }
 
 export function DynamicComponent({ type, props, value, onChange, formData, config, onNavigateNext, onComponentStateChange, onMeetingBooked }: DynamicComponentProps) {
@@ -58,15 +58,17 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
   
   // Special handling for scheduling input
   if (type === 'scheduling_input' && config) {
-    const { serviceType, inventoryType, requiredQuantity, ...otherProps } = props
+    const { serviceType, ...otherProps } = props
     
     return <Component 
       {...otherProps}
-      widgetId={config.id || ''}
-      scheduling={config.scheduling || { enabled: false, business_hours: {}, duration: 60, buffer: 15, timezone: 'America/New_York' }}
+      scheduling={config.scheduling || { 
+        enabled: false, 
+        mode: 'simple',
+        business_hours: {}, 
+        timezone: 'America/New_York' 
+      }}
       serviceType={serviceType || formData?.service || formData?.service_type}
-      inventoryType={inventoryType}
-      requiredQuantity={requiredQuantity || 1}
       value={value} 
       onChange={onChange}
       onMeetingBooked={onMeetingBooked}

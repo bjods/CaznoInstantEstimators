@@ -9,7 +9,6 @@ export interface WidgetConfig {
   quoteStep?: QuoteStepConfig
   notifications?: NotificationConfig
   scheduling?: SchedulingConfig
-  inventory?: InventoryConfig
   submissionFlow?: SubmissionFlowConfig
 }
 
@@ -167,20 +166,25 @@ export interface Widget {
 // Calendar and scheduling types
 export interface SchedulingConfig {
   enabled: boolean
+  mode: 'simple' | 'meeting' // Simple = date ranges only, Meeting = real appointments
   business_hours: BusinessHours
-  google_calendars?: string[] // For availability checking
-  primary_calendar?: string // Where meetings get created
-  duration: number // minutes per appointment
-  buffer: number // minutes between appointments
   timezone: string
   max_days_ahead?: number
   min_hours_notice?: number
   
-  // Feature toggles
-  features: {
-    inventory_booking: boolean // Track inventory items (bins, equipment)
-    meeting_booking: boolean // Create Google Calendar events for meetings
-    availability_checking: boolean // Check Google Calendar for conflicts
+  // Simple mode settings (for rentals, deliveries)
+  simple_mode?: {
+    allow_date_ranges: boolean // Allow start/end date selection
+    min_duration_days?: number // Minimum rental period
+    max_duration_days?: number // Maximum rental period
+  }
+  
+  // Meeting mode settings (for consultations, appointments) 
+  meeting_mode?: {
+    duration: number // minutes per appointment
+    buffer: number // minutes between appointments
+    google_calendars?: string[] // For availability checking
+    primary_calendar?: string // Where meetings get created
     send_calendar_invites: boolean // Send calendar invites to customers
     create_meet_links: boolean // Include Google Meet links in events
   }
@@ -201,60 +205,23 @@ export interface BusinessHoursDay {
   end: string // "17:00"
 }
 
-export interface InventoryConfig {
-  enabled: boolean
-  items: InventoryItem[]
-}
-
-export interface InventoryItem {
-  id?: string
-  type: 'bin' | 'equipment' | 'vehicle' | 'material'
-  name: string
-  sku?: string
-  quantity: number
-  metadata?: Record<string, any>
-}
-
 export interface TimeSlot {
   datetime: Date
   available: boolean
-  inventoryAvailable?: number
 }
 
-export interface InventoryBooking {
-  id: string
-  business_id: string
-  widget_id?: string
-  submission_id?: string
-  inventory_item_id: string
-  customer_email?: string
-  customer_name?: string
-  service_type: string
-  start_date: string // YYYY-MM-DD
-  end_date?: string // YYYY-MM-DD for multi-day rentals
-  quantity: number
-  status: 'active' | 'completed' | 'cancelled'
+export interface SchedulingSelection {
+  // For simple mode (date ranges)
+  start_date?: string // YYYY-MM-DD
+  end_date?: string // YYYY-MM-DD
+  
+  // For meeting mode (specific appointment)
+  appointment_datetime?: string // ISO string
+  duration?: number // minutes
+  
+  // Common
+  mode: 'simple' | 'meeting'
   notes?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface MeetingEvent {
-  id: string
-  business_id: string
-  widget_id?: string
-  submission_id?: string
-  google_calendar_id: string
-  google_event_id: string
-  customer_email?: string
-  customer_name?: string
-  service_type: string
-  appointment_datetime: string
-  duration: number
-  meet_link?: string
-  status: 'scheduled' | 'completed' | 'cancelled'
-  created_at: string
-  updated_at: string
 }
 
 // Submission flow configuration

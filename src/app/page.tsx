@@ -73,11 +73,11 @@ export default function Home() {
         <div className="absolute top-8 left-8">
           <span className="text-xl font-bold">Cazno</span>
         </div>
-        <div className="absolute top-8 right-8 flex gap-4 z-20">
-          <Link href="/login" className="text-white hover:text-lime-400 transition-colors font-medium">
+        <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-col sm:flex-row gap-2 sm:gap-4 z-50">
+          <Link href="/login" className="text-white hover:text-lime-400 transition-colors font-medium text-sm sm:text-base px-2 py-1 border border-white/20 rounded">
             Sign In
           </Link>
-          <Link href="/login" className="bg-lime-400 text-black px-4 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">
+          <Link href="/login" className="bg-lime-400 text-black px-3 py-1 sm:px-4 sm:py-2 rounded-full font-medium hover:bg-lime-300 transition-colors text-sm sm:text-base">
             Get Started
           </Link>
         </div>

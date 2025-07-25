@@ -28,12 +28,12 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <span className="text-xl font-bold text-black">Cazno</span>
-              <div className="hidden md:flex items-center space-x-6">
+              <div className="hidden md:flex items-center space-x-4">
                 <a href="#demo" className="text-gray-700 hover:text-black transition-colors">DEMO</a>
                 <a href="#stats" className="text-gray-700 hover:text-black transition-colors">STATS</a>
                 <a href="#about" className="text-gray-700 hover:text-black transition-colors">ABOUT</a>
                 <a href="#testimonials" className="text-gray-700 hover:text-black transition-colors">REVIEWS</a>
-                <Link href="/login" className="text-gray-700 hover:text-black transition-colors font-medium border border-gray-300 px-4 py-2 rounded-full">
+                <Link href="/login" className="bg-white text-black border-2 border-black px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors">
                   SIGN IN
                 </Link>
                 <Link href="/onboarding" className="bg-lime-400 text-black px-6 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">

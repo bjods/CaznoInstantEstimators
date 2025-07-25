@@ -63,10 +63,6 @@ export default async function Dashboard() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
-  if (!userProfiles || userProfiles.length === 0 || !userProfiles[0]?.business_id) {
-    redirect('/setup')
-  }
-
   const userProfile = userProfiles[0]
 
   // Get business info

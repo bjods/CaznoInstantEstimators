@@ -74,10 +74,6 @@ export default async function AnalyticsPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
-  if (!userProfiles || userProfiles.length === 0 || !userProfiles[0]?.business_id) {
-    redirect('/setup')
-  }
-
   const analytics = await getAnalyticsData(userProfiles[0].business_id)
 
   // Prepare chart data

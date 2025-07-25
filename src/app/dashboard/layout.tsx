@@ -17,18 +17,14 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Check if user has a business set up - get the first/primary business
+  // Get user profile if exists (optional - no setup required)
   const { data: userProfiles } = await supabase
     .from('user_profiles')
     .select('business_id, businesses(name)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
-  if (!userProfiles || userProfiles.length === 0 || !userProfiles[0]?.business_id) {
-    redirect('/setup')
-  }
-
-  const userProfile = userProfiles[0]
+  const userProfile = userProfiles?.[0]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,9 +72,11 @@ export default async function DashboardLayout({
             
             <div className="flex items-center space-x-4">
               {/* Business Name */}
-              <div className="hidden sm:block text-sm text-gray-600">
-                <span className="font-medium">{userProfile.businesses?.name}</span>
-              </div>
+              {userProfile?.businesses?.name && (
+                <div className="hidden sm:block text-sm text-gray-600">
+                  <span className="font-medium">{userProfile.businesses.name}</span>
+                </div>
+              )}
               
               {/* User Menu */}
               <div className="flex items-center space-x-3">

@@ -11,7 +11,6 @@ export default function WhyItWorksPage() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="text-xl font-bold text-black">Cazno</Link>
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/" className="text-gray-700 hover:text-black transition-colors">HOME</Link>
               <Link href="/about" className="text-gray-700 hover:text-black transition-colors">ABOUT</Link>
               <Link href="/services" className="text-gray-700 hover:text-black transition-colors">SERVICES</Link>
               <Link href="/why-it-works" className="text-black font-medium">WHY IT WORKS</Link>

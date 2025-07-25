@@ -33,6 +33,9 @@ export default function Home() {
                 <a href="#stats" className="text-gray-700 hover:text-black transition-colors">STATS</a>
                 <a href="#about" className="text-gray-700 hover:text-black transition-colors">ABOUT</a>
                 <a href="#testimonials" className="text-gray-700 hover:text-black transition-colors">REVIEWS</a>
+                <Link href="/login" className="text-gray-700 hover:text-black transition-colors font-medium">
+                  SIGN IN
+                </Link>
                 <Link href="/onboarding" className="bg-lime-400 text-black px-6 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">
                   GET STARTED
                 </Link>
@@ -70,8 +73,8 @@ export default function Home() {
         <div className="absolute top-8 left-8">
           <span className="text-xl font-bold">Cazno</span>
         </div>
-        <div className="absolute top-8 right-8 flex gap-4">
-          <Link href="/login" className="text-white hover:text-lime-400 transition-colors">
+        <div className="absolute top-8 right-8 flex gap-4 z-20">
+          <Link href="/login" className="text-white hover:text-lime-400 transition-colors font-medium">
             Sign In
           </Link>
           <Link href="/login" className="bg-lime-400 text-black px-4 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">

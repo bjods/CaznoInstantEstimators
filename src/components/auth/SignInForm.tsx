@@ -24,7 +24,8 @@ export function SignInForm() {
     if (error) {
       setMessage(error.message)
     } else {
-      setMessage('Check your email for the login link!')
+      // Redirect to dashboard on successful login
+      window.location.href = '/dashboard'
     }
     setLoading(false)
   }

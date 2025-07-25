@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { 
   WrenchScrewdriverIcon,
   UsersIcon,
-  ChartLineUpIcon,
+  ArrowTrendingUpIcon,
   CurrencyDollarIcon,
   DocumentTextIcon,
   ChatBubbleLeftRightIcon,
@@ -155,7 +155,7 @@ export default async function Dashboard() {
               <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.conversionRate}%</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <ChartLineUpIcon className="w-6 h-6 text-purple-600" />
+              <ArrowTrendingUpIcon className="w-6 h-6 text-purple-600" />
             </div>
           </div>
           <div className="mt-4">

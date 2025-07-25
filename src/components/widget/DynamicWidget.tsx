@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { DynamicComponent } from './DynamicComponent'
 import { PersonalInfoStep } from './PersonalInfoStep'
 import { PriceCalculator, CompactPriceDisplay } from './PriceCalculator'
@@ -23,6 +23,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     name: '' // Combined name field for some components
   })
   const [componentState, setComponentState] = useState<any>(null)
+  const quoteCompletionTriggered = useRef(false)
 
   // Get current step name for tracking
   const getCurrentStepName = () => {
@@ -297,8 +298,11 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
   // Show quote step if we're at that position
   if (isQuoteStep && config.quoteStep) {
-    // Trigger completion when quote step is viewed
+    // Trigger completion when quote step is viewed (only once)
     useEffect(() => {
+      if (quoteCompletionTriggered.current) return
+      quoteCompletionTriggered.current = true
+      
       const triggerQuoteCompletion = async () => {
         try {
           // Calculate final pricing if pricing calculator is configured
@@ -325,7 +329,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       }
 
       triggerQuoteCompletion()
-    }, []) // Empty dependency array ensures this runs only once when quote step mounts
+    }, []) // Empty deps - runs once on mount
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* Header with Progress */}

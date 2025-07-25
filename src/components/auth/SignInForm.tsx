@@ -8,6 +8,7 @@ export function SignInForm() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
 
   const supabase = createClient()
 
@@ -30,7 +31,8 @@ export function SignInForm() {
     setLoading(false)
   }
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
     setLoading(true)
     setMessage('')
 
@@ -48,55 +50,88 @@ export function SignInForm() {
   }
 
   return (
-    <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
-      <form
-        className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground"
-        onSubmit={handleSignIn}
-      >
-        <label className="text-md" htmlFor="email">
-          Email
-        </label>
-        <input
-          className="rounded-md px-4 py-2 bg-inherit border mb-6"
-          name="email"
-          onChange={(e) => setEmail(e.target.value)}
-          value={email}
-          placeholder="you@example.com"
-          required
-        />
-        <label className="text-md" htmlFor="password">
-          Password
-        </label>
-        <input
-          className="rounded-md px-4 py-2 bg-inherit border mb-6"
-          type="password"
-          name="password"
-          onChange={(e) => setPassword(e.target.value)}
-          value={password}
-          placeholder="••••••••"
-          required
-        />
+    <div className="w-full">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-black mb-2">
+          {isSignUp ? 'Create your account' : 'Sign in to continue'}
+        </h2>
+        <p className="text-gray-600">
+          {isSignUp 
+            ? 'Get started with your free trial' 
+            : 'Welcome back to your dashboard'
+          }
+        </p>
+      </div>
+
+      <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            Email Address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@company.com"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-400 focus:border-transparent outline-none transition-colors text-black"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-400 focus:border-transparent outline-none transition-colors text-black"
+            required
+          />
+        </div>
+
         <button
           type="submit"
-          className="bg-green-700 rounded-md px-4 py-2 text-foreground mb-2 disabled:opacity-50"
           disabled={loading}
+          className="w-full bg-lime-400 text-black font-bold py-3 px-4 rounded-lg hover:bg-lime-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading 
+            ? (isSignUp ? 'Creating Account...' : 'Signing In...') 
+            : (isSignUp ? 'Create Account' : 'Sign In')
+          }
         </button>
-        <button
-          type="button"
-          onClick={handleSignUp}
-          className="border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2 disabled:opacity-50"
-          disabled={loading}
-        >
-          {loading ? 'Signing Up...' : 'Sign Up'}
-        </button>
+
         {message && (
-          <div className="mt-4 p-4 bg-foreground/10 border border-foreground/20 rounded-md">
+          <div className={`p-4 rounded-lg text-sm ${
+            message.includes('Check your email') 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
             {message}
           </div>
         )}
       </form>
+
+      <div className="mt-8 text-center">
+        <button
+          onClick={() => {
+            setIsSignUp(!isSignUp)
+            setMessage('')
+          }}
+          className="text-gray-600 hover:text-black transition-colors"
+        >
+          {isSignUp 
+            ? 'Already have an account? Sign in here' 
+            : "Don't have an account? Sign up for free"
+          }
+        </button>
+      </div>
     </div>
   )
 }

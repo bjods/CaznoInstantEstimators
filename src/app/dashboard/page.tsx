@@ -1,182 +1,299 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
-export default async function DashboardPage() {
+async function getDashboardData(businessId: string) {
   const supabase = createClient()
-
-  // Get user's businesses and widgets for dashboard stats
-  const { data: { user } } = await supabase.auth.getUser()
   
-  // For now, we'll create placeholder stats
-  // TODO: Once we set up business linking, we'll fetch real data
-  const stats = {
-    widgets: 0,
-    leads: 0,
-    conversions: 0,
-    revenue: 0
+  // Get widgets
+  const { data: widgets } = await supabase
+    .from('widgets')
+    .select('*')
+    .eq('business_id', businessId)
+  
+  // Get submissions (leads)
+  const { data: submissions } = await supabase
+    .from('submissions')
+    .select('*')
+    .eq('business_id', businessId)
+  
+  // Get recent submissions
+  const { data: recentSubmissions } = await supabase
+    .from('submissions')
+    .select('*')
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false })
+    .limit(5)
+  
+  // Calculate stats
+  const totalWidgets = widgets?.length || 0
+  const totalLeads = submissions?.length || 0
+  const completedLeads = submissions?.filter(s => s.completion_status === 'complete').length || 0
+  const conversionRate = totalLeads > 0 ? Math.round((completedLeads / totalLeads) * 100) : 0
+  
+  // Calculate estimated revenue (using average of $2500 per completed lead)
+  const estimatedRevenue = completedLeads * 2500
+  
+  return {
+    widgets,
+    submissions,
+    recentSubmissions,
+    stats: {
+      totalWidgets,
+      totalLeads,
+      completedLeads,
+      conversionRate,
+      estimatedRevenue
+    }
   }
+}
+
+export default async function Dashboard() {
+  const supabase = createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Get user's business
+  const { data: userProfile } = await supabase
+    .from('user_profiles')
+    .select('business_id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!userProfile?.business_id) {
+    redirect('/setup')
+  }
+
+  // Get business info
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('id', userProfile.business_id)
+    .single()
+
+  const dashboardData = await getDashboardData(userProfile.business_id)
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your widgets.</p>
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-r from-lime-400 to-green-500 rounded-2xl p-8 text-black">
+        <h1 className="text-3xl font-bold mb-2">
+          Welcome back, {business?.name}! 👋
+        </h1>
+        <p className="text-lg opacity-90">
+          Here's what's happening with your lead generation today.
+        </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Active Widgets</p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalWidgets}</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Active Widgets</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.widgets}</p>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">🛠️</span>
             </div>
+          </div>
+          <div className="mt-4">
+            {dashboardData.stats.totalWidgets === 0 ? (
+              <Link href="/dashboard/widgets" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                Create your first widget →
+              </Link>
+            ) : (
+              <Link href="/dashboard/widgets" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                Manage widgets →
+              </Link>
+            )}
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Leads</p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalLeads}</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Leads</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.leads}</p>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">👥</span>
             </div>
+          </div>
+          <div className="mt-4">
+            <Link href="/dashboard/leads" className="text-sm text-green-600 hover:text-green-800 font-medium">
+              View all leads →
+            </Link>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.conversionRate}%</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Conversions</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.conversions}</p>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">📈</span>
             </div>
+          </div>
+          <div className="mt-4">
+            <Link href="/dashboard/analytics" className="text-sm text-purple-600 hover:text-purple-800 font-medium">
+              View analytics →
+            </Link>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-              </div>
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Est. Revenue</p>
+              <p className="text-3xl font-bold text-gray-900">${dashboardData.stats.estimatedRevenue.toLocaleString()}</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Est. Revenue</p>
-              <p className="text-2xl font-semibold text-gray-900">${stats.revenue.toLocaleString()}</p>
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">💰</span>
             </div>
+          </div>
+          <div className="mt-4">
+            <span className="text-sm text-gray-500">Based on completed leads</span>
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            href="/dashboard/widgets/new"
-            className="flex items-center p-4 border-2 border-dashed border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-          >
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Activity */}
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Recent Leads</h2>
+            <Link href="/dashboard/leads" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              View all
+            </Link>
+          </div>
+          
+          {dashboardData.recentSubmissions && dashboardData.recentSubmissions.length > 0 ? (
+            <div className="space-y-4">
+              {dashboardData.recentSubmissions.map((submission) => (
+                <div key={submission.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-lime-400 rounded-full flex items-center justify-center">
+                      <span className="text-black font-bold text-sm">
+                        {submission.full_name?.charAt(0) || submission.email?.charAt(0) || '?'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {submission.full_name || submission.email || 'Anonymous'}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(submission.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                      submission.completion_status === 'complete' 
+                        ? 'bg-green-100 text-green-800'
+                        : submission.completion_status === 'in_progress'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {submission.completion_status}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-900">Create Widget</p>
-              <p className="text-xs text-gray-500">Set up a new estimator</p>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4">📝</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
+              <p className="text-gray-500 mb-4">Your leads will appear here once customers submit forms.</p>
+              <Link href="/dashboard/widgets" className="inline-flex items-center px-4 py-2 bg-lime-400 text-black rounded-lg hover:bg-lime-300 transition-colors font-medium">
+                Create a widget to get started
+              </Link>
             </div>
-          </Link>
+          )}
+        </div>
 
-          <Link
-            href="/dashboard/leads"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-green-100 rounded-md flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+          
+          <div className="space-y-4">
+            <Link href="/dashboard/widgets" className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg">🛠️</span>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Create New Widget</h3>
+                  <p className="text-sm text-gray-500">Add a new quote calculator to your website</p>
+                </div>
               </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-900">View Leads</p>
-              <p className="text-xs text-gray-500">Manage submissions</p>
-            </div>
-          </Link>
+            </Link>
 
-          <Link
-            href="/dashboard/analytics"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-purple-100 rounded-md flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+            <Link href="/dashboard/leads" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg">👥</span>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Manage Leads</h3>
+                  <p className="text-sm text-gray-500">View and follow up with your prospects</p>
+                </div>
               </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-900">View Analytics</p>
-              <p className="text-xs text-gray-500">Track performance</p>
-            </div>
-          </Link>
+            </Link>
+
+            <Link href="/dashboard/analytics" className="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg">📊</span>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">View Analytics</h3>
+                  <p className="text-sm text-gray-500">Track performance and conversions</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/dashboard/settings" className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg">⚙️</span>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Business Settings</h3>
+                  <p className="text-sm text-gray-500">Update your profile and preferences</p>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Getting Started */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-100">
-        <div className="flex items-start space-x-4">
-          <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">Ready to get started?</h3>
-            <p className="text-gray-600 mt-1">
-              Create your first widget to start capturing leads and growing your business.
+      {/* Getting Started Section - Only show if no widgets */}
+      {dashboardData.stats.totalWidgets === 0 && (
+        <div className="bg-gradient-to-r from-gray-900 to-black rounded-2xl p-8 text-white">
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-bold mb-4">🚀 Ready to capture your first lead?</h2>
+            <p className="text-gray-300 mb-6">
+              Create your first instant quote widget and start converting website visitors into paying customers. 
+              It takes less than 5 minutes to set up.
             </p>
-            <div className="mt-4">
-              <Link
-                href="/dashboard/widgets/new"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/dashboard/widgets" className="inline-flex items-center px-6 py-3 bg-lime-400 text-black rounded-lg hover:bg-lime-300 transition-colors font-bold">
                 Create Your First Widget
-                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+              </Link>
+              <Link href="/case-studies" className="inline-flex items-center px-6 py-3 border border-white text-white rounded-lg hover:bg-white hover:text-black transition-colors font-medium">
+                See Success Stories
               </Link>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

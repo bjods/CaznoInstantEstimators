@@ -33,11 +33,8 @@ export default function Home() {
                 <a href="#stats" className="text-gray-700 hover:text-black transition-colors">STATS</a>
                 <a href="#about" className="text-gray-700 hover:text-black transition-colors">ABOUT</a>
                 <a href="#testimonials" className="text-gray-700 hover:text-black transition-colors">REVIEWS</a>
-                <Link href="/login" className="bg-white text-black border-2 border-black px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors">
+                <Link href="/login" className="text-gray-700 hover:text-black transition-colors">
                   SIGN IN
-                </Link>
-                <Link href="/onboarding" className="bg-lime-400 text-black px-6 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">
-                  GET STARTED
                 </Link>
               </div>
             </div>
@@ -73,12 +70,9 @@ export default function Home() {
         <div className="absolute top-8 left-8">
           <span className="text-xl font-bold">Cazno</span>
         </div>
-        <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-col sm:flex-row gap-2 sm:gap-4 z-50">
+        <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-50">
           <Link href="/login" className="bg-white text-black border-2 border-black px-4 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors text-sm sm:text-base">
             SIGN IN
-          </Link>
-          <Link href="/onboarding" className="bg-lime-400 text-black px-3 py-1 sm:px-4 sm:py-2 rounded-full font-medium hover:bg-lime-300 transition-colors text-sm sm:text-base">
-            Get Started
           </Link>
         </div>
 
@@ -92,10 +86,7 @@ export default function Home() {
             focused on growth.
           </h1>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/login" className="inline-block border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors transform hover:scale-105">
-              SIGN IN
-            </Link>
+          <div className="flex justify-center items-center">
             <Link href="/onboarding" className="inline-block bg-lime-400 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-lime-300 transition-colors transform hover:scale-105">
               GET STARTED
             </Link>

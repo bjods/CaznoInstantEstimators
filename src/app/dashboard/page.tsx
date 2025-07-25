@@ -80,13 +80,13 @@ export default async function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-lime-400 to-green-500 rounded-2xl p-8 text-black">
-        <h1 className="text-3xl font-bold mb-2">
-          Welcome back, {business?.name}! 👋
+      {/* Dashboard Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Dashboard Overview
         </h1>
-        <p className="text-lg opacity-90">
-          Here's what's happening with your lead generation today.
+        <p className="text-gray-600">
+          Track your lead generation performance and view detailed metrics.
         </p>
       </div>
 
@@ -103,15 +103,9 @@ export default async function Dashboard() {
             </div>
           </div>
           <div className="mt-4">
-            {dashboardData.stats.totalWidgets === 0 ? (
-              <Link href="/dashboard/widgets" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                Create your first widget →
-              </Link>
-            ) : (
-              <Link href="/dashboard/widgets" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                Manage widgets →
-              </Link>
-            )}
+            <Link href="/dashboard/widgets" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              View widgets →
+            </Link>
           </div>
         </div>
 
@@ -212,39 +206,24 @@ export default async function Dashboard() {
             <div className="text-center py-8">
               <div className="text-6xl mb-4">📝</div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
-              <p className="text-gray-500 mb-4">Your leads will appear here once customers submit forms.</p>
-              <Link href="/dashboard/widgets" className="inline-flex items-center px-4 py-2 bg-lime-400 text-black rounded-lg hover:bg-lime-300 transition-colors font-medium">
-                Create a widget to get started
-              </Link>
+              <p className="text-gray-500">Your leads will appear here once your widgets start receiving submissions.</p>
             </div>
           )}
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Access */}
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Access</h2>
           
           <div className="space-y-4">
-            <Link href="/dashboard/widgets" className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg">🛠️</span>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Create New Widget</h3>
-                  <p className="text-sm text-gray-500">Add a new quote calculator to your website</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/dashboard/leads" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+            <Link href="/dashboard/submissions" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg">👥</span>
+                  <span className="text-white text-lg">📝</span>
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Manage Leads</h3>
-                  <p className="text-sm text-gray-500">View and follow up with your prospects</p>
+                  <h3 className="font-medium text-gray-900">View All Submissions</h3>
+                  <p className="text-sm text-gray-500">See detailed lead information and status</p>
                 </div>
               </div>
             </Link>
@@ -255,20 +234,32 @@ export default async function Dashboard() {
                   <span className="text-white text-lg">📊</span>
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">View Analytics</h3>
-                  <p className="text-sm text-gray-500">Track performance and conversions</p>
+                  <h3 className="font-medium text-gray-900">Analytics & Charts</h3>
+                  <p className="text-sm text-gray-500">Detailed performance metrics and trends</p>
                 </div>
               </div>
             </Link>
 
-            <Link href="/dashboard/settings" className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <Link href="/dashboard/contact" className="block p-4 bg-lime-50 rounded-lg hover:bg-lime-100 transition-colors">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg">⚙️</span>
+                <div className="w-10 h-10 bg-lime-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg">💬</span>
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Business Settings</h3>
-                  <p className="text-sm text-gray-500">Update your profile and preferences</p>
+                  <h3 className="font-medium text-gray-900">Contact Support</h3>
+                  <p className="text-sm text-gray-500">Get help or request new features</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/dashboard/widgets" className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg">🛠️</span>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Widget Status</h3>
+                  <p className="text-sm text-gray-500">View your active calculators</p>
                 </div>
               </div>
             </Link>
@@ -276,26 +267,6 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      {/* Getting Started Section - Only show if no widgets */}
-      {dashboardData.stats.totalWidgets === 0 && (
-        <div className="bg-gradient-to-r from-gray-900 to-black rounded-2xl p-8 text-white">
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold mb-4">🚀 Ready to capture your first lead?</h2>
-            <p className="text-gray-300 mb-6">
-              Create your first instant quote widget and start converting website visitors into paying customers. 
-              It takes less than 5 minutes to set up.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/dashboard/widgets" className="inline-flex items-center px-6 py-3 bg-lime-400 text-black rounded-lg hover:bg-lime-300 transition-colors font-bold">
-                Create Your First Widget
-              </Link>
-              <Link href="/case-studies" className="inline-flex items-center px-6 py-3 border border-white text-white rounded-lg hover:bg-white hover:text-black transition-colors font-medium">
-                See Success Stories
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

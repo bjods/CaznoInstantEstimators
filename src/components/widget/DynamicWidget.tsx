@@ -256,6 +256,40 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   const isQuoteStep = hasQuoteStep && currentStep === config.steps.length
   const isLastStep = isQuoteStep || (!hasQuoteStep && isLastConfigStep)
 
+  // Trigger quote completion when reaching quote step
+  useEffect(() => {
+    if (!isQuoteStep || !config.quoteStep) return
+    if (quoteCompletionTriggered.current) return
+    quoteCompletionTriggered.current = true
+    
+    const triggerQuoteCompletion = async () => {
+      try {
+        // Calculate final pricing if pricing calculator is configured
+        let pricingBreakdown = null
+        if (config.pricingCalculator) {
+          const { calculatePrice } = await import('@/lib/pricingCalculator')
+          pricingBreakdown = await calculatePrice(formData, config.pricingCalculator)
+        }
+
+        // Complete the submission for quote viewing
+        const result = await completeSubmission('quote_viewed', {
+          pricing: pricingBreakdown,
+          additionalData: formData
+        })
+
+        if (result.success) {
+          console.log('Quote completion triggered successfully:', result.data)
+        } else {
+          console.error('Failed to trigger quote completion:', result.error)
+        }
+      } catch (error) {
+        console.error('Error triggering quote completion:', error)
+      }
+    }
+
+    triggerQuoteCompletion()
+  }, [isQuoteStep, config.quoteStep, config.pricingCalculator, formData, completeSubmission])
+
   // Show personal info step
   if (currentStep === -1) {
     return (
@@ -298,38 +332,6 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
   // Show quote step if we're at that position
   if (isQuoteStep && config.quoteStep) {
-    // Trigger completion when quote step is viewed (only once)
-    useEffect(() => {
-      if (quoteCompletionTriggered.current) return
-      quoteCompletionTriggered.current = true
-      
-      const triggerQuoteCompletion = async () => {
-        try {
-          // Calculate final pricing if pricing calculator is configured
-          let pricingBreakdown = null
-          if (config.pricingCalculator) {
-            const { calculatePrice } = await import('@/lib/pricingCalculator')
-            pricingBreakdown = await calculatePrice(formData, config.pricingCalculator)
-          }
-
-          // Complete the submission for quote viewing
-          const result = await completeSubmission('quote_viewed', {
-            pricing: pricingBreakdown,
-            additionalData: formData
-          })
-
-          if (result.success) {
-            console.log('Quote completion triggered successfully:', result.data)
-          } else {
-            console.error('Failed to trigger quote completion:', result.error)
-          }
-        } catch (error) {
-          console.error('Error triggering quote completion:', error)
-        }
-      }
-
-      triggerQuoteCompletion()
-    }, []) // Empty deps - runs once on mount
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* Header with Progress */}

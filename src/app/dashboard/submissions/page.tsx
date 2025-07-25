@@ -33,7 +33,9 @@ export default async function SubmissionsPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
-  const submissions = await getSubmissions(userProfiles[0].business_id)
+  const submissions = userProfiles?.[0]?.business_id 
+    ? await getSubmissions(userProfiles[0].business_id)
+    : []
 
   return (
     <div className="space-y-6">

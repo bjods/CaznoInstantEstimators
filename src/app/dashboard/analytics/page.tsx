@@ -74,7 +74,18 @@ export default async function AnalyticsPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
-  const analytics = await getAnalyticsData(userProfiles[0].business_id)
+  const analytics = userProfiles?.[0]?.business_id 
+    ? await getAnalyticsData(userProfiles[0].business_id)
+    : {
+        submissions: [],
+        widgets: [],
+        submissionsByDay: {},
+        submissionsByMonth: {},
+        submissionsByStatus: { complete: 0, in_progress: 0, abandoned: 0 },
+        revenueByMonth: {},
+        totalRevenue: 0,
+        conversionRate: '0'
+      }
 
   // Prepare chart data
   const last7Days = Array.from({ length: 7 }, (_, i) => {

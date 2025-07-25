@@ -63,16 +63,33 @@ export default async function Dashboard() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
-  const userProfile = userProfiles[0]
+  const userProfile = userProfiles?.[0]
 
-  // Get business info
-  const { data: business } = await supabase
-    .from('businesses')
-    .select('*')
-    .eq('id', userProfile.business_id)
-    .single()
+  // Get business info and dashboard data only if user has a profile
+  let business = null
+  let dashboardData = {
+    widgets: [],
+    submissions: [],
+    recentSubmissions: [],
+    stats: {
+      totalWidgets: 0,
+      totalLeads: 0,
+      completedLeads: 0,
+      conversionRate: 0,
+      estimatedRevenue: 0
+    }
+  }
 
-  const dashboardData = await getDashboardData(userProfile.business_id)
+  if (userProfile?.business_id) {
+    const { data: businessData } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('id', userProfile.business_id)
+      .single()
+    
+    business = businessData
+    dashboardData = await getDashboardData(userProfile.business_id)
+  }
 
   return (
     <div className="space-y-8">

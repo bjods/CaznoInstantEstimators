@@ -69,7 +69,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Logo and Auth buttons at top */}
+        {/* Logo and Auth buttons at top - FORCE DEPLOY */}
         <div className="absolute top-8 left-8">
           <span className="text-xl font-bold">Cazno</span>
         </div>

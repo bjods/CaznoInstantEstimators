@@ -1,6 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { 
+  WrenchScrewdriverIcon,
+  UsersIcon,
+  ChartLineUpIcon,
+  CurrencyDollarIcon,
+  DocumentTextIcon,
+  ChatBubbleLeftRightIcon,
+  ChartPieIcon
+} from '@heroicons/react/24/outline'
 
 async function getDashboardData(businessId: string) {
   const supabase = createClient()
@@ -112,7 +121,7 @@ export default async function Dashboard() {
               <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalWidgets}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">🛠️</span>
+              <WrenchScrewdriverIcon className="w-6 h-6 text-blue-600" />
             </div>
           </div>
           <div className="mt-4">
@@ -129,7 +138,7 @@ export default async function Dashboard() {
               <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalLeads}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">👥</span>
+              <UsersIcon className="w-6 h-6 text-green-600" />
             </div>
           </div>
           <div className="mt-4">
@@ -146,7 +155,7 @@ export default async function Dashboard() {
               <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.conversionRate}%</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">📈</span>
+              <ChartLineUpIcon className="w-6 h-6 text-purple-600" />
             </div>
           </div>
           <div className="mt-4">
@@ -163,7 +172,7 @@ export default async function Dashboard() {
               <p className="text-3xl font-bold text-gray-900">${dashboardData.stats.estimatedRevenue.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">💰</span>
+              <CurrencyDollarIcon className="w-6 h-6 text-yellow-600" />
             </div>
           </div>
           <div className="mt-4">
@@ -217,7 +226,9 @@ export default async function Dashboard() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <div className="text-6xl mb-4">📝</div>
+              <div className="w-16 h-16 bg-gray-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                <DocumentTextIcon className="w-8 h-8 text-gray-400" />
+              </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
               <p className="text-gray-500">Your leads will appear here once your widgets start receiving submissions.</p>
             </div>
@@ -232,7 +243,7 @@ export default async function Dashboard() {
             <Link href="/dashboard/submissions" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg">📝</span>
+                  <DocumentTextIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">View All Submissions</h3>
@@ -244,7 +255,7 @@ export default async function Dashboard() {
             <Link href="/dashboard/analytics" className="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg">📊</span>
+                  <ChartPieIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">Analytics & Charts</h3>
@@ -256,7 +267,7 @@ export default async function Dashboard() {
             <Link href="/dashboard/contact" className="block p-4 bg-lime-50 rounded-lg hover:bg-lime-100 transition-colors">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-lime-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg">💬</span>
+                  <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">Contact Support</h3>
@@ -268,7 +279,7 @@ export default async function Dashboard() {
             <Link href="/dashboard/widgets" className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg">🛠️</span>
+                  <WrenchScrewdriverIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">Widget Status</h3>

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { WrenchScrewdriverIcon } from '@heroicons/react/24/outline'
 
 async function getAnalyticsData(businessId: string) {
   const supabase = createClient()
@@ -309,7 +310,9 @@ export default async function AnalyticsPage() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <div className="text-4xl mb-2">🛠️</div>
+              <div className="w-12 h-12 bg-gray-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                <WrenchScrewdriverIcon className="w-6 h-6 text-gray-400" />
+              </div>
               <p className="text-gray-500 text-sm">No widgets configured yet</p>
             </div>
           )}

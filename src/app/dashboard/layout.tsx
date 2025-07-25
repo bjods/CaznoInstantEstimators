@@ -1,6 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { 
+  ChartBarIcon,
+  WrenchScrewdriverIcon,
+  UsersIcon,
+  ChartPieIcon,
+  Cog6ToothIcon
+} from '@heroicons/react/24/outline'
 
 export default async function DashboardLayout({
   children,
@@ -39,33 +46,38 @@ export default async function DashboardLayout({
               <div className="hidden md:flex ml-10 space-x-1">
                 <Link
                   href="/dashboard"
-                  className="text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
-                  📊 Dashboard
+                  <ChartBarIcon className="w-4 h-4" />
+                  <span>Dashboard</span>
                 </Link>
                 <Link
                   href="/dashboard/widgets"
-                  className="text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
-                  🛠️ Widgets
+                  <WrenchScrewdriverIcon className="w-4 h-4" />
+                  <span>Widgets</span>
                 </Link>
                 <Link
                   href="/dashboard/leads"
-                  className="text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
-                  👥 Leads
+                  <UsersIcon className="w-4 h-4" />
+                  <span>Leads</span>
                 </Link>
                 <Link
                   href="/dashboard/analytics"
-                  className="text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
-                  📈 Analytics
+                  <ChartPieIcon className="w-4 h-4" />
+                  <span>Analytics</span>
                 </Link>
                 <Link
                   href="/dashboard/settings"
-                  className="text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
-                  ⚙️ Settings
+                  <Cog6ToothIcon className="w-4 h-4" />
+                  <span>Settings</span>
                 </Link>
               </div>
             </div>
@@ -116,33 +128,38 @@ export default async function DashboardLayout({
           <div className="px-4 py-3 space-y-1">
             <Link
               href="/dashboard"
-              className="block text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              📊 Dashboard
+              <ChartBarIcon className="w-4 h-4" />
+              <span>Dashboard</span>
             </Link>
             <Link
               href="/dashboard/widgets"
-              className="block text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              🛠️ Widgets
+              <WrenchScrewdriverIcon className="w-4 h-4" />
+              <span>Widgets</span>
             </Link>
             <Link
               href="/dashboard/leads"
-              className="block text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              👥 Leads
+              <UsersIcon className="w-4 h-4" />
+              <span>Leads</span>
             </Link>
             <Link
               href="/dashboard/analytics"
-              className="block text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              📈 Analytics
+              <ChartPieIcon className="w-4 h-4" />
+              <span>Analytics</span>
             </Link>
             <Link
               href="/dashboard/settings"
-              className="block text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              ⚙️ Settings
+              <Cog6ToothIcon className="w-4 h-4" />
+              <span>Settings</span>
             </Link>
           </div>
         </div>

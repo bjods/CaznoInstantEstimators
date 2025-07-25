@@ -2,6 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { 
+  EnvelopeIcon,
+  ClockIcon,
+  CalendarDaysIcon
+} from '@heroicons/react/24/outline'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -205,7 +210,7 @@ export default function ContactPage() {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-lime-100 rounded-lg flex items-center justify-center">
-                  <span className="text-lime-600">📧</span>
+                  <EnvelopeIcon className="w-5 h-5 text-lime-600" />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-900">Email Support</div>
@@ -214,7 +219,7 @@ export default function ContactPage() {
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <span className="text-blue-600">⏱️</span>
+                  <ClockIcon className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-900">Response Time</div>
@@ -223,7 +228,7 @@ export default function ContactPage() {
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <span className="text-green-600">🕒</span>
+                  <CalendarDaysIcon className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-900">Support Hours</div>

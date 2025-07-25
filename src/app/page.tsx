@@ -36,6 +36,9 @@ export default function Home() {
                 <Link href="/login" className="text-gray-700 hover:text-black transition-colors">
                   SIGN IN
                 </Link>
+                <Link href="/onboarding" className="bg-lime-400 text-black px-6 py-2 rounded-full font-medium hover:bg-lime-300 transition-colors">
+                  GET STARTED
+                </Link>
               </div>
             </div>
           </div>

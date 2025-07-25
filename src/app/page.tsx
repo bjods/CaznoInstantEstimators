@@ -29,10 +29,10 @@ export default function Home() {
             <div className="flex justify-between items-center h-16">
               <span className="text-xl font-bold text-black">Cazno</span>
               <div className="hidden md:flex items-center space-x-4">
-                <a href="#demo" className="text-gray-700 hover:text-black transition-colors">DEMO</a>
-                <a href="#stats" className="text-gray-700 hover:text-black transition-colors">STATS</a>
-                <a href="#about" className="text-gray-700 hover:text-black transition-colors">ABOUT</a>
-                <a href="#testimonials" className="text-gray-700 hover:text-black transition-colors">REVIEWS</a>
+                <Link href="/about" className="text-gray-700 hover:text-black transition-colors">ABOUT</Link>
+                <Link href="/services" className="text-gray-700 hover:text-black transition-colors">SERVICES</Link>
+                <Link href="/why-it-works" className="text-gray-700 hover:text-black transition-colors">WHY IT WORKS</Link>
+                <Link href="/case-studies" className="text-gray-700 hover:text-black transition-colors">CASE STUDIES</Link>
                 <Link href="/login" className="text-gray-700 hover:text-black transition-colors">
                   SIGN IN
                 </Link>

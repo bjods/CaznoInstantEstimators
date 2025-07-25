@@ -17,16 +17,18 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Check if user has a business set up
-  const { data: userProfile } = await supabase
+  // Check if user has a business set up - get the first/primary business
+  const { data: userProfiles } = await supabase
     .from('user_profiles')
     .select('business_id, businesses(name)')
     .eq('user_id', user.id)
-    .single()
+    .order('created_at', { ascending: true })
 
-  if (!userProfile?.business_id) {
+  if (!userProfiles || userProfiles.length === 0 || !userProfiles[0]?.business_id) {
     redirect('/setup')
   }
+
+  const userProfile = userProfiles[0]
 
   return (
     <div className="min-h-screen bg-gray-50">

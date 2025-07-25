@@ -56,16 +56,18 @@ export default async function Dashboard() {
     redirect('/login')
   }
 
-  // Get user's business
-  const { data: userProfile } = await supabase
+  // Get user's business - get the first/primary business
+  const { data: userProfiles } = await supabase
     .from('user_profiles')
     .select('business_id')
     .eq('user_id', user.id)
-    .single()
+    .order('created_at', { ascending: true })
 
-  if (!userProfile?.business_id) {
+  if (!userProfiles || userProfiles.length === 0 || !userProfiles[0]?.business_id) {
     redirect('/setup')
   }
+
+  const userProfile = userProfiles[0]
 
   // Get business info
   const { data: business } = await supabase

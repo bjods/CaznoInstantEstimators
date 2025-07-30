@@ -48,7 +48,7 @@ async function getDashboardData(businessId: string) {
   }, 0)
   
   // Calculate leads by source (top 3)
-  const sourceCount = {}
+  const sourceCount: Record<string, number> = {}
   submissions?.forEach(submission => {
     const source = submission.source || 'Direct'
     sourceCount[source] = (sourceCount[source] || 0) + 1
@@ -97,10 +97,9 @@ export default async function Dashboard() {
     recentSubmissions: [],
     stats: {
       totalWidgets: 0,
-      totalLeads: 0,
-      completedLeads: 0,
-      conversionRate: 0,
-      estimatedRevenue: 0
+      thisWeekLeads: 0,
+      thisWeekEstimatedValue: 0,
+      topSources: [] as { source: string; count: number }[]
     }
   }
 

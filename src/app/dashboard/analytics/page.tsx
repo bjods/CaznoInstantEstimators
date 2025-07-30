@@ -20,11 +20,11 @@ async function getAnalyticsData(businessId: string) {
     .eq('business_id', businessId)
   
   // Process data for estimator-focused analytics
-  const estimatesByDay = {}
-  const estimatesByMonth = {}
-  const estimatesByService = {}
-  const afterHoursSubmissions = []
-  const businessHoursSubmissions = []
+  const estimatesByDay: Record<string, number> = {}
+  const estimatesByMonth: Record<string, number> = {}
+  const estimatesByService: Record<string, { count: number; value: number }> = {}
+  const afterHoursSubmissions: any[] = []
+  const businessHoursSubmissions: any[] = []
   
   submissions?.forEach(submission => {
     const date = new Date(submission.created_at)
@@ -217,28 +217,31 @@ export default async function AnalyticsPage() {
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Estimates by Service Type</h2>
           <div className="space-y-4">
-            {Object.entries(analytics.estimatesByService).map(([service, data]) => (
-              <div key={service} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">{service}</h3>
-                  <span className="text-sm text-gray-500">{data.count} estimates</span>
+            {Object.entries(analytics.estimatesByService).map(([service, data]) => {
+              const serviceData = data as { count: number; value: number }
+              return (
+                <div key={service} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-gray-900">{service}</h3>
+                    <span className="text-sm text-gray-500">{serviceData.count} estimates</span>
+                  </div>
+                  <div className="text-xs text-gray-600 mb-2">
+                    Total Value: ${serviceData.value.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-600 mb-2">
+                    Avg Value: ${Math.round(serviceData.value / serviceData.count || 0).toLocaleString()}
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full"
+                      style={{ 
+                        width: `${analytics.submissions.length ? (serviceData.count / analytics.submissions.length) * 100 : 0}%` 
+                      }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-600 mb-2">
-                  Total Value: ${data.value.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-600 mb-2">
-                  Avg Value: ${Math.round(data.value / data.count || 0).toLocaleString()}
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full"
-                    style={{ 
-                      width: `${analytics.submissions.length ? (data.count / analytics.submissions.length) * 100 : 0}%` 
-                    }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+              )
+            })}
             {Object.keys(analytics.estimatesByService).length === 0 && (
               <div className="text-center py-8">
                 <p className="text-gray-500 text-sm">No service data available yet</p>

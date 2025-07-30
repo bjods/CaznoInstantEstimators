@@ -1,5 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { 
+  createDomainValidationMiddleware,
+  extractDomain,
+  getClientIp,
+  logSecurityEvent 
+} from '@/lib/security/domain-validation'
+import { createRateLimitMiddleware } from '@/lib/security/rate-limiting'
+import { getAPISecurityHeaders } from '@/lib/security/security-headers'
+import { z } from 'zod'
+
+// Validation schema for complete submission requests
+const completeSubmissionSchema = z.object({
+  submissionId: z.string().uuid('Invalid submission ID format'),
+  trigger: z.enum(['quote_viewed', 'meeting_booked', 'cta_clicked', 'form_submitted']),
+  pricing: z.any().optional(),
+  appointmentSlot: z.any().optional(),
+  ctaButtonId: z.string().optional(),
+  additionalData: z.record(z.any()).optional()
+})
 
 interface CompleteSubmissionRequest {
   submissionId: string
@@ -10,15 +29,17 @@ interface CompleteSubmissionRequest {
   additionalData?: Record<string, any>
 }
 
-// Handle CORS preflight requests
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders })
+export async function OPTIONS(request: NextRequest) {
+  // For this endpoint, we can't validate domain without submission ID
+  // Return basic security headers
+  return NextResponse.json({}, { 
+    headers: {
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Widget-Key',
+      'Access-Control-Max-Age': '86400',
+      ...getAPISecurityHeaders()
+    }
+  })
 }
 
 // TODO: Email formatting and queueing functions removed for now
@@ -27,7 +48,35 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
-    const body: CompleteSubmissionRequest = await request.json()
+    
+    // Parse and validate request body
+    let body: CompleteSubmissionRequest
+    try {
+      const rawBody = await request.json()
+      body = completeSubmissionSchema.parse(rawBody)
+    } catch (error) {
+      const domain = extractDomain(request)
+      const ip = getClientIp(request)
+      
+      // Log validation failure
+      await logSecurityEvent({
+        eventType: 'input_validation_failed',
+        widgetId: 'unknown',
+        sourceDomain: domain || undefined,
+        sourceIp: ip || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+        requestDetails: {
+          error: error instanceof z.ZodError ? error.errors : 'Invalid JSON',
+          endpoint: '/api/submissions/complete'
+        },
+        severity: 'medium'
+      })
+      
+      return NextResponse.json(
+        { success: false, error: 'Invalid request data' },
+        { status: 400 }
+      )
+    }
     
     const { submissionId, trigger, pricing, appointmentSlot, ctaButtonId, additionalData } = body
     
@@ -49,7 +98,7 @@ export async function POST(request: NextRequest) {
     if (submissionError || !submission) {
       return NextResponse.json(
         { success: false, error: 'Submission not found' },
-        { status: 404, headers: corsHeaders }
+        { status: 404 }
       )
     }
 
@@ -63,7 +112,52 @@ export async function POST(request: NextRequest) {
     if (widgetError || !widget) {
       return NextResponse.json(
         { success: false, error: 'Widget not found' },
-        { status: 404, headers: corsHeaders }
+        { status: 404 }
+      )
+    }
+
+    // Apply rate limiting first (fast check)
+    const domain = extractDomain(request)
+    const ip = getClientIp(request)
+    
+    const rateLimitMiddleware = createRateLimitMiddleware()
+    const rateLimit = rateLimitMiddleware(ip, domain)
+    
+    if (!rateLimit.allowed) {
+      await logSecurityEvent({
+        eventType: 'rate_limit_exceeded',
+        widgetId: submission.widget_id,
+        businessId: widget?.business_id,
+        sourceDomain: domain || undefined,
+        sourceIp: ip || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+        requestDetails: {
+          error: rateLimit.error,
+          endpoint: '/api/submissions/complete'
+        },
+        severity: 'medium'
+      })
+      
+      return NextResponse.json(
+        { success: false, error: rateLimit.error || 'Too many requests' },
+        { 
+          status: 429,
+          headers: rateLimit.headers
+        }
+      )
+    }
+
+    // Apply domain validation middleware now that we have widget ID
+    const domainValidation = createDomainValidationMiddleware()
+    const validation = await domainValidation(request, submission.widget_id)
+    
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { success: false, error: validation.error?.message || 'Access denied' },
+        { 
+          status: validation.error?.status || 403,
+          headers: { ...validation.headers, ...rateLimit.headers }
+        }
       )
     }
 
@@ -141,7 +235,14 @@ export async function POST(request: NextRequest) {
       console.error('Failed to update submission:', updateError)
       return NextResponse.json(
         { success: false, error: 'Failed to update submission' },
-        { status: 500, headers: corsHeaders }
+        { 
+          status: 500, 
+          headers: { 
+            ...validation.headers, 
+            ...rateLimit.headers,
+            ...getAPISecurityHeaders()
+          } 
+        }
       )
     }
 
@@ -157,13 +258,22 @@ export async function POST(request: NextRequest) {
         completed: shouldComplete,
         notificationsSent: false // Disabled for now
       }
-    }, { headers: corsHeaders })
+    }, { 
+      headers: { 
+        ...validation.headers, 
+        ...rateLimit.headers,
+        ...getAPISecurityHeaders()
+      } 
+    })
 
   } catch (error) {
     console.error('Submission completion error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
-      { status: 500, headers: corsHeaders }
+      { 
+        status: 500,
+        headers: getAPISecurityHeaders()
+      }
     )
   }
 }

@@ -19,12 +19,18 @@ async function getAnalyticsData(businessId: string) {
     .select('*')
     .eq('business_id', businessId)
   
+  // Detect widget capabilities
+  const hasInstantPricing = widgets?.some(w => w.has_pricing || w.show_instant_estimate) || false
+  const hasBooking = widgets?.some(w => w.has_booking || w.appointment_booking) || false
+  
   // Process data for estimator-focused analytics
   const estimatesByDay: Record<string, number> = {}
   const estimatesByMonth: Record<string, number> = {}
   const estimatesByService: Record<string, { count: number; value: number }> = {}
   const afterHoursSubmissions: any[] = []
   const businessHoursSubmissions: any[] = []
+  const appointmentsByHour: Record<number, number> = {}
+  const bookingsByDay: Record<string, number> = {}
   
   submissions?.forEach(submission => {
     const date = new Date(submission.created_at)
@@ -33,11 +39,11 @@ async function getAnalyticsData(businessId: string) {
     const hour = date.getHours()
     const estimatedPrice = submission.estimated_price || 0
     
-    // Estimate values by day
-    estimatesByDay[dayKey] = (estimatesByDay[dayKey] || 0) + estimatedPrice
-    
-    // Estimate values by month
-    estimatesByMonth[monthKey] = (estimatesByMonth[monthKey] || 0) + estimatedPrice
+    // Estimate values by day (only for pricing widgets)
+    if (hasInstantPricing) {
+      estimatesByDay[dayKey] = (estimatesByDay[dayKey] || 0) + estimatedPrice
+      estimatesByMonth[monthKey] = (estimatesByMonth[monthKey] || 0) + estimatedPrice
+    }
     
     // Estimates by service type
     const service = submission.service_type || 'General Service'
@@ -46,6 +52,18 @@ async function getAnalyticsData(businessId: string) {
     }
     estimatesByService[service].count += 1
     estimatesByService[service].value += estimatedPrice
+    
+    // Booking analytics (only for booking widgets)
+    if (hasBooking && (submission.appointment_date || submission.booking_confirmed)) {
+      bookingsByDay[dayKey] = (bookingsByDay[dayKey] || 0) + 1
+      
+      // Track appointment times if available
+      if (submission.appointment_date) {
+        const appointmentDate = new Date(submission.appointment_date)
+        const appointmentHour = appointmentDate.getHours()
+        appointmentsByHour[appointmentHour] = (appointmentsByHour[appointmentHour] || 0) + 1
+      }
+    }
     
     // After hours tracking (after 6 PM or before 8 AM, or weekends)
     const isWeekend = date.getDay() === 0 || date.getDay() === 6
@@ -68,12 +86,29 @@ async function getAnalyticsData(businessId: string) {
   const afterHoursRate = submissions?.length ? 
     (afterHoursSubmissions.length / submissions.length * 100).toFixed(1) : '0'
   
+  // Calculate completion rates
+  const startedSubmissions = submissions?.filter(s => s.started_at) || []
+  const completedSubmissions = submissions?.filter(s => s.completion_status === 'complete') || []
+  const formCompletionRate = startedSubmissions.length > 0 ? 
+    Math.round((completedSubmissions.length / startedSubmissions.length) * 100) : 0
+  
+  const bookingCompletionRate = hasBooking && submissions?.length ? 
+    Math.round((Object.values(bookingsByDay).reduce((sum: number, val: number) => sum + val, 0) / submissions.length) * 100) : 0
+  
   return {
     submissions: submissions || [],
     widgets: widgets || [],
+    widgetTypes: {
+      hasInstantPricing,
+      hasBooking
+    },
     estimatesByDay,
     estimatesByMonth,
     estimatesByService,
+    bookingsByDay,
+    appointmentsByHour,
+    formCompletionRate,
+    bookingCompletionRate,
     afterHours: {
       count: afterHoursSubmissions.length,
       rate: afterHoursRate,
@@ -83,7 +118,8 @@ async function getAnalyticsData(businessId: string) {
       count: businessHoursSubmissions.length,
       value: businessHoursValue
     },
-    totalEstimateValue: Object.values(estimatesByMonth).reduce((sum: number, val: number) => sum + val, 0)
+    totalEstimateValue: Object.values(estimatesByMonth).reduce((sum: number, val: number) => sum + val, 0),
+    totalBookings: Object.values(bookingsByDay).reduce((sum: number, val: number) => sum + val, 0)
   }
 }
 
@@ -107,9 +143,17 @@ export default async function AnalyticsPage() {
     : {
         submissions: [],
         widgets: [],
+        widgetTypes: {
+          hasInstantPricing: false,
+          hasBooking: false
+        },
         estimatesByDay: {},
         estimatesByMonth: {},
         estimatesByService: {},
+        bookingsByDay: {},
+        appointmentsByHour: {},
+        formCompletionRate: 0,
+        bookingCompletionRate: 0,
         afterHours: {
           count: 0,
           rate: '0',
@@ -119,7 +163,8 @@ export default async function AnalyticsPage() {
           count: 0,
           value: 0
         },
-        totalEstimateValue: 0
+        totalEstimateValue: 0,
+        totalBookings: 0
       }
 
   // Prepare chart data
@@ -143,13 +188,13 @@ export default async function AnalyticsPage() {
         <p className="text-gray-600">Track estimate values, service breakdowns, and after-hours capture</p>
       </div>
 
-      {/* Key Metrics */}
+      {/* Key Metrics - Adaptive based on widget type */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <div className="text-3xl font-bold text-blue-600 mb-2">
             {analytics.submissions.length}
           </div>
-          <div className="text-sm text-gray-600 mb-1">Total Estimates</div>
+          <div className="text-sm text-gray-600 mb-1">Total Submissions</div>
           <div className="text-xs text-green-600">
             +{analytics.submissions.filter(s => {
               const weekAgo = new Date()
@@ -161,31 +206,45 @@ export default async function AnalyticsPage() {
 
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <div className="text-3xl font-bold text-green-600 mb-2">
-            ${analytics.totalEstimateValue.toLocaleString()}
+            {analytics.formCompletionRate}%
           </div>
-          <div className="text-sm text-gray-600 mb-1">Total Estimate Value</div>
+          <div className="text-sm text-gray-600 mb-1">Form Completion Rate</div>
           <div className="text-xs text-gray-500">
-            All-time estimates combined
+            Of started forms completed
           </div>
         </div>
 
+        {analytics.widgetTypes.hasInstantPricing && (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <div className="text-3xl font-bold text-purple-600 mb-2">
+              ${analytics.totalEstimateValue.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-600 mb-1">Total Estimate Value</div>
+            <div className="text-xs text-gray-500">
+              All-time estimates combined
+            </div>
+          </div>
+        )}
+
+        {analytics.widgetTypes.hasBooking && (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <div className="text-3xl font-bold text-indigo-600 mb-2">
+              {analytics.totalBookings}
+            </div>
+            <div className="text-sm text-gray-600 mb-1">Total Appointments</div>
+            <div className="text-xs text-gray-500">
+              {analytics.bookingCompletionRate}% booking rate
+            </div>
+          </div>
+        )}
+
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <div className="text-3xl font-bold text-purple-600 mb-2">
+          <div className="text-3xl font-bold text-orange-600 mb-2">
             {analytics.afterHours.rate}%
           </div>
           <div className="text-sm text-gray-600 mb-1">After Hours Rate</div>
           <div className="text-xs text-gray-500">
-            {analytics.afterHours.count} after-hours estimates
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <div className="text-3xl font-bold text-orange-600 mb-2">
-            ${analytics.afterHours.value.toLocaleString()}
-          </div>
-          <div className="text-sm text-gray-600 mb-1">After Hours Value</div>
-          <div className="text-xs text-gray-500">
-            Revenue captured outside business hours
+            {analytics.afterHours.count} after-hours submissions
           </div>
         </div>
       </div>
@@ -193,34 +252,67 @@ export default async function AnalyticsPage() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Daily Estimate Values Chart */}
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Daily Estimate Values (Last 7 Days)</h2>
-          <div className="space-y-3">
-            {last7Days.map(day => {
-              const value = analytics.estimatesByDay[day] || 0
-              const maxValue = Math.max(...last7Days.map(d => analytics.estimatesByDay[d] || 0)) || 1
-              const percentage = (value / maxValue) * 100
-              
-              return (
-                <div key={day} className="flex items-center space-x-3">
-                  <div className="w-20 text-xs text-gray-600">
-                    {new Date(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        {/* Daily Estimate Values Chart - Only show for pricing widgets */}
+        {analytics.widgetTypes.hasInstantPricing && (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Daily Estimate Values (Last 7 Days)</h2>
+            <div className="space-y-3">
+              {last7Days.map(day => {
+                const value = analytics.estimatesByDay[day] || 0
+                const maxValue = Math.max(...last7Days.map(d => analytics.estimatesByDay[d] || 0)) || 1
+                const percentage = (value / maxValue) * 100
+                
+                return (
+                  <div key={day} className="flex items-center space-x-3">
+                    <div className="w-20 text-xs text-gray-600">
+                      {new Date(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                      <div 
+                        className="bg-blue-500 h-4 rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <div className="w-16 text-xs text-gray-900 font-medium text-right">
+                      ${value.toLocaleString()}
+                    </div>
                   </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
-                    <div 
-                      className="bg-blue-500 h-4 rounded-full transition-all duration-300"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
-                  <div className="w-16 text-xs text-gray-900 font-medium text-right">
-                    ${value.toLocaleString()}
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Daily Bookings Chart - Only show for booking widgets */}
+        {analytics.widgetTypes.hasBooking && (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Daily Bookings (Last 7 Days)</h2>
+            <div className="space-y-3">
+              {last7Days.map(day => {
+                const value = analytics.bookingsByDay[day] || 0
+                const maxValue = Math.max(...last7Days.map(d => analytics.bookingsByDay[d] || 0)) || 1
+                const percentage = (value / maxValue) * 100
+                
+                return (
+                  <div key={day} className="flex items-center space-x-3">
+                    <div className="w-20 text-xs text-gray-600">
+                      {new Date(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                      <div 
+                        className="bg-indigo-500 h-4 rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <div className="w-16 text-xs text-gray-900 font-medium text-right">
+                      {value}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Estimates by Service */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -259,34 +351,73 @@ export default async function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Monthly Estimate Values Chart */}
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Estimate Values (Last 6 Months)</h2>
-          <div className="space-y-3">
-            {last6Months.map(month => {
-              const value = analytics.estimatesByMonth[month] || 0
-              const maxValue = Math.max(...last6Months.map(m => analytics.estimatesByMonth[m] || 0)) || 1
-              const percentage = (value / maxValue) * 100
-              
-              return (
-                <div key={month} className="flex items-center space-x-3">
-                  <div className="w-16 text-xs text-gray-600">
-                    {new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
+        {/* Monthly Estimate Values Chart - Only show for pricing widgets */}
+        {analytics.widgetTypes.hasInstantPricing && (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Estimate Values (Last 6 Months)</h2>
+            <div className="space-y-3">
+              {last6Months.map(month => {
+                const value = analytics.estimatesByMonth[month] || 0
+                const maxValue = Math.max(...last6Months.map(m => analytics.estimatesByMonth[m] || 0)) || 1
+                const percentage = (value / maxValue) * 100
+                
+                return (
+                  <div key={month} className="flex items-center space-x-3">
+                    <div className="w-16 text-xs text-gray-600">
+                      {new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                      <div 
+                        className="bg-green-500 h-4 rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <div className="w-16 text-xs text-gray-900 font-medium text-right">
+                      ${value.toLocaleString()}
+                    </div>
                   </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
-                    <div 
-                      className="bg-green-500 h-4 rounded-full transition-all duration-300"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
-                  <div className="w-16 text-xs text-gray-900 font-medium text-right">
-                    ${value.toLocaleString()}
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Appointment Times Chart - Only show for booking widgets */}
+        {analytics.widgetTypes.hasBooking && (
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Appointment Times Distribution</h2>
+            <div className="space-y-2">
+              {Array.from({ length: 12 }, (_, i) => {
+                const hour = i + 8 // 8 AM to 7 PM
+                const hourKey = hour
+                const value = analytics.appointmentsByHour[hourKey] || 0
+                const maxValue = Math.max(...Object.values(analytics.appointmentsByHour)) || 1
+                const percentage = (value / maxValue) * 100
+                const displayHour = hour > 12 ? `${hour - 12} PM` : hour === 12 ? '12 PM' : `${hour} AM`
+                
+                return (
+                  <div key={hour} className="flex items-center space-x-3">
+                    <div className="w-16 text-xs text-gray-600">
+                      {displayHour}
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-3 relative">
+                      <div 
+                        className="bg-purple-500 h-3 rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <div className="w-8 text-xs text-gray-900 font-medium text-right">
+                      {value}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-4 text-xs text-gray-500">
+              Shows when customers prefer to book appointments
+            </div>
+          </div>
+        )}
 
         {/* After Hours vs Business Hours */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">

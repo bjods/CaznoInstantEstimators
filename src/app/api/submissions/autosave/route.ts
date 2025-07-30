@@ -1,5 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { 
+  createDomainValidationMiddleware,
+  extractDomain,
+  getClientIp,
+  logSecurityEvent 
+} from '@/lib/security/domain-validation'
+import { createRateLimitMiddleware } from '@/lib/security/rate-limiting'
+import { getAPISecurityHeaders } from '@/lib/security/security-headers'
+import { z } from 'zod'
+
+// Validation schema for autosave requests
+const autosaveSchema = z.object({
+  widgetId: z.string().uuid('Invalid widget ID format'),
+  sessionId: z.string().uuid().optional(),
+  formData: z.record(z.any()).refine(
+    (data) => Object.keys(data).length > 0,
+    'Form data cannot be empty'
+  ),
+  currentStep: z.string().min(1, 'Current step is required'),
+  isEarlyCapture: z.boolean().optional()
+})
 
 interface AutosaveRequest {
   widgetId: string
@@ -9,21 +30,105 @@ interface AutosaveRequest {
   isEarlyCapture?: boolean // First time creating the submission
 }
 
-// Handle CORS preflight requests
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders })
+export async function OPTIONS(request: NextRequest) {
+  // Apply domain validation even for preflight requests
+  const domainValidation = createDomainValidationMiddleware()
+  
+  // Extract widget ID from URL or body for validation
+  const url = new URL(request.url)
+  const widgetId = url.searchParams.get('widgetId')
+  
+  if (widgetId) {
+    const validation = await domainValidation(request, widgetId)
+    return NextResponse.json({}, { headers: validation.headers })
+  }
+  
+  // Default headers if no widget ID
+  return NextResponse.json({}, { 
+    headers: {
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Widget-Key',
+      'Access-Control-Max-Age': '86400'
+    }
+  })
 }
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
-    const body: AutosaveRequest = await request.json()
+    
+    // Parse and validate request body
+    let body: AutosaveRequest
+    try {
+      const rawBody = await request.json()
+      body = autosaveSchema.parse(rawBody)
+    } catch (error) {
+      const domain = extractDomain(request)
+      const ip = getClientIp(request)
+      
+      // Log validation failure
+      await logSecurityEvent({
+        eventType: 'input_validation_failed',
+        widgetId: 'unknown',
+        sourceDomain: domain || undefined,
+        sourceIp: ip || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+        requestDetails: {
+          error: error instanceof z.ZodError ? error.errors : 'Invalid JSON',
+          endpoint: '/api/submissions/autosave'
+        },
+        severity: 'medium'
+      })
+      
+      return NextResponse.json(
+        { success: false, error: 'Invalid request data' },
+        { status: 400 }
+      )
+    }
+
+    // Apply rate limiting first (fast check)
+    const domain = extractDomain(request)
+    const ip = getClientIp(request)
+    
+    const rateLimitMiddleware = createRateLimitMiddleware()
+    const rateLimit = rateLimitMiddleware(ip, domain)
+    
+    if (!rateLimit.allowed) {
+      await logSecurityEvent({
+        eventType: 'rate_limit_exceeded',
+        widgetId: body.widgetId,
+        sourceDomain: domain || undefined,
+        sourceIp: ip || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+        requestDetails: {
+          error: rateLimit.error,
+          endpoint: '/api/submissions/autosave'
+        },
+        severity: 'medium'
+      })
+      
+      return NextResponse.json(
+        { success: false, error: rateLimit.error || 'Too many requests' },
+        { 
+          status: 429,
+          headers: rateLimit.headers
+        }
+      )
+    }
+
+    // Apply domain validation middleware
+    const domainValidation = createDomainValidationMiddleware()
+    const validation = await domainValidation(request, body.widgetId)
+    
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { success: false, error: validation.error?.message || 'Access denied' },
+        { 
+          status: validation.error?.status || 403,
+          headers: { ...validation.headers, ...rateLimit.headers }
+        }
+      )
+    }
     
     const { widgetId, sessionId, formData, currentStep, isEarlyCapture = false } = body
     
@@ -187,13 +292,22 @@ export async function POST(request: NextRequest) {
         isEarlyCapture,
         currentStep: submission.current_step
       }
-    }, { headers: corsHeaders })
+    }, { 
+      headers: { 
+        ...validation.headers, 
+        ...rateLimit.headers,
+        ...getAPISecurityHeaders()
+      } 
+    })
 
   } catch (error) {
     console.error('Autosave error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
-      { status: 500, headers: corsHeaders }
+      { 
+        status: 500,
+        headers: getAPISecurityHeaders()
+      }
     )
   }
 }

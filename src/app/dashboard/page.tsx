@@ -8,7 +8,9 @@ import {
   CurrencyDollarIcon,
   DocumentTextIcon,
   ChatBubbleLeftRightIcon,
-  ChartPieIcon
+  ChartPieIcon,
+  CalendarIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 
 async function getDashboardData(businessId: string) {
@@ -42,10 +44,25 @@ async function getDashboardData(businessId: string) {
     .order('created_at', { ascending: false })
     .limit(5)
   
-  // Calculate this week's estimated value
-  const thisWeekEstimatedValue = thisWeekSubmissions.reduce((total, submission) => {
-    return total + (submission.estimated_price || 0)
-  }, 0)
+  // Detect widget types (instant pricing vs booking/request)
+  const hasInstantPricing = widgets?.some(w => w.has_pricing || w.show_instant_estimate) || false
+  const hasBooking = widgets?.some(w => w.has_booking || w.appointment_booking) || false
+  
+  // Calculate metrics based on widget type
+  const thisWeekEstimatedValue = hasInstantPricing ? 
+    thisWeekSubmissions.reduce((total, submission) => {
+      return total + (submission.estimated_price || 0)
+    }, 0) : 0
+  
+  // Calculate appointments booked this week
+  const thisWeekAppointments = hasBooking ?
+    thisWeekSubmissions.filter(s => s.appointment_date || s.booking_confirmed).length : 0
+  
+  // Calculate form completion rate
+  const startedSubmissions = submissions?.filter(s => s.started_at) || []
+  const completedSubmissions = submissions?.filter(s => s.completion_status === 'complete') || []
+  const formCompletionRate = startedSubmissions.length > 0 ? 
+    Math.round((completedSubmissions.length / startedSubmissions.length) * 100) : 0
   
   // Calculate leads by source (top 3)
   const sourceCount: Record<string, number> = {}
@@ -63,10 +80,16 @@ async function getDashboardData(businessId: string) {
     widgets,
     submissions,
     recentSubmissions,
+    widgetTypes: {
+      hasInstantPricing,
+      hasBooking
+    },
     stats: {
       totalWidgets: widgets?.length || 0,
       thisWeekLeads: thisWeekSubmissions.length,
       thisWeekEstimatedValue,
+      thisWeekAppointments,
+      formCompletionRate,
       topSources
     }
   }
@@ -95,10 +118,16 @@ export default async function Dashboard() {
     widgets: [],
     submissions: [],
     recentSubmissions: [],
+    widgetTypes: {
+      hasInstantPricing: false,
+      hasBooking: false
+    },
     stats: {
       totalWidgets: 0,
       thisWeekLeads: 0,
       thisWeekEstimatedValue: 0,
+      thisWeekAppointments: 0,
+      formCompletionRate: 0,
       topSources: [] as { source: string; count: number }[]
     }
   }
@@ -126,8 +155,9 @@ export default async function Dashboard() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Stats Grid - Adaptive based on widget type */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Always show leads this week */}
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
@@ -145,23 +175,63 @@ export default async function Dashboard() {
           </div>
         </div>
 
+        {/* Show estimated value only if has instant pricing */}
+        {dashboardData.widgetTypes.hasInstantPricing && (
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Estimated Value This Week</p>
+                <p className="text-3xl font-bold text-gray-900">${dashboardData.stats.thisWeekEstimatedValue.toLocaleString()}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <CurrencyDollarIcon className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Link href="/dashboard/analytics" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                View analytics →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Show appointments booked if has booking */}
+        {dashboardData.widgetTypes.hasBooking && (
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Appointments This Week</p>
+                <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.thisWeekAppointments}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <CalendarIcon className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Link href="/dashboard/analytics" className="text-sm text-purple-600 hover:text-purple-800 font-medium">
+                View booking analytics →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Form completion rate */}
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Estimated Value This Week</p>
-              <p className="text-3xl font-bold text-gray-900">${dashboardData.stats.thisWeekEstimatedValue.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600">Form Completion Rate</p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.formCompletionRate}%</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <CurrencyDollarIcon className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <CheckCircleIcon className="w-6 h-6 text-orange-600" />
             </div>
           </div>
           <div className="mt-4">
-            <Link href="/dashboard/analytics" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              View analytics →
-            </Link>
+            <span className="text-sm text-gray-500">Of started forms</span>
           </div>
         </div>
 
+        {/* Top Lead Sources */}
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
@@ -175,8 +245,8 @@ export default async function Dashboard() {
                 ))}
               </div>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <ChartPieIcon className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <ChartPieIcon className="w-6 h-6 text-indigo-600" />
             </div>
           </div>
         </div>

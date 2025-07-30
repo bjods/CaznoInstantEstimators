@@ -1,15 +1,18 @@
 # Widget Configuration Guide for Supabase
 
-This guide explains how to create and configure widgets in Supabase for each company using the Cazno instant estimator system.
+This guide explains how to create and configure widgets in Supabase for each company using the Cazno instant estimator system. 
+
+**Note**: The Cazno dashboard is now view-only for analytics and lead management. Widget creation and configuration must be done directly in the Supabase database using the SQL editor.
 
 ## Table of Contents
 1. [Database Structure](#database-structure)
 2. [Creating a New Business](#creating-a-new-business)
 3. [Creating a Widget](#creating-a-widget)
-4. [Component Reference](#component-reference)
-5. [Submission Flow Configuration](#submission-flow-configuration)
-6. [Scheduling Configuration](#scheduling-configuration)
-7. [Configuration Examples](#configuration-examples)
+4. [Analytics Dashboard Configuration](#analytics-dashboard-configuration)
+5. [Component Reference](#component-reference)
+6. [Submission Flow Configuration](#submission-flow-configuration)
+7. [Scheduling Configuration](#scheduling-configuration)
+8. [Configuration Examples](#configuration-examples)
 
 ## Database Structure
 
@@ -32,6 +35,10 @@ This guide explains how to create and configure widgets in Supabase for each com
 - config: JSONB (step configuration)
 - theme: JSONB (visual customization)
 - is_active: boolean
+- has_pricing: boolean (indicates if widget has instant pricing)
+- has_booking: boolean (indicates if widget has appointment booking)
+- show_instant_estimate: boolean (displays pricing on quote step)
+- appointment_booking: boolean (enables appointment scheduling)
 ```
 
 ## Creating a New Business
@@ -109,7 +116,14 @@ INSERT INTO widgets (
   embed_key, 
   config, 
   theme, 
-  is_active
+  is_active,
+  has_pricing,
+  has_booking,
+  show_instant_estimate,
+  appointment_booking,
+  allowed_domains,
+  security_enabled,
+  embed_restrictions
 ) VALUES (
   'business-uuid-here',
   'Widget Display Name',
@@ -121,8 +135,378 @@ INSERT INTO widgets (
     "fontFamily": "Inter",
     "borderRadius": "8px"
   }'::jsonb,
-  true
+  true,
+  true,  -- has_pricing: indicates widget includes pricing calculator
+  false, -- has_booking: indicates widget includes appointment booking
+  true,  -- show_instant_estimate: displays pricing on quote step
+  false, -- appointment_booking: enables appointment scheduling
+  -- NEW SECURITY FIELDS:
+  ARRAY['example.com', '*.subdomain.example.com', 'trusted-site.org'], -- allowed_domains
+  true,  -- security_enabled: enables domain validation
+  '{
+    "require_https": true,
+    "block_iframes": false,
+    "max_embeds_per_domain": 10,
+    "rate_limit_per_hour": 1000
+  }'::jsonb -- embed_restrictions
 );
+```
+
+### Widget Type Configuration
+
+When creating widgets, set the boolean flags to control dashboard analytics:
+
+- **has_pricing / show_instant_estimate**: Set to `true` for widgets with pricing calculators
+- **has_booking / appointment_booking**: Set to `true` for widgets with appointment booking
+- **Both false**: For simple lead capture forms without pricing or booking
+
+The dashboard will automatically show relevant metrics based on these flags:
+- Pricing widgets show estimate values, daily/monthly estimate charts
+- Booking widgets show appointment counts, booking completion rates, appointment time charts
+- All widgets show form completion rates and lead analytics
+
+## Widget Security Configuration
+
+### Domain Validation & Embedding Security
+
+The security system restricts which domains can embed your widgets, protecting against unauthorized usage and data theft. These settings can be configured through the **Dashboard Settings** interface or directly in the database.
+
+### Configuring Security Through Dashboard
+
+1. **Navigate to Settings**: Go to `/dashboard/settings` in your browser
+2. **Widget Security Settings**: Each widget shows its current security configuration
+3. **Edit Security**: Click "Edit Security" to modify settings
+4. **Configure Domains**: Add or remove allowed domains using the interface
+5. **Save Changes**: Security updates take effect immediately
+
+### Dashboard Security Features
+
+#### Visual Security Status
+- **🟢 Secured**: Widget has domain validation enabled with allowed domains configured
+- **🟡 Unsecured**: Widget has security disabled or no domains configured
+
+#### Domain Management Interface
+- **Add Domains**: Type domain and click "Add" (supports wildcards like *.example.com)
+- **Remove Domains**: Click "Remove" next to any domain to delete it
+- **Domain Validation**: Real-time validation ensures proper domain format
+
+#### Security Controls
+- **Security Toggle**: Enable/disable domain validation with a simple switch
+- **HTTPS Enforcement**: Require widgets to be embedded only on HTTPS sites
+- **Rate Limiting**: Set per-domain request limits (100-10,000 requests/hour)
+- **Embed Limits**: Control how many pages per domain can embed the widget
+
+### Security Fields
+
+#### allowed_domains (TEXT[] - Array of domains)
+Controls which domains can embed this widget. Supports exact matches and wildcard subdomains.
+
+**Examples:**
+```sql
+-- Allow specific domains only
+ARRAY['example.com', 'app.example.com', 'staging.example.com']
+
+-- Allow wildcards for subdomains  
+ARRAY['example.com', '*.example.com'] -- Allows any subdomain of example.com
+
+-- Allow multiple different domains
+ARRAY['client1.com', 'client2.org', '*.app.client3.com']
+
+-- NULL = Allow all domains (not recommended for production)
+NULL
+
+-- Empty array = Block all domains (widget cannot be embedded)
+ARRAY[]::TEXT[]
+```
+
+#### security_enabled (BOOLEAN)
+Master switch for security features. Set to `true` to enable domain validation.
+
+```sql
+security_enabled = true  -- Enforces domain whitelist
+security_enabled = false -- Legacy mode, allows any domain
+```
+
+#### embed_restrictions (JSONB)
+Fine-grained security controls for widget embedding.
+
+```json
+{
+  "require_https": true,           // Only allow embedding on HTTPS sites
+  "block_iframes": false,          // Prevent widget from being iframed (future feature)
+  "max_embeds_per_domain": 10,     // Max number of unique pages per domain
+  "rate_limit_per_hour": 1000      // Max requests per hour per domain
+}
+```
+
+### Security Configuration Examples
+
+#### High Security Configuration (Recommended)
+```sql
+-- For production widgets with sensitive data
+allowed_domains = ARRAY['mycompany.com', 'www.mycompany.com', 'app.mycompany.com'],
+security_enabled = true,
+embed_restrictions = '{
+  "require_https": true,
+  "block_iframes": false,
+  "max_embeds_per_domain": 5,
+  "rate_limit_per_hour": 500
+}'::jsonb
+```
+
+#### Development Configuration
+```sql
+-- For testing across multiple domains
+allowed_domains = ARRAY['localhost', '*.vercel.app', '*.netlify.app', 'staging.mycompany.com'],
+security_enabled = true,
+embed_restrictions = '{
+  "require_https": false,  -- Allow HTTP for local development
+  "block_iframes": false,
+  "max_embeds_per_domain": 100,
+  "rate_limit_per_hour": 10000
+}'::jsonb
+```
+
+#### Multi-Client Configuration
+```sql
+-- For agencies managing multiple client websites
+allowed_domains = ARRAY[
+  'client1.com', '*.client1.com',
+  'client2.org', 'www.client2.org',
+  'agency-demos.com', '*.agency-demos.com'
+],
+security_enabled = true,
+embed_restrictions = '{
+  "require_https": true,
+  "block_iframes": false,
+  "max_embeds_per_domain": 20,
+  "rate_limit_per_hour": 2000
+}'::jsonb
+```
+
+### Security Monitoring
+
+The system automatically tracks:
+
+#### Domain Usage (`widget_domain_usage` table)
+- Which domains are embedding your widget
+- Total requests per domain
+- Blocked/unauthorized attempts
+- First and last seen timestamps
+
+#### Security Events (`security_events` table)
+- Unauthorized domain access attempts
+- Rate limit violations
+- Suspicious activity patterns
+- Input validation failures
+
+### Viewing Security Data
+
+```sql
+-- See which domains are using your widget
+SELECT * FROM widget_domain_summary 
+WHERE widget_id = 'your-widget-id'
+ORDER BY total_requests DESC;
+
+-- View recent security events
+SELECT * FROM security_events_summary
+WHERE widget_id = 'your-widget-id'
+AND created_at > NOW() - INTERVAL '24 hours'
+ORDER BY created_at DESC;
+
+-- Check unauthorized access attempts
+SELECT source_domain, COUNT(*) as attempts
+FROM security_events
+WHERE widget_id = 'your-widget-id'
+AND event_type = 'unauthorized_domain'
+GROUP BY source_domain
+ORDER BY attempts DESC;
+```
+
+### Important Security Notes
+
+1. **Always use HTTPS in production** - Set `require_https: true`
+2. **Be specific with domains** - Avoid using wildcards unless necessary
+3. **Monitor security events** - Check for unauthorized access attempts regularly
+4. **Update allowed domains promptly** - Remove domains when clients leave
+5. **Use rate limiting** - Prevent abuse and DDoS attacks
+
+### Migrating Existing Widgets
+
+For existing widgets without security configuration:
+
+```sql
+-- Add security to existing widget
+UPDATE widgets
+SET 
+  allowed_domains = ARRAY['your-domain.com', 'www.your-domain.com'],
+  security_enabled = true,
+  embed_restrictions = '{
+    "require_https": true,
+    "block_iframes": false,
+    "max_embeds_per_domain": 10,
+    "rate_limit_per_hour": 1000
+  }'::jsonb
+WHERE id = 'your-widget-id';
+```
+
+### Testing Domain Validation
+
+1. **Test Allowed Domain**: Embed widget on an allowed domain - should work
+2. **Test Blocked Domain**: Try embedding on unauthorized domain - should be blocked
+3. **Test Wildcards**: If using `*.example.com`, test various subdomains
+4. **Check Security Events**: Verify blocked attempts are logged
+
+### Troubleshooting
+
+**Widget not loading?**
+- Check if domain is in `allowed_domains` array
+- Verify `security_enabled = true`
+- Check for typos in domain names (must match exactly)
+- Look for security events: `SELECT * FROM security_events WHERE widget_id = 'your-widget-id'`
+
+**Need to temporarily disable security?**
+```sql
+UPDATE widgets SET security_enabled = false WHERE id = 'your-widget-id';
+-- Remember to re-enable after testing!
+```
+
+## Analytics Dashboard Configuration
+
+The Cazno dashboard provides adaptive analytics based on your widget configuration. The dashboard automatically detects widget capabilities and shows relevant metrics.
+
+### Dashboard Types
+
+#### Instant Pricing Widgets
+Widgets with pricing calculators (`has_pricing: true` or `show_instant_estimate: true`) display:
+
+**Key Metrics:**
+- Total Submissions (with weekly growth)
+- Form Completion Rate (percentage of started forms completed)
+- Total Estimate Value (all-time estimates combined)
+- After Hours Rate (submissions outside business hours)
+
+**Analytics Charts:**
+- Daily Estimate Values (last 7 days)
+- Monthly Estimate Values (last 6 months)
+- Estimates by Service Type (breakdown by service)
+- Business Hours vs After Hours (comparison with values)
+
+#### Booking/Appointment Widgets
+Widgets with appointment booking (`has_booking: true` or `appointment_booking: true`) display:
+
+**Key Metrics:**
+- Total Submissions
+- Form Completion Rate
+- Total Appointments (booked appointments)
+- Booking Completion Rate (percentage who complete booking)
+
+**Analytics Charts:**
+- Daily Bookings (last 7 days)
+- Appointment Times Distribution (preferred booking hours 8 AM - 7 PM)
+- Business Hours vs After Hours
+- Booking patterns and preferences
+
+#### Simple Lead Capture Widgets
+Widgets without pricing or booking (`both flags false`) display:
+
+**Key Metrics:**
+- Total Submissions
+- Form Completion Rate
+- Top Lead Sources (with counts)
+- After Hours Rate
+
+**Analytics Charts:**
+- Estimates by Service Type (form submissions by service)
+- Business Hours vs After Hours
+
+### Submission Analytics
+
+All widget types track detailed submission analytics:
+
+```sql
+-- Key submission tracking fields
+current_step TEXT                    -- Which step user is currently on
+last_interaction_at TIMESTAMP        -- When user last interacted
+quote_viewed_at TIMESTAMP           -- When user reached quote page  
+appointment_scheduled_at TIMESTAMP   -- When user booked appointment
+completion_status TEXT              -- 'started', 'in_progress', 'complete'
+estimated_price NUMERIC             -- Calculated price (if pricing enabled)
+service_type TEXT                   -- Selected service type
+appointment_date TIMESTAMP          -- Scheduled appointment date/time
+booking_confirmed BOOLEAN           -- Whether booking was confirmed
+```
+
+### Time-Based Analytics
+
+The dashboard provides time-based breakdowns:
+
+#### Business Hours vs After Hours
+- **Business Hours**: 8 AM - 6 PM, Monday-Friday
+- **After Hours**: Evenings, nights, weekends
+- **Metrics**: Submission counts, estimate values, capture rates
+
+#### Weekly and Monthly Trends
+- **Daily Charts**: Last 7 days for recent activity
+- **Monthly Charts**: Last 6 months for trends
+- **Growth Indicators**: Week-over-week comparisons
+
+### Lead Source Tracking
+
+Track where your leads are coming from:
+- **Direct**: Visitors who typed your URL
+- **Google**: Search engine traffic
+- **Facebook**: Social media referrals
+- **Referral**: Other website referrals
+- **Custom**: Campaign-specific sources
+
+### Service Analytics
+
+For multi-service businesses:
+- **Service Breakdown**: Submissions per service type
+- **Value by Service**: Average and total estimate values
+- **Popular Services**: Most requested services
+- **Service Performance**: Completion rates by service
+
+### Best Practices for Analytics
+
+1. **Set Widget Flags Correctly**: Ensure `has_pricing` and `has_booking` flags match your widget's actual functionality
+2. **Track Service Types**: Use consistent service naming across widgets
+3. **Monitor Completion Rates**: Low completion rates may indicate form issues
+4. **Analyze Time Patterns**: After-hours capture can indicate market demand
+5. **Review Lead Sources**: Focus marketing on top-performing channels
+6. **Service Performance**: Identify which services generate the most leads
+
+### Database Views for Custom Analytics
+
+For advanced analytics, query the database directly:
+
+```sql
+-- Widget performance summary
+SELECT 
+  w.name as widget_name,
+  w.has_pricing,
+  w.has_booking,
+  COUNT(s.*) as total_submissions,
+  COUNT(CASE WHEN s.completion_status = 'complete' THEN 1 END) as completed_submissions,
+  AVG(s.estimated_price) as avg_estimate_value,
+  COUNT(CASE WHEN s.appointment_date IS NOT NULL THEN 1 END) as total_appointments
+FROM widgets w
+LEFT JOIN submissions s ON w.id = s.widget_id
+WHERE w.business_id = 'your-business-id'
+  AND s.created_at > NOW() - INTERVAL '30 days'
+GROUP BY w.id, w.name, w.has_pricing, w.has_booking;
+
+-- Time-based submission patterns
+SELECT 
+  EXTRACT(hour FROM created_at) as hour_of_day,
+  COUNT(*) as submissions,
+  AVG(estimated_price) as avg_value
+FROM submissions 
+WHERE business_id = 'your-business-id'
+  AND created_at > NOW() - INTERVAL '30 days'
+GROUP BY EXTRACT(hour FROM created_at)
+ORDER BY hour_of_day;
 ```
 
 ## Component Reference

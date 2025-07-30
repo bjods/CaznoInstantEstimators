@@ -1,9 +1,115 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import WidgetSecuritySettings from '@/components/dashboard/WidgetSecuritySettings'
+
+interface Widget {
+  id: string
+  name: string
+  embed_key: string
+  allowed_domains: string[]
+  security_enabled: boolean
+  embed_restrictions: {
+    require_https: boolean
+    block_iframes: boolean
+    max_embeds_per_domain: number
+    rate_limit_per_hour: number
+  }
+}
+
 export default function SettingsPage() {
+  const [widgets, setWidgets] = useState<Widget[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchWidgets()
+  }, [])
+
+  const fetchWidgets = async () => {
+    try {
+      const response = await fetch('/api/widgets')
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch widgets')
+      }
+
+      setWidgets(result.data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load widgets')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleWidgetUpdate = (updatedWidget: Widget) => {
+    setWidgets(widgets.map(widget => 
+      widget.id === updatedWidget.id ? updatedWidget : widget
+    ))
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">Manage your account and preferences</p>
+        <p className="text-gray-600 mt-2">Manage your account, security settings, and preferences</p>
+      </div>
+
+      {/* Widget Security Settings */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Widget Security Settings</h2>
+          <p className="text-gray-600 text-sm">
+            Configure which domains can embed your widgets and manage security restrictions.
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-500">Loading widgets...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6">
+            <div className="text-center">
+              <div className="text-red-600 mb-2">⚠️ Error</div>
+              <p className="text-red-600">{error}</p>
+              <button
+                onClick={fetchWidgets}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : widgets.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No widgets found</h3>
+              <p className="text-gray-500">
+                Create your first widget to start configuring security settings.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {widgets.map((widget) => (
+              <WidgetSecuritySettings
+                key={widget.id}
+                widget={widget}
+                onUpdate={handleWidgetUpdate}
+              />
+            ))}
+          </div>
+        )}
       </div>
       
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">

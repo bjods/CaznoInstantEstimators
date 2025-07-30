@@ -41,7 +41,9 @@ async function getAnalyticsData(businessId: string) {
     
     // Estimates by service type
     const service = submission.service_type || 'General Service'
-    estimatesByService[service] = (estimatesByService[service] || { count: 0, value: 0 })
+    if (!estimatesByService[service]) {
+      estimatesByService[service] = { count: 0, value: 0 }
+    }
     estimatesByService[service].count += 1
     estimatesByService[service].value += estimatedPrice
     
@@ -105,12 +107,19 @@ export default async function AnalyticsPage() {
     : {
         submissions: [],
         widgets: [],
-        submissionsByDay: {},
-        submissionsByMonth: {},
-        submissionsByStatus: { complete: 0, in_progress: 0, abandoned: 0 },
-        revenueByMonth: {},
-        totalRevenue: 0,
-        conversionRate: '0'
+        estimatesByDay: {},
+        estimatesByMonth: {},
+        estimatesByService: {},
+        afterHours: {
+          count: 0,
+          rate: '0',
+          value: 0
+        },
+        businessHours: {
+          count: 0,
+          value: 0
+        },
+        totalEstimateValue: 0
       }
 
   // Prepare chart data

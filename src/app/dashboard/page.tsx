@@ -20,13 +20,21 @@ async function getDashboardData(businessId: string) {
     .select('*')
     .eq('business_id', businessId)
   
-  // Get submissions (leads)
+  // Get all submissions
   const { data: submissions } = await supabase
     .from('submissions')
     .select('*')
     .eq('business_id', businessId)
   
-  // Get recent submissions
+  // Get this week's submissions (last 7 days)
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  
+  const thisWeekSubmissions = submissions?.filter(s => 
+    new Date(s.created_at) >= oneWeekAgo
+  ) || []
+  
+  // Get recent submissions for display
   const { data: recentSubmissions } = await supabase
     .from('submissions')
     .select('*')
@@ -34,25 +42,32 @@ async function getDashboardData(businessId: string) {
     .order('created_at', { ascending: false })
     .limit(5)
   
-  // Calculate stats
-  const totalWidgets = widgets?.length || 0
-  const totalLeads = submissions?.length || 0
-  const completedLeads = submissions?.filter(s => s.completion_status === 'complete').length || 0
-  const conversionRate = totalLeads > 0 ? Math.round((completedLeads / totalLeads) * 100) : 0
+  // Calculate this week's estimated value
+  const thisWeekEstimatedValue = thisWeekSubmissions.reduce((total, submission) => {
+    return total + (submission.estimated_price || 0)
+  }, 0)
   
-  // Calculate estimated revenue (using average of $2500 per completed lead)
-  const estimatedRevenue = completedLeads * 2500
+  // Calculate leads by source (top 3)
+  const sourceCount = {}
+  submissions?.forEach(submission => {
+    const source = submission.source || 'Direct'
+    sourceCount[source] = (sourceCount[source] || 0) + 1
+  })
+  
+  const topSources = Object.entries(sourceCount)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 3)
+    .map(([source, count]) => ({ source, count }))
   
   return {
     widgets,
     submissions,
     recentSubmissions,
     stats: {
-      totalWidgets,
-      totalLeads,
-      completedLeads,
-      conversionRate,
-      estimatedRevenue
+      totalWidgets: widgets?.length || 0,
+      thisWeekLeads: thisWeekSubmissions.length,
+      thisWeekEstimatedValue,
+      topSources
     }
   }
 }
@@ -113,37 +128,20 @@ export default async function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Widgets</p>
-              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalWidgets}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <WrenchScrewdriverIcon className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <Link href="/dashboard/widgets" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              View widgets →
-            </Link>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Leads</p>
-              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalLeads}</p>
+              <p className="text-sm font-medium text-gray-600">Leads This Week</p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.thisWeekLeads}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <UsersIcon className="w-6 h-6 text-green-600" />
             </div>
           </div>
           <div className="mt-4">
-            <Link href="/dashboard/leads" className="text-sm text-green-600 hover:text-green-800 font-medium">
-              View all leads →
+            <Link href="/dashboard/submissions" className="text-sm text-green-600 hover:text-green-800 font-medium">
+              View all submissions →
             </Link>
           </div>
         </div>
@@ -151,15 +149,15 @@ export default async function Dashboard() {
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.conversionRate}%</p>
+              <p className="text-sm font-medium text-gray-600">Estimated Value This Week</p>
+              <p className="text-3xl font-bold text-gray-900">${dashboardData.stats.thisWeekEstimatedValue.toLocaleString()}</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <ArrowTrendingUpIcon className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <CurrencyDollarIcon className="w-6 h-6 text-blue-600" />
             </div>
           </div>
           <div className="mt-4">
-            <Link href="/dashboard/analytics" className="text-sm text-purple-600 hover:text-purple-800 font-medium">
+            <Link href="/dashboard/analytics" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
               View analytics →
             </Link>
           </div>
@@ -168,15 +166,19 @@ export default async function Dashboard() {
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Est. Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">${dashboardData.stats.estimatedRevenue.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600">Top Lead Sources</p>
+              <div className="mt-2 space-y-1">
+                {dashboardData.stats.topSources.map((source, index) => (
+                  <div key={source.source} className="flex justify-between text-sm">
+                    <span className="text-gray-700">{source.source}</span>
+                    <span className="font-medium text-gray-900">{source.count}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <CurrencyDollarIcon className="w-6 h-6 text-yellow-600" />
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <ChartPieIcon className="w-6 h-6 text-purple-600" />
             </div>
-          </div>
-          <div className="mt-4">
-            <span className="text-sm text-gray-500">Based on completed leads</span>
           </div>
         </div>
       </div>

@@ -13,50 +13,75 @@ async function getAnalyticsData(businessId: string) {
     .eq('business_id', businessId)
     .order('created_at', { ascending: true })
   
-  // Get widgets for performance analysis
+  // Get widgets for service analysis
   const { data: widgets } = await supabase
     .from('widgets')
     .select('*')
     .eq('business_id', businessId)
   
-  // Process data for charts
-  const submissionsByDay = {}
-  const submissionsByMonth = {}
-  const submissionsByStatus = { complete: 0, in_progress: 0, abandoned: 0 }
-  const revenueByMonth = {}
+  // Process data for estimator-focused analytics
+  const estimatesByDay = {}
+  const estimatesByMonth = {}
+  const estimatesByService = {}
+  const afterHoursSubmissions = []
+  const businessHoursSubmissions = []
   
   submissions?.forEach(submission => {
     const date = new Date(submission.created_at)
     const dayKey = date.toISOString().split('T')[0]
     const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`
+    const hour = date.getHours()
+    const estimatedPrice = submission.estimated_price || 0
     
-    // Daily submissions
-    submissionsByDay[dayKey] = (submissionsByDay[dayKey] || 0) + 1
+    // Estimate values by day
+    estimatesByDay[dayKey] = (estimatesByDay[dayKey] || 0) + estimatedPrice
     
-    // Monthly submissions
-    submissionsByMonth[monthKey] = (submissionsByMonth[monthKey] || 0) + 1
+    // Estimate values by month
+    estimatesByMonth[monthKey] = (estimatesByMonth[monthKey] || 0) + estimatedPrice
     
-    // Status breakdown
-    submissionsByStatus[submission.completion_status] = 
-      (submissionsByStatus[submission.completion_status] || 0) + 1
+    // Estimates by service type
+    const service = submission.service_type || 'General Service'
+    estimatesByService[service] = (estimatesByService[service] || { count: 0, value: 0 })
+    estimatesByService[service].count += 1
+    estimatesByService[service].value += estimatedPrice
     
-    // Revenue tracking (assuming $2500 average per completed lead)
-    if (submission.completion_status === 'complete') {
-      const revenue = submission.estimated_price || 2500
-      revenueByMonth[monthKey] = (revenueByMonth[monthKey] || 0) + revenue
+    // After hours tracking (after 6 PM or before 8 AM, or weekends)
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6
+    const isAfterHours = hour < 8 || hour >= 18 || isWeekend
+    
+    if (isAfterHours) {
+      afterHoursSubmissions.push(submission)
+    } else {
+      businessHoursSubmissions.push(submission)
     }
   })
+  
+  // Calculate after hours metrics
+  const afterHoursValue = afterHoursSubmissions.reduce((total, sub) => 
+    total + (sub.estimated_price || 0), 0
+  )
+  const businessHoursValue = businessHoursSubmissions.reduce((total, sub) => 
+    total + (sub.estimated_price || 0), 0
+  )
+  const afterHoursRate = submissions?.length ? 
+    (afterHoursSubmissions.length / submissions.length * 100).toFixed(1) : '0'
   
   return {
     submissions: submissions || [],
     widgets: widgets || [],
-    submissionsByDay,
-    submissionsByMonth,
-    submissionsByStatus,
-    revenueByMonth,
-    totalRevenue: Object.values(revenueByMonth).reduce((sum: number, val: number) => sum + val, 0),
-    conversionRate: submissions?.length ? 
-      (submissionsByStatus.complete / submissions.length * 100).toFixed(1) : '0'
+    estimatesByDay,
+    estimatesByMonth,
+    estimatesByService,
+    afterHours: {
+      count: afterHoursSubmissions.length,
+      rate: afterHoursRate,
+      value: afterHoursValue
+    },
+    businessHours: {
+      count: businessHoursSubmissions.length,
+      value: businessHoursValue
+    },
+    totalEstimateValue: Object.values(estimatesByMonth).reduce((sum: number, val: number) => sum + val, 0)
   }
 }
 
@@ -105,8 +130,8 @@ export default async function AnalyticsPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-        <p className="text-gray-600">Track your performance metrics and trends</p>
+        <h1 className="text-3xl font-bold text-gray-900">Estimator Analytics</h1>
+        <p className="text-gray-600">Track estimate values, service breakdowns, and after-hours capture</p>
       </div>
 
       {/* Key Metrics */}
@@ -115,7 +140,7 @@ export default async function AnalyticsPage() {
           <div className="text-3xl font-bold text-blue-600 mb-2">
             {analytics.submissions.length}
           </div>
-          <div className="text-sm text-gray-600 mb-1">Total Leads</div>
+          <div className="text-sm text-gray-600 mb-1">Total Estimates</div>
           <div className="text-xs text-green-600">
             +{analytics.submissions.filter(s => {
               const weekAgo = new Date()
@@ -127,31 +152,31 @@ export default async function AnalyticsPage() {
 
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <div className="text-3xl font-bold text-green-600 mb-2">
-            {analytics.conversionRate}%
+            ${analytics.totalEstimateValue.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600 mb-1">Conversion Rate</div>
+          <div className="text-sm text-gray-600 mb-1">Total Estimate Value</div>
           <div className="text-xs text-gray-500">
-            {analytics.submissionsByStatus.complete} completed leads
+            All-time estimates combined
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <div className="text-3xl font-bold text-purple-600 mb-2">
-            ${analytics.totalRevenue.toLocaleString()}
+            {analytics.afterHours.rate}%
           </div>
-          <div className="text-sm text-gray-600 mb-1">Total Revenue</div>
+          <div className="text-sm text-gray-600 mb-1">After Hours Rate</div>
           <div className="text-xs text-gray-500">
-            From completed projects
+            {analytics.afterHours.count} after-hours estimates
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <div className="text-3xl font-bold text-orange-600 mb-2">
-            {analytics.widgets.length}
+            ${analytics.afterHours.value.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600 mb-1">Active Widgets</div>
+          <div className="text-sm text-gray-600 mb-1">After Hours Value</div>
           <div className="text-xs text-gray-500">
-            Generating leads
+            Revenue captured outside business hours
           </div>
         </div>
       </div>
@@ -159,14 +184,14 @@ export default async function AnalyticsPage() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Daily Submissions Chart */}
+        {/* Daily Estimate Values Chart */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Daily Submissions (Last 7 Days)</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Daily Estimate Values (Last 7 Days)</h2>
           <div className="space-y-3">
             {last7Days.map(day => {
-              const count = analytics.submissionsByDay[day] || 0
-              const maxCount = Math.max(...last7Days.map(d => analytics.submissionsByDay[d] || 0)) || 1
-              const percentage = (count / maxCount) * 100
+              const value = analytics.estimatesByDay[day] || 0
+              const maxValue = Math.max(...last7Days.map(d => analytics.estimatesByDay[d] || 0)) || 1
+              const percentage = (value / maxValue) * 100
               
               return (
                 <div key={day} className="flex items-center space-x-3">
@@ -179,8 +204,8 @@ export default async function AnalyticsPage() {
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
-                  <div className="w-8 text-xs text-gray-900 font-medium text-right">
-                    {count}
+                  <div className="w-16 text-xs text-gray-900 font-medium text-right">
+                    ${value.toLocaleString()}
                   </div>
                 </div>
               )
@@ -188,74 +213,48 @@ export default async function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Status Breakdown */}
+        {/* Estimates by Service */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Lead Status Breakdown</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Estimates by Service Type</h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 bg-green-500 rounded"></div>
-                <span className="text-sm text-gray-700">Completed</span>
+            {Object.entries(analytics.estimatesByService).map(([service, data]) => (
+              <div key={service} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-gray-900">{service}</h3>
+                  <span className="text-sm text-gray-500">{data.count} estimates</span>
+                </div>
+                <div className="text-xs text-gray-600 mb-2">
+                  Total Value: ${data.value.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-600 mb-2">
+                  Avg Value: ${Math.round(data.value / data.count || 0).toLocaleString()}
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full"
+                    style={{ 
+                      width: `${analytics.submissions.length ? (data.count / analytics.submissions.length) * 100 : 0}%` 
+                    }}
+                  ></div>
+                </div>
               </div>
-              <div className="text-sm font-medium text-gray-900">
-                {analytics.submissionsByStatus.complete} leads
+            ))}
+            {Object.keys(analytics.estimatesByService).length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-sm">No service data available yet</p>
               </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                <span className="text-sm text-gray-700">In Progress</span>
-              </div>
-              <div className="text-sm font-medium text-gray-900">
-                {analytics.submissionsByStatus.in_progress} leads
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 bg-gray-500 rounded"></div>
-                <span className="text-sm text-gray-700">Abandoned</span>
-              </div>
-              <div className="text-sm font-medium text-gray-900">
-                {analytics.submissionsByStatus.abandoned} leads
-              </div>
-            </div>
-          </div>
-          
-          {/* Visual breakdown */}
-          <div className="mt-6">
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div className="h-full flex">
-                <div 
-                  className="bg-green-500"
-                  style={{ 
-                    width: `${analytics.submissions.length ? (analytics.submissionsByStatus.complete / analytics.submissions.length) * 100 : 0}%` 
-                  }}
-                ></div>
-                <div 
-                  className="bg-yellow-500"
-                  style={{ 
-                    width: `${analytics.submissions.length ? (analytics.submissionsByStatus.in_progress / analytics.submissions.length) * 100 : 0}%` 
-                  }}
-                ></div>
-                <div 
-                  className="bg-gray-500"
-                  style={{ 
-                    width: `${analytics.submissions.length ? (analytics.submissionsByStatus.abandoned / analytics.submissions.length) * 100 : 0}%` 
-                  }}
-                ></div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Monthly Revenue Chart */}
+        {/* Monthly Estimate Values Chart */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue (Last 6 Months)</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Estimate Values (Last 6 Months)</h2>
           <div className="space-y-3">
             {last6Months.map(month => {
-              const revenue = analytics.revenueByMonth[month] || 0
-              const maxRevenue = Math.max(...last6Months.map(m => analytics.revenueByMonth[m] || 0)) || 1
-              const percentage = (revenue / maxRevenue) * 100
+              const value = analytics.estimatesByMonth[month] || 0
+              const maxValue = Math.max(...last6Months.map(m => analytics.estimatesByMonth[m] || 0)) || 1
+              const percentage = (value / maxValue) * 100
               
               return (
                 <div key={month} className="flex items-center space-x-3">
@@ -269,7 +268,7 @@ export default async function AnalyticsPage() {
                     ></div>
                   </div>
                   <div className="w-16 text-xs text-gray-900 font-medium text-right">
-                    ${revenue.toLocaleString()}
+                    ${value.toLocaleString()}
                   </div>
                 </div>
               )
@@ -277,45 +276,53 @@ export default async function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Widget Performance */}
+        {/* After Hours vs Business Hours */}
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Widget Performance</h2>
-          {analytics.widgets.length > 0 ? (
-            <div className="space-y-4">
-              {analytics.widgets.map(widget => {
-                const widgetSubmissions = analytics.submissions.filter(s => s.widget_id === widget.id)
-                return (
-                  <div key={widget.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-gray-900">{widget.name}</h3>
-                      <span className="text-sm text-gray-500">{widgetSubmissions.length} leads</span>
-                    </div>
-                    <div className="text-xs text-gray-600 mb-2">
-                      Conversion: {widgetSubmissions.length ? 
-                        ((widgetSubmissions.filter(s => s.completion_status === 'complete').length / widgetSubmissions.length) * 100).toFixed(1)
-                        : '0'
-                      }%
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full"
-                        style={{ 
-                          width: `${analytics.submissions.length ? (widgetSubmissions.length / analytics.submissions.length) * 100 : 0}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <WrenchScrewdriverIcon className="w-6 h-6 text-gray-400" />
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Business Hours vs After Hours</h2>
+          <div className="space-y-6">
+            
+            {/* Business Hours */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium text-gray-900">Business Hours (8 AM - 6 PM)</h3>
+                <span className="text-sm text-gray-500">{analytics.businessHours.count} estimates</span>
               </div>
-              <p className="text-gray-500 text-sm">No widgets configured yet</p>
+              <div className="text-xs text-gray-600 mb-2">
+                Total Value: ${analytics.businessHours.value.toLocaleString()}
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-blue-500 h-3 rounded-full"
+                  style={{ 
+                    width: `${analytics.submissions.length ? (analytics.businessHours.count / analytics.submissions.length) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
             </div>
-          )}
+
+            {/* After Hours */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium text-gray-900">After Hours & Weekends</h3>
+                <span className="text-sm text-gray-500">{analytics.afterHours.count} estimates</span>
+              </div>
+              <div className="text-xs text-gray-600 mb-2">
+                Total Value: ${analytics.afterHours.value.toLocaleString()}
+              </div>
+              <div className="text-xs text-purple-600 mb-2">
+                {analytics.afterHours.rate}% of all estimates
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-purple-500 h-3 rounded-full"
+                  style={{ 
+                    width: `${analytics.submissions.length ? (analytics.afterHours.count / analytics.submissions.length) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 

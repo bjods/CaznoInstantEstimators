@@ -3,17 +3,17 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { DocumentTextIcon } from '@heroicons/react/24/outline'
 
-async function getSubmissions(businessId: string) {
+async function getSubmissions(businessIds: string[]) {
   const supabase = createClient()
   
-  // Get all submissions with widget information
+  // Get all submissions with widget information for all user's businesses
   const { data: submissions } = await supabase
     .from('submissions')
     .select(`
       *,
-      widgets(name, slug)
+      widgets(name, embed_key)
     `)
-    .eq('business_id', businessId)
+    .in('business_id', businessIds)
     .order('created_at', { ascending: false })
   
   return submissions || []
@@ -27,15 +27,15 @@ export default async function SubmissionsPage() {
     redirect('/login')
   }
 
-  // Get user's business
+  // Get user's businesses
   const { data: userProfiles } = await supabase
     .from('user_profiles')
     .select('business_id')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
 
-  const submissions = userProfiles?.[0]?.business_id 
-    ? await getSubmissions(userProfiles[0].business_id)
+  const businessIds = userProfiles?.map(profile => profile.business_id) || []
+  const submissions = businessIds.length > 0 
+    ? await getSubmissions(businessIds)
     : []
 
   return (
@@ -131,12 +131,16 @@ export default async function SubmissionsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {submission.widgets?.name || 'Unknown Widget'}
+                      <div className="flex items-center space-x-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {submission.widgets?.name || 'Unknown Widget'}
+                        </span>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {submission.widgets?.slug}
-                      </div>
+                      {submission.widgets?.embed_key && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {submission.widgets.embed_key}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

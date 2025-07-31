@@ -6,8 +6,13 @@ import { DocumentTextIcon } from '@heroicons/react/24/outline'
 async function getSubmissions(businessIds: string[]) {
   const supabase = createClient()
   
+  // Return empty array if no business IDs
+  if (!businessIds || businessIds.length === 0) {
+    return []
+  }
+  
   // Get all submissions with widget information for all user's businesses
-  const { data: submissions } = await supabase
+  const { data: submissions, error } = await supabase
     .from('submissions')
     .select(`
       *,
@@ -15,6 +20,11 @@ async function getSubmissions(businessIds: string[]) {
     `)
     .in('business_id', businessIds)
     .order('created_at', { ascending: false })
+  
+  if (error) {
+    console.error('Error fetching submissions:', error)
+    return []
+  }
   
   return submissions || []
 }
@@ -28,15 +38,17 @@ export default async function SubmissionsPage() {
   }
 
   // Get user's businesses
-  const { data: userProfiles } = await supabase
+  const { data: userProfiles, error: profileError } = await supabase
     .from('user_profiles')
     .select('business_id')
     .eq('user_id', user.id)
 
-  const businessIds = userProfiles?.map(profile => profile.business_id) || []
-  const submissions = businessIds.length > 0 
-    ? await getSubmissions(businessIds)
-    : []
+  if (profileError) {
+    console.error('Error fetching user profiles:', profileError)
+  }
+
+  const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
+  const submissions = await getSubmissions(businessIds)
 
   return (
     <div className="space-y-6">

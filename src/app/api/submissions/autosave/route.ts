@@ -57,15 +57,18 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
     
+    // Initialize security components early
+    const domain = extractDomain(request)
+    const ip = getClientIp(request)
+    const rateLimitMiddleware = createRateLimitMiddleware()
+    const rateLimit = rateLimitMiddleware(ip, domain)
+    
     // Parse and validate request body
     let body: AutosaveRequest
     try {
       const rawBody = await request.json()
       body = autosaveSchema.parse(rawBody)
     } catch (error) {
-      const domain = extractDomain(request)
-      const ip = getClientIp(request)
-      
       // Log validation failure
       await logSecurityEvent({
         eventType: 'input_validation_failed',
@@ -82,17 +85,17 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json(
         { success: false, error: 'Invalid request data' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: {
+            ...rateLimit.headers,
+            ...getAPISecurityHeaders()
+          }
+        }
       )
     }
 
-    // Apply rate limiting first (fast check)
-    const domain = extractDomain(request)
-    const ip = getClientIp(request)
-    
-    const rateLimitMiddleware = createRateLimitMiddleware()
-    const rateLimit = rateLimitMiddleware(ip, domain)
-    
+    // Check rate limit
     if (!rateLimit.allowed) {
       await logSecurityEvent({
         eventType: 'rate_limit_exceeded',
@@ -330,11 +333,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Autosave error:', error)
+    
+    // Ensure we have basic security headers even in error case
+    const errorHeaders = getAPISecurityHeaders()
+    
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { 
         status: 500,
-        headers: getAPISecurityHeaders()
+        headers: errorHeaders
       }
     )
   }

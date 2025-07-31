@@ -62,29 +62,23 @@ export function useFormAutosave({
     isSavingRef.current = true
     setAutosaveState(prev => ({ ...prev, status: 'saving', error: null }))
 
-    const requestData = {
-      widgetId,
-      sessionId: autosaveState.sessionId,
-      formData,
-      currentStep,
-      isEarlyCapture
-    }
-    
-    console.log('Autosave request data:', requestData)
-
     try {
       const response = await fetch('/api/submissions/autosave', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify({
+          widgetId,
+          sessionId: autosaveState.sessionId,
+          formData,
+          currentStep,
+          isEarlyCapture
+        })
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Autosave API error response:', response.status, errorText)
-        throw new Error(`HTTP ${response.status}: ${errorText}`)
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const result = await response.json()

@@ -13,7 +13,7 @@ import { z } from 'zod'
 // Validation schema for autosave requests
 const autosaveSchema = z.object({
   widgetId: z.string().uuid('Invalid widget ID format'),
-  sessionId: z.string().uuid().optional(),
+  sessionId: z.string().uuid().optional().nullable(),
   formData: z.record(z.any()).refine(
     (data) => Object.keys(data).length > 0,
     'Form data cannot be empty'
@@ -24,7 +24,7 @@ const autosaveSchema = z.object({
 
 interface AutosaveRequest {
   widgetId: string
-  sessionId?: string // Optional session ID for tracking
+  sessionId?: string | null // Optional session ID for tracking
   formData: Record<string, any>
   currentStep: string
   isEarlyCapture?: boolean // First time creating the submission
@@ -67,10 +67,8 @@ export async function POST(request: NextRequest) {
     let body: AutosaveRequest
     try {
       const rawBody = await request.json()
-      console.log('Autosave received data:', rawBody)
       body = autosaveSchema.parse(rawBody)
     } catch (error) {
-      console.error('Autosave validation error:', error)
       
       // Log validation failure
       await logSecurityEvent({

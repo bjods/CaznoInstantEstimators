@@ -67,8 +67,11 @@ export async function POST(request: NextRequest) {
     let body: AutosaveRequest
     try {
       const rawBody = await request.json()
+      console.log('Autosave received data:', rawBody)
       body = autosaveSchema.parse(rawBody)
     } catch (error) {
+      console.error('Autosave validation error:', error)
+      
       // Log validation failure
       await logSecurityEvent({
         eventType: 'input_validation_failed',
@@ -84,7 +87,7 @@ export async function POST(request: NextRequest) {
       })
       
       return NextResponse.json(
-        { success: false, error: 'Invalid request data' },
+        { success: false, error: error instanceof z.ZodError ? error.errors : 'Invalid request data' },
         { 
           status: 400,
           headers: {

@@ -150,7 +150,14 @@ export async function POST(request: NextRequest) {
     if (widgetError || !widget) {
       return NextResponse.json(
         { success: false, error: 'Widget not found' },
-        { status: 404, headers: corsHeaders }
+        { 
+          status: 404, 
+          headers: { 
+            ...validation.headers, 
+            ...rateLimit.headers,
+            ...getAPISecurityHeaders()
+          } 
+        }
       )
     }
 
@@ -175,7 +182,14 @@ export async function POST(request: NextRequest) {
             error: `Missing required fields for early capture: ${submissionFlowConfig.min_fields_for_capture.join(', ')}`,
             waitForFields: submissionFlowConfig.min_fields_for_capture
           },
-          { status: 400, headers: corsHeaders }
+          { 
+            status: 400, 
+            headers: { 
+              ...validation.headers, 
+              ...rateLimit.headers,
+              ...getAPISecurityHeaders()
+            } 
+          }
         )
       }
     }
@@ -230,7 +244,14 @@ export async function POST(request: NextRequest) {
           console.error('Failed to update submission:', updateError)
           return NextResponse.json(
             { success: false, error: 'Failed to update submission' },
-            { status: 500, headers: corsHeaders }
+            { 
+              status: 500, 
+              headers: { 
+                ...validation.headers, 
+                ...rateLimit.headers,
+                ...getAPISecurityHeaders()
+              } 
+            }
           )
         }
 
@@ -276,7 +297,14 @@ export async function POST(request: NextRequest) {
         console.error('Failed to create submission:', createError)
         return NextResponse.json(
           { success: false, error: 'Failed to create submission' },
-          { status: 500, headers: corsHeaders }
+          { 
+            status: 500, 
+            headers: { 
+              ...validation.headers, 
+              ...rateLimit.headers,
+              ...getAPISecurityHeaders()
+            } 
+          }
         )
       }
 

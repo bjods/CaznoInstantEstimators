@@ -3,52 +3,84 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { DocumentTextIcon } from '@heroicons/react/24/outline'
 
+// Force dynamic rendering since we use authentication
+export const dynamic = 'force-dynamic'
+
 async function getSubmissions(businessIds: string[]) {
+  console.log('[SUBMISSIONS] getSubmissions called with businessIds:', businessIds)
   const supabase = createClient()
   
   // Return empty array if no business IDs
   if (!businessIds || businessIds.length === 0) {
+    console.log('[SUBMISSIONS] No business IDs provided, returning empty array')
     return []
   }
   
-  // Get all submissions with widget information for all user's businesses
-  const { data: submissions, error } = await supabase
-    .from('submissions')
-    .select(`
-      *,
-      widgets(name, embed_key)
-    `)
-    .in('business_id', businessIds)
-    .order('created_at', { ascending: false })
-  
-  if (error) {
-    console.error('Error fetching submissions:', error)
-    return []
+  try {
+    console.log('[SUBMISSIONS] Making Supabase query for business IDs:', businessIds)
+    
+    // Get all submissions with widget information for all user's businesses
+    const { data: submissions, error } = await supabase
+      .from('submissions')
+      .select(`
+        *,
+        widgets(name, embed_key)
+      `)
+      .in('business_id', businessIds)
+      .order('created_at', { ascending: false })
+    
+    console.log('[SUBMISSIONS] Supabase query completed. Error:', error, 'Data count:', submissions?.length || 0)
+    
+    if (error) {
+      console.error('[SUBMISSIONS] Error fetching submissions:', error)
+      throw new Error(`Submissions query failed: ${error.message}`)
+    }
+    
+    console.log('[SUBMISSIONS] Successfully fetched submissions:', submissions?.length || 0)
+    return submissions || []
+  } catch (err) {
+    console.error('[SUBMISSIONS] Exception in getSubmissions:', err)
+    throw err
   }
-  
-  return submissions || []
 }
 
 export default async function SubmissionsPage() {
-  const supabase = createClient()
+  console.log('[SUBMISSIONS] SubmissionsPage component started')
   
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
+  try {
+    const supabase = createClient()
+    console.log('[SUBMISSIONS] Supabase client created')
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('[SUBMISSIONS] Auth check completed. User ID:', user?.id, 'Auth Error:', authError)
+    
+    if (!user) {
+      console.log('[SUBMISSIONS] No user found, redirecting to login')
+      redirect('/login')
+    }
 
-  // Get user's businesses
-  const { data: userProfiles, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('business_id')
-    .eq('user_id', user.id)
+    // Get user's businesses
+    console.log('[SUBMISSIONS] Fetching user profiles for user ID:', user.id)
+    const { data: userProfiles, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('business_id')
+      .eq('user_id', user.id)
 
-  if (profileError) {
-    console.error('Error fetching user profiles:', profileError)
-  }
+    console.log('[SUBMISSIONS] User profiles query completed. Profiles:', userProfiles, 'Error:', profileError)
 
-  const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
-  const submissions = await getSubmissions(businessIds)
+    if (profileError) {
+      console.error('[SUBMISSIONS] Error fetching user profiles:', profileError)
+      throw new Error(`User profiles query failed: ${profileError.message}`)
+    }
+
+    const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
+    console.log('[SUBMISSIONS] Processed business IDs:', businessIds)
+    
+    console.log('[SUBMISSIONS] About to call getSubmissions with business IDs:', businessIds)
+    const submissions = await getSubmissions(businessIds)
+    console.log('[SUBMISSIONS] getSubmissions completed, submissions count:', submissions?.length || 0)
+  
+    console.log('[SUBMISSIONS] About to render component with', submissions?.length || 0, 'submissions')
 
   return (
     <div className="space-y-6">
@@ -228,4 +260,37 @@ export default async function SubmissionsPage() {
       )}
     </div>
   )
+  } catch (error) {
+    console.error('[SUBMISSIONS] Fatal error in SubmissionsPage:', error)
+    
+    // Return error page instead of crashing
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Lead Submissions</h1>
+            <p className="text-gray-600">Error loading submissions</p>
+          </div>
+        </div>
+        
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Submissions</h3>
+          <p className="text-red-600 mb-4">
+            There was an error loading your submissions. Please check the console for details and try refreshing the page.
+          </p>
+          <div className="text-sm text-red-500 bg-red-100 p-3 rounded font-mono">
+            {error instanceof Error ? error.message : 'Unknown error occurred'}
+          </div>
+          <div className="mt-4">
+            <Link 
+              href="/dashboard" 
+              className="inline-flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+            >
+              ← Back to Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 }

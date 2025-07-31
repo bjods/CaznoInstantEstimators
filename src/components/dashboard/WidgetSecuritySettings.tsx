@@ -79,6 +79,7 @@ export default function WidgetSecuritySettings({ widget, onUpdate }: WidgetSecur
     try {
       const response = await fetch(`/api/widgets/${widget.id}/security`, {
         method: 'PUT',
+        credentials: 'include', // Include cookies for authentication
         headers: {
           'Content-Type': 'application/json'
         },

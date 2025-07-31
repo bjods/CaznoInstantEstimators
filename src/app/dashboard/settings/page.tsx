@@ -28,7 +28,14 @@ export default function SettingsPage() {
 
   const fetchWidgets = async () => {
     try {
-      const response = await fetch('/api/widgets')
+      const response = await fetch('/api/widgets', {
+        method: 'GET',
+        credentials: 'include', // Include cookies for authentication
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
       const result = await response.json()
 
       if (!result.success) {

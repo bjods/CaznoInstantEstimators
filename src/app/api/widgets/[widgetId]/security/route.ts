@@ -23,6 +23,16 @@ export async function GET(
     const supabase = createClient()
     const { widgetId } = params
 
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401, headers: getAPISecurityHeaders() }
+      )
+    }
+
     // Validate widget ID format
     if (!widgetId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(widgetId)) {
       return NextResponse.json(
@@ -31,11 +41,27 @@ export async function GET(
       )
     }
 
-    // Get widget security settings
+    // Get user's business IDs from user_profiles
+    const { data: userProfiles, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('business_id')
+      .eq('user_id', user.id)
+
+    if (profileError || !userProfiles || userProfiles.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No business access found' },
+        { status: 403, headers: getAPISecurityHeaders() }
+      )
+    }
+
+    const businessIds = userProfiles.map(profile => profile.business_id)
+
+    // Get widget security settings (only for user's businesses)
     const { data: widget, error } = await supabase
       .from('widgets')
       .select('id, name, embed_key, allowed_domains, security_enabled, embed_restrictions')
       .eq('id', widgetId)
+      .in('business_id', businessIds)
       .single()
 
     if (error || !widget) {
@@ -79,6 +105,16 @@ export async function PUT(
     const supabase = createClient()
     const { widgetId } = params
 
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401, headers: getAPISecurityHeaders() }
+      )
+    }
+
     // Validate widget ID format
     if (!widgetId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(widgetId)) {
       return NextResponse.json(
@@ -113,11 +149,27 @@ export async function PUT(
       }
     }
 
-    // Check if widget exists
+    // Get user's business IDs from user_profiles
+    const { data: userProfiles, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('business_id')
+      .eq('user_id', user.id)
+
+    if (profileError || !userProfiles || userProfiles.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No business access found' },
+        { status: 403, headers: getAPISecurityHeaders() }
+      )
+    }
+
+    const businessIds = userProfiles.map(profile => profile.business_id)
+
+    // Check if widget exists and user has access
     const { data: existingWidget } = await supabase
       .from('widgets')
       .select('id, business_id')
       .eq('id', widgetId)
+      .in('business_id', businessIds)
       .single()
 
     if (!existingWidget) {

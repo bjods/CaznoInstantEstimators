@@ -59,11 +59,11 @@ export default async function DashboardLayout({
                   <span>Widgets</span>
                 </Link>
                 <Link
-                  href="/dashboard/leads"
+                  href="/dashboard/submissions"
                   className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   <UsersIcon className="w-4 h-4" />
-                  <span>Leads</span>
+                  <span>Submissions</span>
                 </Link>
                 <Link
                   href="/dashboard/analytics"
@@ -141,11 +141,11 @@ export default async function DashboardLayout({
               <span>Widgets</span>
             </Link>
             <Link
-              href="/dashboard/leads"
+              href="/dashboard/submissions"
               className="flex items-center space-x-2 text-gray-700 hover:text-black hover:bg-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               <UsersIcon className="w-4 h-4" />
-              <span>Leads</span>
+              <span>Submissions</span>
             </Link>
             <Link
               href="/dashboard/analytics"

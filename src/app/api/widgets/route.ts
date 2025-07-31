@@ -6,10 +6,36 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createClient()
 
-    // Get all widgets for the business (in a real app, this would be filtered by authenticated user)
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401, headers: getAPISecurityHeaders() }
+      )
+    }
+
+    // Get user's business IDs from user_profiles
+    const { data: userProfiles, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('business_id')
+      .eq('user_id', user.id)
+
+    if (profileError || !userProfiles || userProfiles.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No business access found' },
+        { status: 403, headers: getAPISecurityHeaders() }
+      )
+    }
+
+    const businessIds = userProfiles.map(profile => profile.business_id)
+
+    // Get widgets only for user's businesses
     const { data: widgets, error } = await supabase
       .from('widgets')
       .select('id, name, embed_key, allowed_domains, security_enabled, embed_restrictions, created_at')
+      .in('business_id', businessIds)
       .order('created_at', { ascending: false })
 
     if (error) {

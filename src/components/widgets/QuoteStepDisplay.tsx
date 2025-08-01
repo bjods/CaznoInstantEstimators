@@ -63,13 +63,13 @@ interface QuoteStepDisplayProps {
       layout?: 'single' | 'sidebar'
     }
   }
-  calculatedTotal: number
-  calculatedBreakdown: Array<{
+  calculatedTotal?: number
+  calculatedBreakdown?: Array<{
     service: string
     area?: number
     quantity?: number
     basePrice: number
-    options: Array<{ name: string; price: number }>
+    options?: Array<{ name: string; price: number }>
     total: number
   }>
   onBack?: () => void
@@ -209,7 +209,7 @@ export default function QuoteStepDisplay({
                   <h2 className="text-lg font-semibold text-gray-900">Services Breakdown</h2>
                 </div>
                 <div className="p-6 space-y-6">
-                  {calculatedBreakdown.map((item, index) => (
+                  {calculatedBreakdown && calculatedBreakdown.length > 0 ? calculatedBreakdown.map((item, index) => (
                     <div key={index} className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900">{item.service}</h3>
@@ -232,7 +232,7 @@ export default function QuoteStepDisplay({
                             <span>${(item.basePrice * (item.area || item.quantity || 1)).toLocaleString()}</span>
                           </div>
                           
-                          {config.breakdown.showOptionsBreakdown && item.options.map((option, optionIndex) => (
+                          {config.breakdown.showOptionsBreakdown && item.options && item.options.map((option, optionIndex) => (
                             <div key={optionIndex} className="flex justify-between text-gray-600">
                               <span>{option.name}</span>
                               <span>+${option.price.toLocaleString()}</span>
@@ -247,13 +247,17 @@ export default function QuoteStepDisplay({
                         </div>
                       )}
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No service breakdown available</p>
+                    </div>
+                  )}
                   
                   <hr className="my-6" />
                   
                   <div className="flex justify-between items-center text-xl font-bold">
                     <span>Total Project Cost</span>
-                    <span className={config.styling.primaryColor}>${calculatedTotal.toLocaleString()}</span>
+                    <span className={config.styling.primaryColor}>${(calculatedTotal || 0).toLocaleString()}</span>
                   </div>
                 </div>
               </div>

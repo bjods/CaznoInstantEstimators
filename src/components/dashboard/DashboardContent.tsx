@@ -19,6 +19,7 @@ interface Widget {
   id: string
   name: string
   embed_key: string
+  config?: any
   has_pricing?: boolean
   show_instant_estimate?: boolean
   has_booking?: boolean
@@ -31,7 +32,12 @@ interface Submission {
   full_name?: string
   email?: string
   phone?: string
-  estimated_price?: number
+  pricing_data?: {
+    estimate?: number
+    basePrice?: number
+    finalPrice?: number
+    display_price?: string
+  }
   completion_status: string
   appointment_date?: string
   created_at: string
@@ -46,7 +52,7 @@ interface DashboardContentProps {
   submissions: Submission[]
   thisWeekSubmissions: Submission[]
   recentSubmissions: Submission[]
-  businessIds: string[]
+  businessId: string
 }
 
 export default function DashboardContent({
@@ -54,7 +60,7 @@ export default function DashboardContent({
   submissions,
   thisWeekSubmissions,
   recentSubmissions,
-  businessIds
+  businessId
 }: DashboardContentProps) {
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
 
@@ -79,8 +85,15 @@ export default function DashboardContent({
     }
   }, [selectedWidgetId, submissions, thisWeekSubmissions, recentSubmissions, widgets])
 
-  // Detect widget capabilities
-  const hasInstantPricing = filteredData.widgets.some(w => w.has_pricing || w.show_instant_estimate)
+  // Detect widget capabilities using pricingCalculator in config
+  const hasInstantPricing = filteredData.widgets.some(w => {
+    // Check if widget has pricingCalculator in config
+    if (w.config && typeof w.config === 'object' && w.config.pricingCalculator) {
+      return true
+    }
+    // Fallback to old detection methods
+    return w.has_pricing || w.show_instant_estimate
+  })
   const hasBooking = filteredData.widgets.some(w => w.has_booking || w.appointment_booking)
 
   // Calculate metrics
@@ -105,8 +118,8 @@ export default function DashboardContent({
   // Calculate total estimate value (for pricing widgets)
   const totalEstimateValue = hasInstantPricing 
     ? filteredData.submissions
-        .filter(s => s.estimated_price && typeof s.estimated_price === 'number')
-        .reduce((sum, s) => sum + (s.estimated_price || 0), 0)
+        .filter(s => s.pricing_data?.estimate || s.pricing_data?.finalPrice)
+        .reduce((sum, s) => sum + (s.pricing_data?.estimate || s.pricing_data?.finalPrice || 0), 0)
     : 0
 
   // Calculate appointment count (for booking widgets)
@@ -257,7 +270,7 @@ export default function DashboardContent({
               const widgetName = submission?.widgets?.name || 'Unknown Widget'
               const status = submission?.completion_status || 'unknown'
               const createdAt = submission?.created_at ? new Date(submission.created_at) : null
-              const estimatePrice = submission?.estimated_price
+              const estimatePrice = submission?.pricing_data?.estimate || submission?.pricing_data?.finalPrice
               
               return (
                 <div key={submission.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">

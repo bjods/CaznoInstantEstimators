@@ -34,25 +34,25 @@ export default function SubmissionsPage() {
         return
       }
 
-      // Get user's businesses
-      const { data: userProfiles, error: profileError } = await supabase
+      // Get user's business (single business per user)
+      const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
         .select('business_id')
         .eq('user_id', user.id)
+        .single()
 
       if (profileError) {
-        throw new Error(`Failed to fetch user profiles: ${profileError.message}`)
+        throw new Error(`Failed to fetch user profile: ${profileError.message}`)
       }
 
-      const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
-      console.log('[SUBMISSIONS] Business IDs:', businessIds)
-
-      if (businessIds.length === 0) {
-        console.log('[SUBMISSIONS] No business IDs found')
+      if (!userProfile?.business_id) {
+        console.log('[SUBMISSIONS] No business ID found')
         setSubmissions([])
         setLoading(false)
         return
       }
+
+      console.log('[SUBMISSIONS] Business ID:', userProfile.business_id)
 
       // Get all submissions with widget information
       const { data: submissions, error: submissionsError } = await supabase
@@ -61,7 +61,7 @@ export default function SubmissionsPage() {
           *,
           widgets(name, embed_key)
         `)
-        .in('business_id', businessIds)
+        .eq('business_id', userProfile.business_id)
         .order('created_at', { ascending: false })
 
       if (submissionsError) {

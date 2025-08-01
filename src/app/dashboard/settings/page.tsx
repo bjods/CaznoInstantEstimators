@@ -29,13 +29,13 @@ export default function SettingsPage() {
       }
 
       // Get user's business
-      const { data: userProfiles } = await supabase
+      const { data: userProfile } = await supabase
         .from('user_profiles')
         .select('business_id')
         .eq('user_id', user.id)
         .single()
 
-      if (!userProfiles?.business_id) {
+      if (!userProfile?.business_id) {
         setError('No business found for this user')
         setLoading(false)
         return
@@ -45,7 +45,7 @@ export default function SettingsPage() {
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .select('settings')
-        .eq('id', userProfiles.business_id)
+        .eq('id', userProfile.business_id)
         .single()
 
       if (businessError) {
@@ -105,13 +105,13 @@ export default function SettingsPage() {
       }
 
       // Get user's business
-      const { data: userProfiles } = await supabase
+      const { data: userProfile } = await supabase
         .from('user_profiles')
         .select('business_id')
         .eq('user_id', user.id)
         .single()
 
-      if (!userProfiles?.business_id) {
+      if (!userProfile?.business_id) {
         throw new Error('No business found for this user')
       }
 
@@ -119,7 +119,7 @@ export default function SettingsPage() {
       const { data: business } = await supabase
         .from('businesses')
         .select('settings')
-        .eq('id', userProfiles.business_id)
+        .eq('id', userProfile.business_id)
         .single()
 
       const currentSettings = business?.settings || {}
@@ -135,7 +135,7 @@ export default function SettingsPage() {
       const { error: updateError } = await supabase
         .from('businesses')
         .update({ settings: updatedSettings })
-        .eq('id', userProfiles.business_id)
+        .eq('id', userProfile.business_id)
 
       if (updateError) {
         throw updateError

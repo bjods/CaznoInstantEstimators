@@ -2,24 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DashboardContent from '@/components/dashboard/DashboardContent'
 
-async function getDashboardData(businessIds: string[]) {
+async function getDashboardData(businessId: string) {
   const supabase = createClient()
   
-  if (businessIds.length === 0) {
-    return {
-      widgets: [],
-      submissions: [],
-      thisWeekSubmissions: [],
-      recentSubmissions: [],
-      businessIds
-    }
-  }
-  
-  // Get widgets for all user's businesses
+  // Get widgets for the business
   const { data: widgets } = await supabase
     .from('widgets')
     .select('*')
-    .in('business_id', businessIds)
+    .eq('business_id', businessId)
   
   // Get all submissions with widget information
   const { data: submissions } = await supabase
@@ -28,7 +18,7 @@ async function getDashboardData(businessIds: string[]) {
       *,
       widgets(name, embed_key)
     `)
-    .in('business_id', businessIds)
+    .eq('business_id', businessId)
   
   // Get this week's submissions (last 7 days)
   const oneWeekAgo = new Date()
@@ -45,7 +35,7 @@ async function getDashboardData(businessIds: string[]) {
       *,
       widgets(name, embed_key)
     `)
-    .in('business_id', businessIds)
+    .eq('business_id', businessId)
     .order('created_at', { ascending: false })
     .limit(5)
   
@@ -54,7 +44,7 @@ async function getDashboardData(businessIds: string[]) {
     submissions: submissions || [],
     thisWeekSubmissions,
     recentSubmissions: recentSubmissions || [],
-    businessIds
+    businessId
   }
 }
 
@@ -66,15 +56,14 @@ export default async function Dashboard() {
     redirect('/login')
   }
 
-  // Get all user's businesses
+  // Get user's business (single business per user)
   const { data: userProfiles } = await supabase
     .from('user_profiles')
     .select('business_id')
     .eq('user_id', user.id)
+    .single()
 
-  const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
-
-  if (businessIds.length === 0) {
+  if (!userProfiles?.business_id) {
     return (
       <div className="text-center py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">No Business Access</h1>
@@ -83,7 +72,7 @@ export default async function Dashboard() {
     )
   }
 
-  const dashboardData = await getDashboardData(businessIds)
+  const dashboardData = await getDashboardData(userProfiles.business_id)
 
   return (
     <DashboardContent 
@@ -91,7 +80,7 @@ export default async function Dashboard() {
       submissions={dashboardData.submissions}
       thisWeekSubmissions={dashboardData.thisWeekSubmissions}
       recentSubmissions={dashboardData.recentSubmissions}
-      businessIds={dashboardData.businessIds}
+      businessId={dashboardData.businessId}
     />
   )
 }

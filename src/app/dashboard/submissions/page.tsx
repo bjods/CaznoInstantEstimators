@@ -1,94 +1,119 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { DocumentTextIcon } from '@heroicons/react/24/outline'
+import SubmissionDetailsModal from '@/components/dashboard/SubmissionDetailsModal'
 
-// Force dynamic rendering since we use authentication
-export const dynamic = 'force-dynamic'
-
-async function getSubmissions(businessIds: string[]) {
-  console.log('[SUBMISSIONS] getSubmissions called with businessIds:', businessIds)
+export default function SubmissionsPage() {
+  const [submissions, setSubmissions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  
+  const router = useRouter()
   const supabase = createClient()
-  
-  // Return empty array if no business IDs
-  if (!businessIds || businessIds.length === 0) {
-    console.log('[SUBMISSIONS] No business IDs provided, returning empty array')
-    return []
-  }
-  
-  try {
-    console.log('[SUBMISSIONS] Making Supabase query for business IDs:', businessIds)
-    
-    // Get all submissions with widget information for all user's businesses
-    const { data: submissions, error } = await supabase
-      .from('submissions')
-      .select(`
-        *,
-        widgets(name, embed_key)
-      `)
-      .in('business_id', businessIds)
-      .order('created_at', { ascending: false })
-    
-    console.log('[SUBMISSIONS] Supabase query completed. Error:', error, 'Data count:', submissions?.length || 0)
-    
-    if (error) {
-      console.error('[SUBMISSIONS] Error fetching submissions:', error)
-      return []
+
+  useEffect(() => {
+    fetchSubmissions()
+  }, [])
+
+  const fetchSubmissions = async () => {
+    try {
+      console.log('[SUBMISSIONS] Starting to fetch submissions')
+      
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        console.log('[SUBMISSIONS] No user found, redirecting to login')
+        router.push('/login')
+        return
+      }
+
+      // Get user's businesses
+      const { data: userProfiles, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('business_id')
+        .eq('user_id', user.id)
+
+      if (profileError) {
+        throw new Error(`Failed to fetch user profiles: ${profileError.message}`)
+      }
+
+      const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
+      console.log('[SUBMISSIONS] Business IDs:', businessIds)
+
+      if (businessIds.length === 0) {
+        console.log('[SUBMISSIONS] No business IDs found')
+        setSubmissions([])
+        setLoading(false)
+        return
+      }
+
+      // Get all submissions with widget information
+      const { data: submissions, error: submissionsError } = await supabase
+        .from('submissions')
+        .select(`
+          *,
+          widgets(name, embed_key)
+        `)
+        .in('business_id', businessIds)
+        .order('created_at', { ascending: false })
+
+      if (submissionsError) {
+        throw new Error(`Failed to fetch submissions: ${submissionsError.message}`)
+      }
+
+      console.log('[SUBMISSIONS] Fetched submissions:', submissions?.length || 0)
+      setSubmissions(submissions || [])
+    } catch (err) {
+      console.error('[SUBMISSIONS] Error:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
     }
-    
-    console.log('[SUBMISSIONS] Successfully fetched submissions:', submissions?.length || 0)
-    return submissions || []
-  } catch (err) {
-    console.error('[SUBMISSIONS] Exception in getSubmissions:', err)
-    return []
-  }
-}
-
-export default async function SubmissionsPage() {
-  console.log('[SUBMISSIONS] SubmissionsPage component started')
-  
-  const supabase = createClient()
-  console.log('[SUBMISSIONS] Supabase client created')
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  console.log('[SUBMISSIONS] Auth check completed. User ID:', user?.id, 'Auth Error:', authError)
-  
-  if (!user) {
-    console.log('[SUBMISSIONS] No user found, redirecting to login')
-    redirect('/login')
   }
 
-  // Get user's businesses
-  console.log('[SUBMISSIONS] Fetching user profiles for user ID:', user.id)
-  const { data: userProfiles, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('business_id')
-    .eq('user_id', user.id)
+  const handleRowClick = (submission: any) => {
+    setSelectedSubmission(submission)
+    setModalOpen(true)
+  }
 
-  console.log('[SUBMISSIONS] User profiles query completed. Profiles:', userProfiles, 'Error:', profileError)
-
-  if (profileError) {
-    console.error('[SUBMISSIONS] Error fetching user profiles:', profileError)
+  if (loading) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold text-gray-900">Lead Submissions</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-600">Error loading user profile: {profileError.message}</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-500">Loading submissions...</p>
+          </div>
         </div>
       </div>
     )
   }
 
-  const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
-  console.log('[SUBMISSIONS] Processed business IDs:', businessIds)
-  
-  console.log('[SUBMISSIONS] About to call getSubmissions with business IDs:', businessIds)
-  const submissions = await getSubmissions(businessIds)
-  console.log('[SUBMISSIONS] getSubmissions completed, submissions count:', submissions?.length || 0)
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">Lead Submissions</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">Error: {error}</p>
+          <button 
+            onClick={fetchSubmissions}
+            className="mt-2 text-red-600 hover:text-red-800 underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    )
+  }
 
-  console.log('[SUBMISSIONS] About to render component with', submissions?.length || 0, 'submissions')
-
-  // Simple render without complex filtering to avoid hydration issues
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -134,6 +159,7 @@ export default async function SubmissionsPage() {
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">All Submissions</h2>
+          <p className="text-sm text-gray-500 mt-1">Click on any row to view details</p>
         </div>
 
         {submissions.length > 0 ? (
@@ -168,7 +194,11 @@ export default async function SubmissionsPage() {
                   const estimatePrice = submission?.estimated_price
                   
                   return (
-                    <tr key={submission?.id || Math.random()} className="hover:bg-gray-50">
+                    <tr 
+                      key={submission?.id || Math.random()} 
+                      className="hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => handleRowClick(submission)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-lime-400 rounded-full flex items-center justify-center">
@@ -260,6 +290,16 @@ export default async function SubmissionsPage() {
           </Link>
         </div>
       )}
+
+      {/* Submission Details Modal */}
+      <SubmissionDetailsModal 
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false)
+          setSelectedSubmission(null)
+        }}
+        submission={selectedSubmission}
+      />
     </div>
   )
 }

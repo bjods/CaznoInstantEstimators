@@ -68,15 +68,15 @@ export function AddressAutocomplete({
           google.maps.places.PlaceAutocompleteElement) {
         
         console.log('Using new PlaceAutocompleteElement API')
-        const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement({
-          fields: ['formatted_address', 'geometry', 'address_components', 'place_id']
-        })
+        const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement()
         
         // Set up event listener for the new API
         placeAutocomplete.addEventListener('gmp-placeselect', (event: any) => {
           const place = event.place
-          if (place && place.formatted_address) {
-            onChange(place.formatted_address)
+          if (place && place.formattedAddress) {
+            onChange(place.formattedAddress)
+          } else if (place && place.displayName) {
+            onChange(place.displayName)
           }
         })
         

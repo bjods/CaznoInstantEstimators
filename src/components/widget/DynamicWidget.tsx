@@ -5,6 +5,7 @@ import { DynamicComponent } from './DynamicComponent'
 import { PersonalInfoStep } from './PersonalInfoStep'
 import { PriceCalculator, CompactPriceDisplay } from './PriceCalculator'
 import { QuoteStep } from './QuoteStep'
+import QuoteStepDisplay from '../widgets/QuoteStepDisplay'
 import { WidgetConfig, CTAButton, SchedulingSelection } from '@/types'
 import { useFormAutosave } from '@/hooks/useFormAutosave'
 
@@ -332,6 +333,38 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
   // Show quote step if we're at that position
   if (isQuoteStep && config.quoteStep) {
+    // Calculate pricing data for QuoteStepDisplay
+    const calculateQuoteData = () => {
+      if (!config.pricingCalculator) {
+        return { total: 0, breakdown: [] }
+      }
+
+      const serviceField = config.pricingCalculator.basePricing?.service_field || 'selectedServices'
+      const selectedServices = formData[serviceField] || []
+      const services = Array.isArray(selectedServices) ? selectedServices : [selectedServices]
+      const prices = config.pricingCalculator.basePricing?.prices || {}
+
+      let total = 0
+      const breakdown = services.map(service => {
+        const priceConfig = prices[service]
+        if (!priceConfig) return null
+
+        const serviceTotal = priceConfig.amount || 0
+        total += serviceTotal
+
+        return {
+          service: service.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          basePrice: priceConfig.amount || 0,
+          options: [], // No options for simple pricing
+          total: serviceTotal
+        }
+      }).filter(Boolean)
+
+      return { total, breakdown }
+    }
+
+    const { total, breakdown } = calculateQuoteData()
+
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* Header with Progress */}
@@ -353,13 +386,25 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-6 py-8">
-          <QuoteStep
-            config={config.quoteStep}
-            pricingCalculator={config.pricingCalculator}
-            formData={formData}
-            onButtonClick={handleCTAButtonClick}
-          />
+        <main className="flex-1">
+          {config.quoteStep.component === 'QuoteStepDisplay' ? (
+            <QuoteStepDisplay
+              formData={formData}
+              quoteConfig={config.quoteStep.config || {}}
+              calculatedTotal={total}
+              calculatedBreakdown={breakdown}
+              onBack={handlePrevious}
+            />
+          ) : (
+            <div className="px-6 py-8">
+              <QuoteStep
+                config={config.quoteStep}
+                pricingCalculator={config.pricingCalculator}
+                formData={formData}
+                onButtonClick={handleCTAButtonClick}
+              />
+            </div>
+          )}
         </main>
 
         {/* Footer with Navigation */}

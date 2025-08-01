@@ -2,20 +2,33 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DashboardContent from '@/components/dashboard/DashboardContent'
 
-async function getDashboardData(businessId: string) {
+async function getDashboardData(businessIds: string[]) {
   const supabase = createClient()
   
-  // Get widgets
+  if (businessIds.length === 0) {
+    return {
+      widgets: [],
+      submissions: [],
+      thisWeekSubmissions: [],
+      recentSubmissions: [],
+      businessIds
+    }
+  }
+  
+  // Get widgets for all user's businesses
   const { data: widgets } = await supabase
     .from('widgets')
     .select('*')
-    .eq('business_id', businessId)
+    .in('business_id', businessIds)
   
-  // Get all submissions
+  // Get all submissions with widget information
   const { data: submissions } = await supabase
     .from('submissions')
-    .select('*')
-    .eq('business_id', businessId)
+    .select(`
+      *,
+      widgets(name, embed_key)
+    `)
+    .in('business_id', businessIds)
   
   // Get this week's submissions (last 7 days)
   const oneWeekAgo = new Date()
@@ -25,11 +38,14 @@ async function getDashboardData(businessId: string) {
     new Date(s.created_at) >= oneWeekAgo
   ) || []
   
-  // Get recent submissions for display
+  // Get recent submissions for display with widget information
   const { data: recentSubmissions } = await supabase
     .from('submissions')
-    .select('*')
-    .eq('business_id', businessId)
+    .select(`
+      *,
+      widgets(name, embed_key)
+    `)
+    .in('business_id', businessIds)
     .order('created_at', { ascending: false })
     .limit(5)
   
@@ -38,7 +54,7 @@ async function getDashboardData(businessId: string) {
     submissions: submissions || [],
     thisWeekSubmissions,
     recentSubmissions: recentSubmissions || [],
-    businessId
+    businessIds
   }
 }
 
@@ -50,16 +66,15 @@ export default async function Dashboard() {
     redirect('/login')
   }
 
-  // Get user's business - get the first/primary business
+  // Get all user's businesses
   const { data: userProfiles } = await supabase
     .from('user_profiles')
     .select('business_id')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
 
-  const userProfile = userProfiles?.[0]
+  const businessIds = userProfiles?.map(profile => profile.business_id).filter(Boolean) || []
 
-  if (!userProfile?.business_id) {
+  if (businessIds.length === 0) {
     return (
       <div className="text-center py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">No Business Access</h1>
@@ -68,7 +83,7 @@ export default async function Dashboard() {
     )
   }
 
-  const dashboardData = await getDashboardData(userProfile.business_id)
+  const dashboardData = await getDashboardData(businessIds)
 
   return (
     <DashboardContent 
@@ -76,7 +91,7 @@ export default async function Dashboard() {
       submissions={dashboardData.submissions}
       thisWeekSubmissions={dashboardData.thisWeekSubmissions}
       recentSubmissions={dashboardData.recentSubmissions}
-      businessId={dashboardData.businessId}
+      businessIds={dashboardData.businessIds}
     />
   )
 }

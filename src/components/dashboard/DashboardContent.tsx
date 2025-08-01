@@ -28,12 +28,17 @@ interface Widget {
 interface Submission {
   id: string
   widget_id: string
-  customer: any
-  service: any
+  full_name?: string
+  email?: string
+  phone?: string
   estimated_price?: number
   completion_status: string
   appointment_date?: string
   created_at: string
+  widgets?: {
+    name: string
+    embed_key: string
+  }
 }
 
 interface DashboardContentProps {
@@ -41,7 +46,7 @@ interface DashboardContentProps {
   submissions: Submission[]
   thisWeekSubmissions: Submission[]
   recentSubmissions: Submission[]
-  businessId: string
+  businessIds: string[]
 }
 
 export default function DashboardContent({
@@ -49,7 +54,7 @@ export default function DashboardContent({
   submissions,
   thisWeekSubmissions,
   recentSubmissions,
-  businessId
+  businessIds
 }: DashboardContentProps) {
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
 
@@ -246,33 +251,65 @@ export default function DashboardContent({
         
         {filteredData.recentSubmissions.length > 0 ? (
           <div className="space-y-3">
-            {filteredData.recentSubmissions.map((submission) => (
-              <div key={submission.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">
-                    {submission.customer?.name || 'Anonymous'}
-                  </p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>{submission.service?.type || 'Service request'}</span>
-                    {submission.estimated_price && (
-                      <span>${submission.estimated_price.toLocaleString()}</span>
-                    )}
-                    <span>{new Date(submission.created_at).toLocaleDateString()}</span>
+            {filteredData.recentSubmissions.map((submission) => {
+              const contactName = submission?.full_name || 'No name'
+              const contactEmail = submission?.email || submission?.phone || 'No contact'
+              const widgetName = submission?.widgets?.name || 'Unknown Widget'
+              const status = submission?.completion_status || 'unknown'
+              const createdAt = submission?.created_at ? new Date(submission.created_at) : null
+              const estimatePrice = submission?.estimated_price
+              
+              return (
+                <div key={submission.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-lime-400 rounded-full flex items-center justify-center">
+                      <span className="text-black font-bold text-sm">
+                        {contactName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {contactName}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {contactEmail}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {widgetName}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-gray-900">
+                        {estimatePrice 
+                          ? `$${Number(estimatePrice).toLocaleString()}`
+                          : 'N/A'
+                        }
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {createdAt ? createdAt.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        }) : 'Unknown date'}
+                      </div>
+                    </div>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      status === 'complete' 
+                        ? 'bg-green-100 text-green-800'
+                        : status === 'in_progress'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {status}
+                    </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                    submission.completion_status === 'complete' 
-                      ? 'bg-green-100 text-green-800'
-                      : submission.completion_status === 'in_progress'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {submission.completion_status}
-                  </span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">

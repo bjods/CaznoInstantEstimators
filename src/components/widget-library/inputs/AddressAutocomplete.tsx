@@ -44,8 +44,6 @@ export function AddressAutocomplete({
   useEffect(() => {
     if (!isLoaded || !inputRef.current) return
 
-    let listenerCleanup: google.maps.MapsEventListener | null = null
-
     // Clean up previous autocomplete instance
     if (autocompleteRef.current) {
       google.maps.event.clearInstanceListeners(autocompleteRef.current)
@@ -60,60 +58,22 @@ export function AddressAutocomplete({
       }
     })
 
-    try {
-      // Try the new PlaceAutocompleteElement API first
-      if (typeof google !== 'undefined' && 
-          google.maps && 
-          google.maps.places && 
-          google.maps.places.PlaceAutocompleteElement) {
-        
-        console.log('Using new PlaceAutocompleteElement API')
-        const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement()
-        
-        // Set up event listener for the new API
-        placeAutocomplete.addEventListener('gmp-placeselect', (event: any) => {
-          const place = event.place
-          if (place && place.formattedAddress) {
-            onChange(place.formattedAddress)
-          } else if (place && place.displayName) {
-            onChange(place.displayName)
-          }
-        })
-        
-        // Apply same styling as input
-        placeAutocomplete.className = "w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
-        
-        // Replace input with PlaceAutocompleteElement
-        if (inputRef.current?.parentNode) {
-          inputRef.current.parentNode.replaceChild(placeAutocomplete, inputRef.current)
-          // Update ref to point to new element
-          inputRef.current = placeAutocomplete as any
-        }
-        
-      } else {
-        // Fallback to legacy Autocomplete API
-        console.log('Using legacy Autocomplete API')
-        const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-          fields: ['formatted_address', 'geometry', 'address_components', 'place_id']
-        })
+    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+      fields: ['formatted_address', 'geometry', 'address_components', 'place_id']
+    })
 
-        listenerCleanup = autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace()
-          if (place && place.formatted_address) {
-            onChange(place.formatted_address)
-          }
-        })
-        
-        autocompleteRef.current = autocomplete
+    const listener = autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace()
+      if (place.formatted_address) {
+        onChange(place.formatted_address)
       }
-    } catch (error) {
-      console.error('Error setting up Google Places Autocomplete:', error)
-      setError('Failed to initialize address autocomplete')
-    }
+    })
+
+    autocompleteRef.current = autocomplete
 
     return () => {
-      if (listenerCleanup) {
-        google.maps.event.removeListener(listenerCleanup)
+      if (listener) {
+        google.maps.event.removeListener(listener)
       }
       if (autocompleteRef.current) {
         google.maps.event.clearInstanceListeners(autocompleteRef.current)

@@ -1825,6 +1825,327 @@ When `showDetailedBreakdown: true`:
 - All customer data is preserved through the quote step
 - CTA actions can trigger form submission with full pricing data
 
+## Advanced Quote Step Configuration (QuoteStepDisplay)
+
+The `QuoteStepDisplay` component provides a premium, highly customizable quote page with a professional 3-column layout, timeline display, and extensive styling options. This is perfect for high-value services that need a more sophisticated presentation.
+
+### Basic Structure
+
+```json
+{
+  "steps": [...], // Your existing form steps
+  
+  "quoteStep": {
+    "enabled": true,
+    "component": "QuoteStepDisplay",
+    "config": {
+      "header": {
+        "title": "Your Quote is Ready!",
+        "subtitle": "Here's your personalized estimate",
+        "showQuoteNumber": true,
+        "showSuccessIcon": true
+      },
+      "breakdown": {
+        "showServiceBreakdown": true,
+        "showOptionsBreakdown": true,
+        "showBaseCalculation": true
+      },
+      "timeline": {
+        "showTimeline": true,
+        "steps": [
+          {
+            "title": "Site Visit",
+            "description": "On-site consultation and measurements",
+            "duration": "3-5 days"
+          },
+          {
+            "title": "Final Quote",
+            "description": "Detailed proposal with accurate pricing",
+            "duration": "1-2 days"
+          }
+        ]
+      },
+      "contact": {
+        "showContactInfo": true,
+        "showNextSteps": true,
+        "nextSteps": [
+          {
+            "title": "Quote Submitted",
+            "description": "We've received your quote request",
+            "status": "completed"
+          },
+          {
+            "title": "We'll Call You",
+            "description": "Within 24 hours to schedule consultation",
+            "status": "active"
+          },
+          {
+            "title": "Site Assessment",
+            "description": "Professional measurement and consultation",
+            "status": "pending"
+          }
+        ]
+      },
+      "cta": {
+        "showCta": true,
+        "title": "Ready to Get Started?",
+        "subtitle": "Call us now to expedite your project",
+        "buttonText": "Call Now",
+        "phoneNumber": "(555) 123-4567"
+      },
+      "actions": {
+        "showBackButton": true,
+        "showShareButton": true,
+        "showDownloadButton": true
+      },
+      "styling": {
+        "headerBgColor": "bg-green-50",
+        "primaryColor": "text-green-600",
+        "cardShadow": "soft",
+        "layout": "sidebar"
+      }
+    }
+  }
+}
+```
+
+### QuoteStepDisplay Configuration Options
+
+#### Header Configuration
+Controls the top success section of the quote page.
+
+```json
+"header": {
+  "title": "Your Quote is Ready!",           // Main heading
+  "subtitle": "Here's your personalized estimate", // Subheading
+  "showQuoteNumber": true,                  // Display auto-generated quote number
+  "showSuccessIcon": true                   // Show checkmark icon
+}
+```
+
+#### Breakdown Configuration  
+Controls how pricing information is displayed.
+
+```json
+"breakdown": {
+  "showServiceBreakdown": true,    // Show itemized service list
+  "showOptionsBreakdown": true,    // Show add-on options for each service
+  "showBaseCalculation": true      // Show base price calculation details
+}
+```
+
+#### Timeline Configuration
+Displays project timeline with customizable steps.
+
+```json
+"timeline": {
+  "showTimeline": true,
+  "steps": [
+    {
+      "title": "Site Visit",              // Step name
+      "description": "On-site consultation", // Step description
+      "duration": "3-5 days"              // Time estimate
+    }
+  ]
+}
+```
+
+#### Contact & Next Steps Configuration
+Shows customer information and process workflow.
+
+```json
+"contact": {
+  "showContactInfo": true,    // Display customer contact details
+  "showNextSteps": true,      // Show workflow steps
+  "nextSteps": [
+    {
+      "title": "Quote Submitted",
+      "description": "We've received your request",
+      "status": "completed"     // "completed", "active", or "pending"
+    }
+  ]
+}
+```
+
+#### Call-to-Action Configuration
+Prominent CTA section in the sidebar.
+
+```json
+"cta": {
+  "showCta": true,
+  "title": "Ready to Get Started?",
+  "subtitle": "Call us now to expedite",
+  "buttonText": "Call Now",
+  "phoneNumber": "(555) 123-4567"
+}
+```
+
+#### Actions Configuration
+Header action buttons for additional functionality.
+
+```json
+"actions": {
+  "showBackButton": true,     // "Back to Form" button
+  "showShareButton": true,    // Share quote button
+  "showDownloadButton": true  // Download PDF button
+}
+```
+
+#### Styling Configuration
+Visual customization options.
+
+```json
+"styling": {
+  "headerBgColor": "bg-green-50",    // Header background (Tailwind class)
+  "primaryColor": "text-green-600",   // Primary text color (Tailwind class)
+  "cardShadow": "soft",               // "none", "soft", or "large"
+  "layout": "sidebar"                 // "single" or "sidebar" (3-column)
+}
+```
+
+### Styling Options
+
+#### Header Background Colors
+```json
+"headerBgColor": "bg-blue-50"    // Blue theme
+"headerBgColor": "bg-green-50"   // Green theme  
+"headerBgColor": "bg-purple-50"  // Purple theme
+"headerBgColor": "bg-gray-50"    // Neutral theme
+```
+
+#### Primary Colors
+```json
+"primaryColor": "text-blue-600"    // Blue accent
+"primaryColor": "text-green-600"   // Green accent
+"primaryColor": "text-purple-600"  // Purple accent
+"primaryColor": "text-gray-800"    // Dark neutral
+```
+
+#### Card Shadows
+```json
+"cardShadow": "none"   // No shadow
+"cardShadow": "soft"   // Subtle shadow
+"cardShadow": "large"  // Prominent shadow
+```
+
+#### Layout Options
+```json
+"layout": "single"   // Single column layout
+"layout": "sidebar"  // 3-column layout with sidebar (recommended)
+```
+
+### Complete Example: Hardscape Service
+
+```json
+{
+  "quoteStep": {
+    "enabled": true,
+    "component": "QuoteStepDisplay",
+    "config": {
+      "header": {
+        "title": "Your Hardscape Quote is Ready!",
+        "subtitle": "Here is your personalized hardscaping estimate",
+        "showQuoteNumber": true,
+        "showSuccessIcon": true
+      },
+      "breakdown": {
+        "showServiceBreakdown": true,
+        "showOptionsBreakdown": true,
+        "showBaseCalculation": true
+      },
+      "timeline": {
+        "showTimeline": true,
+        "steps": [
+          {
+            "title": "Site Visit",
+            "description": "On-site consultation and measurements",
+            "duration": "3-5 days"
+          },
+          {
+            "title": "Design & Quote", 
+            "description": "Detailed design with final pricing",
+            "duration": "5-7 days"
+          },
+          {
+            "title": "Project Start",
+            "description": "Construction begins",
+            "duration": "2-4 weeks"
+          }
+        ]
+      },
+      "contact": {
+        "showContactInfo": true,
+        "showNextSteps": true,
+        "nextSteps": [
+          {
+            "title": "Quote Submitted",
+            "description": "We have received your quote request",
+            "status": "completed"
+          },
+          {
+            "title": "Design Consultation",
+            "description": "We will call within 24 hours to schedule",
+            "status": "active"
+          },
+          {
+            "title": "Site Assessment", 
+            "description": "Professional on-site measurement and consultation",
+            "status": "pending"
+          },
+          {
+            "title": "Final Design",
+            "description": "Complete design package with accurate pricing",
+            "status": "pending"
+          }
+        ]
+      },
+      "cta": {
+        "showCta": true,
+        "title": "Ready to Transform Your Space?",
+        "subtitle": "Call us now to get started on your hardscape project",
+        "buttonText": "Call Now",
+        "phoneNumber": "(555) 123-HARD"
+      },
+      "actions": {
+        "showBackButton": true,
+        "showShareButton": true,
+        "showDownloadButton": true
+      },
+      "styling": {
+        "headerBgColor": "bg-green-50",
+        "primaryColor": "text-green-600", 
+        "cardShadow": "soft",
+        "layout": "sidebar"
+      }
+    }
+  }
+}
+```
+
+### QuoteStepDisplay vs Standard Quote Step
+
+**Use QuoteStepDisplay when:**
+- High-value services ($2,000+)
+- Complex multi-service offerings
+- Need professional presentation
+- Want to showcase company process/timeline
+- Require detailed service breakdowns
+
+**Use Standard Quote Step when:**
+- Simple single-service widgets
+- Lower-value services
+- Want faster, simpler quotes
+- Limited customization needs
+
+### Best Practices for QuoteStepDisplay
+
+1. **Timeline Accuracy**: Use realistic timeframes in your timeline steps
+2. **Next Steps Clarity**: Make the process transparent with clear next steps
+3. **Contact Information**: Always include easy ways to reach you
+4. **Visual Consistency**: Match colors to your brand
+5. **Mobile Responsive**: The component automatically adapts to mobile screens
+6. **Service Descriptions**: Use clear, benefit-focused service descriptions
+
 ## Pricing Calculator Configuration
 
 The pricing calculator allows you to display real-time pricing estimates as users fill out your widget. It's completely configurable through JSON and supports complex pricing logic.

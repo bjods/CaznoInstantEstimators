@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { DynamicWidget } from './DynamicWidget'
 import WidgetSkeleton from './WidgetSkeleton'
+import { WidgetThemeProvider, WidgetTheme } from '@/contexts/WidgetThemeContext'
 
 interface WidgetData {
   id: string
@@ -100,5 +101,36 @@ export default function WidgetLoader({ embedKey }: WidgetLoaderProps) {
     )
   }
 
-  return <DynamicWidget config={{...widget.config, id: widget.id}} />
+  // Convert theme config to WidgetTheme format
+  const widgetTheme: Partial<WidgetTheme> = {
+    backgroundColor: widget.theme?.backgroundColor || '#000000',
+    cardBackground: widget.theme?.cardBackground || '#1f2937',
+    primaryText: widget.theme?.primaryText || '#ffffff',
+    secondaryText: widget.theme?.secondaryText || '#9ca3af',
+    labelText: widget.theme?.labelText || '#f3f4f6',
+    primaryColor: widget.theme?.primaryColor || '#60a5fa',
+    inputBackground: widget.theme?.inputBackground || '#374151',
+    inputBorder: widget.theme?.inputBorder || '#4b5563',
+    inputFocusBorder: widget.theme?.inputFocusBorder || '#60a5fa',
+    inputText: widget.theme?.inputText || '#ffffff',
+    inputPlaceholder: widget.theme?.inputPlaceholder || '#9ca3af',
+    primaryButton: widget.theme?.primaryButton || '#60a5fa',
+    primaryButtonHover: widget.theme?.primaryButtonHover || '#3b82f6',
+    primaryButtonText: widget.theme?.primaryButtonText || '#ffffff',
+    secondaryButton: widget.theme?.secondaryButton || '#374151',
+    secondaryButtonHover: widget.theme?.secondaryButtonHover || '#4b5563',
+    secondaryButtonText: widget.theme?.secondaryButtonText || '#f3f4f6',
+    progressBackground: widget.theme?.progressBackground || '#374151',
+    progressFill: widget.theme?.progressFill || '#60a5fa',
+    borderColor: widget.theme?.borderColor || '#4b5563',
+    borderColorLight: widget.theme?.borderColorLight || '#374151',
+  }
+
+  return (
+    <WidgetThemeProvider theme={widgetTheme}>
+      <div style={{ backgroundColor: widgetTheme.backgroundColor }} className="min-h-screen">
+        <DynamicWidget config={{...widget.config, id: widget.id}} />
+      </div>
+    </WidgetThemeProvider>
+  )
 }

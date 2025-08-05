@@ -108,6 +108,172 @@ VALUES (
 
 **Important**: The `title` field in each step is displayed as the main heading above the progress bar. This helps users understand what information they're providing at each stage of the form.
 
+## Widget Theming & Colors
+
+The widget theming system allows you to completely customize the visual appearance of your widgets to match your brand. All colors are controlled through the `theme` field in the widget configuration.
+
+### Theme Configuration
+
+```json
+{
+  "theme": {
+    // Background colors
+    "backgroundColor": "#000000",
+    "cardBackground": "#1f2937",
+    
+    // Text colors  
+    "primaryText": "#ffffff",
+    "secondaryText": "#9ca3af",
+    "labelText": "#f3f4f6",
+    
+    // Accent colors
+    "primaryColor": "#60a5fa",
+    "successColor": "#34d399", 
+    "errorColor": "#f87171",
+    
+    // Input colors
+    "inputBackground": "#374151",
+    "inputBorder": "#4b5563",
+    "inputFocusBorder": "#60a5fa",
+    "inputText": "#ffffff",
+    "inputPlaceholder": "#9ca3af",
+    
+    // Button colors
+    "primaryButton": "#60a5fa",
+    "primaryButtonHover": "#3b82f6",
+    "primaryButtonText": "#ffffff", 
+    "secondaryButton": "#374151",
+    "secondaryButtonHover": "#4b5563",
+    "secondaryButtonText": "#f3f4f6",
+    
+    // Progress bar
+    "progressBackground": "#374151",
+    "progressFill": "#60a5fa",
+    
+    // Border colors
+    "borderColor": "#4b5563",
+    "borderColorLight": "#374151"
+  }
+}
+```
+
+### Theme Properties
+
+#### Background Colors
+- **backgroundColor**: Main widget background color
+- **cardBackground**: Background for cards and containers
+
+#### Text Colors
+- **primaryText**: Main text color (headings, important text)
+- **secondaryText**: Secondary text color (descriptions, help text)
+- **labelText**: Form label text color
+
+#### Accent Colors
+- **primaryColor**: Main brand color (buttons, links, highlights)
+- **successColor**: Success states and positive feedback
+- **errorColor**: Error states and validation messages
+
+#### Input Colors
+- **inputBackground**: Form input background color
+- **inputBorder**: Default input border color
+- **inputFocusBorder**: Input border color when focused
+- **inputText**: Text color inside inputs
+- **inputPlaceholder**: Placeholder text color
+
+#### Button Colors
+- **primaryButton**: Primary button background
+- **primaryButtonHover**: Primary button hover state
+- **primaryButtonText**: Primary button text color
+- **secondaryButton**: Secondary button background
+- **secondaryButtonHover**: Secondary button hover state
+- **secondaryButtonText**: Secondary button text color
+
+#### Progress & UI Elements
+- **progressBackground**: Progress bar background
+- **progressFill**: Progress bar fill color
+- **borderColor**: General border color
+- **borderColorLight**: Light border color for subtle dividers
+
+### Example Theme Configurations
+
+#### Dark Theme (Default)
+```json
+{
+  "theme": {
+    "backgroundColor": "#000000",
+    "cardBackground": "#1f2937",
+    "primaryText": "#ffffff",
+    "secondaryText": "#9ca3af",
+    "labelText": "#f3f4f6",
+    "primaryColor": "#60a5fa",
+    "inputBackground": "#374151",
+    "inputBorder": "#4b5563",
+    "inputFocusBorder": "#60a5fa",
+    "inputText": "#ffffff",
+    "inputPlaceholder": "#9ca3af"
+  }
+}
+```
+
+#### Light Theme
+```json
+{
+  "theme": {
+    "backgroundColor": "#ffffff",
+    "cardBackground": "#f9fafb", 
+    "primaryText": "#111827",
+    "secondaryText": "#6b7280",
+    "labelText": "#374151",
+    "primaryColor": "#3b82f6",
+    "inputBackground": "#ffffff",
+    "inputBorder": "#d1d5db",
+    "inputFocusBorder": "#3b82f6", 
+    "inputText": "#111827",
+    "inputPlaceholder": "#9ca3af"
+  }
+}
+```
+
+#### Brand-Specific Theme (Green)
+```json
+{
+  "theme": {
+    "backgroundColor": "#0f172a",
+    "cardBackground": "#1e293b",
+    "primaryText": "#f1f5f9",
+    "secondaryText": "#94a3b8",
+    "labelText": "#e2e8f0",
+    "primaryColor": "#10b981",
+    "successColor": "#059669",
+    "errorColor": "#ef4444",
+    "inputBackground": "#334155",
+    "inputBorder": "#475569",
+    "inputFocusBorder": "#10b981",
+    "inputText": "#f1f5f9",
+    "inputPlaceholder": "#94a3b8"
+  }
+}
+```
+
+### Color Format
+
+All colors should be provided as hex values (e.g., `#ffffff`, `#3b82f6`). The theming system will automatically apply these colors to all widget components including:
+
+- Form inputs (text, number, email, etc.)
+- Buttons and CTAs
+- Progress indicators
+- Labels and text
+- Borders and dividers
+- Background colors
+- Hover and focus states
+
+### Best Practices
+
+1. **Contrast**: Ensure sufficient contrast between text and background colors for accessibility
+2. **Consistency**: Use a cohesive color palette that matches your brand
+3. **Testing**: Test your theme with different widget types to ensure readability
+4. **Fallbacks**: The system provides sensible defaults if any color is not specified
+
 ### SQL Insert Example
 ```sql
 INSERT INTO widgets (

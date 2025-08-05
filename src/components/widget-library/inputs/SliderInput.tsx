@@ -1,3 +1,5 @@
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
+
 export interface SliderInputProps {
   value: number
   onChange: (value: number) => void
@@ -21,12 +23,17 @@ export function SliderInput({
   step = 1,
   showValue = true
 }: SliderInputProps) {
+  const theme = useWidgetTheme()
+  
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label 
+          className="block text-lg font-medium"
+          style={{ color: theme.labelText }}
+        >
           {label}
-          
+          {required && <span style={{ color: theme.errorColor }}> *</span>}
         </label>
       )}
       
@@ -38,14 +45,21 @@ export function SliderInput({
           min={min}
           max={max}
           step={step}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer slider"
+          style={{ backgroundColor: theme.progressBackground }}
         />
         
-        <div className="flex justify-between items-center text-sm text-gray-600">
+        <div className="flex justify-between items-center text-sm" style={{ color: theme.secondaryText }}>
           <span>{min}</span>
           {showValue && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
-              {value}
+            <span 
+              className="px-3 py-1 rounded font-medium"
+              style={{ 
+                backgroundColor: `${theme.primaryColor}20`,
+                color: theme.primaryColor 
+              }}
+            >
+              {value}%
             </span>
           )}
           <span>{max}</span>
@@ -53,7 +67,9 @@ export function SliderInput({
       </div>
       
       {helpText && (
-        <p className="text-sm text-gray-500">{helpText}</p>
+        <p className="text-sm" style={{ color: theme.secondaryText }}>
+          {helpText}
+        </p>
       )}
       
       <style jsx>{`
@@ -61,30 +77,30 @@ export function SliderInput({
           appearance: none;
           width: 20px;
           height: 20px;
-          background: #3b82f6;
+          background: ${theme.primaryColor};
           cursor: pointer;
           border-radius: 50%;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          border: 2px solid ${theme.backgroundColor};
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .slider::-moz-range-thumb {
           width: 20px;
           height: 20px;
-          background: #3b82f6;
+          background: ${theme.primaryColor};
           cursor: pointer;
           border-radius: 50%;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          border: 2px solid ${theme.backgroundColor};
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .slider::-webkit-slider-track {
-          background: #e5e7eb;
+          background: ${theme.progressBackground};
           border-radius: 4px;
         }
         
         .slider::-moz-range-track {
-          background: #e5e7eb;
+          background: ${theme.progressBackground};
           border-radius: 4px;
         }
       `}</style>

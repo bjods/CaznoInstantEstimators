@@ -16,7 +16,16 @@ interface DynamicWidgetProps {
 
 export function DynamicWidget({ config }: DynamicWidgetProps) {
   const theme = useWidgetTheme()
-  const [currentStep, setCurrentStep] = useState(-1) // Start at -1 for personal info step
+  
+  // Check if widget has personal info built into its steps
+  const hasBuiltInPersonalInfo = config.steps.some(step => 
+    step.components.some(component => 
+      ['email', 'phone', 'full_name', 'business_name', 'firstName', 'lastName'].includes(component.props.name)
+    )
+  )
+  
+  // Start at 0 if widget has built-in personal info, otherwise -1
+  const [currentStep, setCurrentStep] = useState(hasBuiltInPersonalInfo ? 0 : -1)
   const [formData, setFormData] = useState<Record<string, any>>({
     firstName: '',
     lastName: '',
@@ -30,7 +39,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
   // Get current step name for tracking
   const getCurrentStepName = () => {
-    if (currentStep === -1) return 'personal_info'
+    if (!hasBuiltInPersonalInfo && currentStep === -1) return 'personal_info'
     if (currentStep === config.steps.length) return 'quote'
     return config.steps[currentStep]?.id || `step_${currentStep}`
   }
@@ -166,7 +175,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   const handlePrevious = () => {
-    if (currentStep > -1) {
+    const minStep = hasBuiltInPersonalInfo ? 0 : -1
+    if (currentStep > minStep) {
       setCurrentStep(currentStep - 1)
     }
   }
@@ -248,13 +258,14 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   const completePersonalInfo = () => {
-    setCurrentStep(0) // Move to first config step
+    setCurrentStep(0) // Move to first config step (only used when hasBuiltInPersonalInfo is false)
   }
 
   // Calculate total steps: personal info + config steps + quote step (if configured)
   const hasQuoteStep = !!config.quoteStep
-  const totalSteps = config.steps.length + 1 + (hasQuoteStep ? 1 : 0) // +1 for personal info, +1 for quote step if exists
-  const currentStepForProgress = currentStep + 1 // Adjust for display
+  const personalInfoSteps = hasBuiltInPersonalInfo ? 0 : 1 // Only add personal info step if not built-in
+  const totalSteps = config.steps.length + personalInfoSteps + (hasQuoteStep ? 1 : 0)
+  const currentStepForProgress = hasBuiltInPersonalInfo ? currentStep + 1 : currentStep + 1 // Adjust for display
   const isLastConfigStep = currentStep === config.steps.length - 1
   const isQuoteStep = hasQuoteStep && currentStep === config.steps.length
   const isLastStep = isQuoteStep || (!hasQuoteStep && isLastConfigStep)
@@ -293,8 +304,8 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     triggerQuoteCompletion()
   }, [isQuoteStep, config.quoteStep, config.pricingCalculator, formData, completeSubmission])
 
-  // Show personal info step
-  if (currentStep === -1) {
+  // Show personal info step (only if not built into widget steps)
+  if (!hasBuiltInPersonalInfo && currentStep === -1) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
@@ -530,7 +541,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}
-            disabled={currentStep === -1}
+            disabled={currentStep === (hasBuiltInPersonalInfo ? 0 : -1)}
             className="px-8 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             style={{
               backgroundColor: theme.backgroundColor,

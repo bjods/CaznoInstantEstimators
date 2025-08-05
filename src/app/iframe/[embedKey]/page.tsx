@@ -1,6 +1,6 @@
 'use client'
 
-import IframeWidget from '@/components/widget/IframeWidget'
+import WidgetLoader from '@/components/widget/WidgetLoader'
 
 interface IframePageProps {
   params: {
@@ -9,5 +9,16 @@ interface IframePageProps {
 }
 
 export default function IframePage({ params }: IframePageProps) {
-  return <IframeWidget embedKey={params.embedKey} />
+  return (
+    <>
+      <style jsx global>{`
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+      `}</style>
+      <WidgetLoader embedKey={params.embedKey} />
+    </>
+  )
 }

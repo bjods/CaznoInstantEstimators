@@ -20,30 +20,26 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0a0f1f]">
-      {/* Fixed Navigation Bar */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        showNav ? 'bg-[#0a0f1f]/95 backdrop-blur-sm border-b border-gray-800' : 'bg-transparent'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-8">
+      {/* Fixed Navigation Bar - Only shows when scrolled past hero */}
+      {showNav && (
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
-            {showNav && (
-              <div className="hidden md:flex items-center space-x-6">
-                <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
-                <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
-                <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
-                <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
-              </div>
-            )}
+            <div className="hidden md:flex items-center space-x-6">
+              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
+              <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
+              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
+              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
+              <Link href="#" className="bg-[#3b82f6] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2563eb] transition-colors">
+                Get Started →
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
-            <Link href="#" className="bg-[#3b82f6] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2563eb] transition-colors">
-              Get Started →
-            </Link>
-          </div>
-        </div>
-      </nav>
+        </nav>
+      )}
 
       <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#0a0f1f] text-white px-6">
         {/* Dotted Pattern Background */}
@@ -68,28 +64,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Hero Navigation - visible when not scrolled */}
-        {!showNav && (
-          <div className="absolute top-0 left-0 right-0 px-6 py-4">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
-              <div className="flex items-center space-x-8">
-                <div className="hidden md:flex items-center space-x-6">
-                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
-                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
-                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
-                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
-                  <Link href="#" className="bg-[#3b82f6] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2563eb] transition-colors">
-                    Get Started →
-                  </Link>
-                </div>
-              </div>
-            </div>
+        {/* Hero Navigation - only CAZNO left and Sign In right */}
+        <div className="absolute top-0 left-0 right-0 px-6 py-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
+            <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
           </div>
-        )}
+        </div>
 
         {/* Main Content */}
         <div className="text-center max-w-4xl mx-auto relative z-10">

@@ -447,114 +447,180 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Everything you need to turn visitors into customers
+              Everything You Need to Turn Visitors into Customers
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               Built specifically for contractors who want to stop wasting time on unqualified leads
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-16 items-center mb-20">
-            <div>
-              <h3 className="text-3xl font-bold text-white mb-6">Instant pricing for any job</h3>
-              <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Instant Pricing Engine */}
+            <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+              <div className="text-3xl mb-4">💰</div>
+              <h3 className="text-xl font-bold text-white mb-3">Instant Pricing Engine</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">
                 Give customers accurate quotes instantly. Fully customized to your business - 
                 linear feet for fencing, square footage for concrete, or any pricing model you use.
               </p>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Custom pricing for your services</span>
+                  <span className="text-gray-400 text-sm">Custom pricing for your services</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Good, Better, Best pricing tiers</span>
+                  <span className="text-gray-400 text-sm">Good, Better, Best pricing tiers</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Material and labor calculations</span>
+                  <span className="text-gray-400 text-sm">Material and labor calculations</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Seasonal pricing adjustments</span>
                 </div>
               </div>
             </div>
+
+            {/* Advanced Analytics Dashboard */}
             <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
-              {/* Mock calculator interface */}
-              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h4 className="font-semibold mb-4 text-white">Fence Calculator</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm text-gray-400">Linear Feet</label>
-                    <div className="bg-gray-700 rounded p-2 text-sm text-white">150 ft</div>
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-400">Fence Type</label>
-                    <div className="bg-gray-700 rounded p-2 text-sm text-white">Wood Privacy</div>
-                  </div>
-                  <div className="bg-blue-900/30 border border-blue-700 rounded p-4 mt-4">
-                    <div className="text-lg font-bold text-blue-400">$4,200 - $5,800</div>
-                    <div className="text-sm text-blue-300">Professional installation included</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-16 items-center mb-20">
-            <div className="order-2 md:order-1">
-              <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
-                <img src="/images/dashboard-example.png" alt="Analytics Dashboard" className="w-full rounded-lg shadow-sm" />
-              </div>
-            </div>
-            <div className="order-1 md:order-2">
-              <h3 className="text-3xl font-bold text-white mb-6">Track your ROI with advanced reporting</h3>
-              <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-                Our analytics dashboard shows you exactly how many leads you're generating and where 
-                they're coming from. Tag leads in your CRM to track closing rates and prove the value 
-                of your marketing spend.
+              <div className="text-3xl mb-4">📊</div>
+              <h3 className="text-xl font-bold text-white mb-3">Advanced Analytics Dashboard</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                Track exactly how many leads you're generating and where they're coming from. 
+                Prove the ROI of your marketing spend.
               </p>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Measure lead volume and sources</span>
+                  <span className="text-gray-400 text-sm">Real-time lead tracking</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Make data-driven marketing decisions</span>
+                  <span className="text-gray-400 text-sm">Source attribution</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                  <span className="text-gray-300">Prove the ROI of your website and ad campaigns</span>
+                  <span className="text-gray-400 text-sm">Conversion rate optimization</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Custom reporting</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            {/* Smart Appointment Booking */}
+            <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+              <div className="text-3xl mb-4">📅</div>
+              <h3 className="text-xl font-bold text-white mb-3">Smart Appointment Booking</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                Let qualified leads book appointments directly into your calendar. 
+                No back-and-forth, no phone tag.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Google Calendar sync</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Buffer time management</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">SMS/Email reminders</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Team member routing</span>
+                </div>
               </div>
-              <h4 className="text-lg font-semibold text-white mb-2">Map measurements</h4>
-              <p className="text-gray-400 text-sm">Interactive maps for accurate surface area calculations</p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+
+            {/* Lead Qualification & Routing */}
+            <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+              <div className="text-3xl mb-4">🎯</div>
+              <h3 className="text-xl font-bold text-white mb-3">Lead Qualification & Routing</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                Automatically qualify leads based on budget, timeline, and project scope. 
+                Route hot leads directly to your sales team.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Custom qualification criteria</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Lead scoring</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Instant notifications</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">CRM integration</span>
+                </div>
               </div>
-              <h4 className="text-lg font-semibold text-white mb-2">Abandoned lead capture</h4>
-              <p className="text-gray-400 text-sm">Capture partial information even if they don't complete the form</p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M12 6V4a2 2 0 00-2-2H8a2 2 0 00-2 2v2M7 10V8a1 1 0 011-1h8a1 1 0 011 1v2m-9 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2z" />
-                </svg>
+
+            {/* Mobile-First Design */}
+            <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+              <div className="text-3xl mb-4">📱</div>
+              <h3 className="text-xl font-bold text-white mb-3">Mobile-First Design</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                60% of your traffic is mobile. Our forms are optimized for thumb-friendly 
+                completion on any device.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Responsive design</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Fast loading times</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Touch-optimized interface</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Works on any website</span>
+                </div>
               </div>
-              <h4 className="text-lg font-semibold text-white mb-2">CRM integrations</h4>
-              <p className="text-gray-400 text-sm">Seamlessly connect with your existing sales workflow</p>
+            </div>
+
+            {/* Abandoned Lead Recovery */}
+            <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+              <div className="text-3xl mb-4">🔄</div>
+              <h3 className="text-xl font-bold text-white mb-3">Abandoned Lead Recovery</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                Capture partial information even if visitors don't complete the form. 
+                Never lose a potential lead again.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Progressive data capture</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Exit-intent technology</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Follow-up automation</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                  <span className="text-gray-400 text-sm">Re-engagement campaigns</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

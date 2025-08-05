@@ -382,19 +382,9 @@ export default function Home() {
 
       {/* Solution Section */}
       <section className="py-24 px-6 bg-gray-900">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Give customers a price.
-            <br />
-            Get a <span className="text-blue-400 underline decoration-blue-400">qualified lead</span>.
-          </h2>
-          <p className="text-xl text-gray-300 mb-16 max-w-3xl mx-auto">
-            Cazno turns your website into an automated lead machine that works 
-            for you 24/7. It's a simple, powerful exchange that wins you more business.
-          </p>
-
+        <div className="max-w-6xl mx-auto">
           {/* 3-Step Process */}
-          <div className="grid md:grid-cols-3 gap-12 mb-16">
+          <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-blue-400">1</span>
@@ -402,14 +392,14 @@ export default function Home() {
               <div className="mb-6">
                 <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">They get an instant quote</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Customer visits website</h3>
               <p className="text-gray-400">
-                A customer answers a few simple questions and instantly receives an 
-                accurate price range. No phone call needed.
+                From Google, paid traffic, referrals, or wherever they find you - 
+                potential customers land on your website looking for your services.
               </p>
             </div>
 
@@ -420,14 +410,14 @@ export default function Home() {
               <div className="mb-6">
                 <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">You get a pre-qualified lead</h3>
+              <h3 className="text-xl font-bold text-white mb-3">They get an instant quote</h3>
               <p className="text-gray-400">
-                You receive the customer's contact info. The best part? They've already seen the 
-                price and are ready to talk.
+                Your customer answers a few simple questions and instantly receives an 
+                accurate price range. No waiting, no phone calls needed.
               </p>
             </div>
 
@@ -438,14 +428,14 @@ export default function Home() {
               <div className="mb-6">
                 <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">You close the job</h3>
+              <h3 className="text-xl font-bold text-white mb-3">You get a qualified, ready-to-go lead</h3>
               <p className="text-gray-400">
-                You spend less time on pointless estimates and more time on profitable 
-                installations with serious, qualified buyers.
+                Depending on how you want your estimator set up, you can get notified when they submit, 
+                or you can have them book an in-person estimate straight from your website.
               </p>
             </div>
           </div>

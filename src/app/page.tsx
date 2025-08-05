@@ -53,40 +53,40 @@ export default function Home() {
 
         {/* Main Content */}
         <div className="text-center max-w-5xl mx-auto relative z-10">
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
             Your website visitors are
             <br />
             <span className="text-red-400">leaving without buying.</span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-4xl mx-auto leading-relaxed">
             73% of contractors lose qualified leads because customers can't get instant pricing. 
             <br />
             While you're writing estimates, your competitors are closing deals.
           </p>
 
-          <p className="text-2xl md:text-3xl font-semibold text-blue-400 mb-12">
+          <p className="text-xl md:text-2xl font-semibold text-blue-400 mb-8">
             Turn website visitors into paying customers with instant quote calculators that work 24/7.
           </p>
-
-          <div className="flex items-center justify-center gap-8 mb-16">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">200+</div>
-              <div className="text-gray-400">Contractors Using Cazno</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-400 mb-2">48hrs</div>
-              <div className="text-gray-400">To Go Live</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-400 mb-2">2-3x</div>
-              <div className="text-gray-400">More Leads</div>
-            </div>
-          </div>
           
-          <Link href="/get-started" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-full font-bold text-xl transition-colors transform hover:scale-105 mb-16">
+          <Link href="/get-started" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold text-lg transition-colors transform hover:scale-105 mb-8">
             Get Your Calculator In 48 Hours →
           </Link>
+
+          <div className="flex items-center justify-center gap-6 mb-12 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-gray-400">200+ contractors using Cazno</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-gray-400">48hrs to go live</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <span className="text-gray-400">2-3x more leads</span>
+            </div>
+          </div>
 
           {/* Overlapping Images */}
           <div className="relative max-w-4xl mx-auto">
@@ -121,13 +121,13 @@ export default function Home() {
         <style jsx>{`
           .image-stack-container {
             position: relative;
-            height: 600px;
+            height: 500px;
             perspective: 1000px;
           }
 
           .image-stack-item {
             position: absolute;
-            width: 70%;
+            width: 75%;
             transition: all 0.6s ease-in-out;
           }
 
@@ -139,18 +139,18 @@ export default function Home() {
           }
 
           .quote-image {
-            top: 60px;
+            top: 40px;
             right: 0;
             z-index: 1;
-            transform: translateY(0) scale(0.95);
-            opacity: 0.8;
+            transform: translateY(0) scale(0.9);
+            opacity: 0.85;
           }
 
           /* Hover Animation */
           .group:hover .dashboard-image {
             z-index: 1;
-            transform: translateY(60px) scale(0.95);
-            opacity: 0.8;
+            transform: translateY(40px) scale(0.9);
+            opacity: 0.85;
           }
 
           .group:hover .quote-image {
@@ -161,19 +161,19 @@ export default function Home() {
 
           @media (max-width: 768px) {
             .image-stack-container {
-              height: 400px;
+              height: 350px;
             }
             
             .image-stack-item {
-              width: 85%;
+              width: 90%;
             }
             
             .quote-image {
-              top: 40px;
+              top: 30px;
             }
             
             .group:hover .dashboard-image {
-              transform: translateY(40px) scale(0.95);
+              transform: translateY(30px) scale(0.9);
             }
           }
         `}</style>

@@ -52,19 +52,131 @@ export default function Home() {
         </div>
 
         {/* Main Content */}
-        <div className="text-center max-w-4xl mx-auto relative z-10">
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-8">
-            Custom inbound systems
+        <div className="text-center max-w-5xl mx-auto relative z-10">
+          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+            Your website visitors are
             <br />
-            for service based
-            <br />
-            companies.
+            <span className="text-red-400">leaving without buying.</span>
           </h1>
           
-          <Link href="/get-started" className="inline-block bg-blue-900/50 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-900/70 transition-colors transform hover:scale-105">
-            GET STARTED
+          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
+            73% of contractors lose qualified leads because customers can't get instant pricing. 
+            <br />
+            While you're writing estimates, your competitors are closing deals.
+          </p>
+
+          <p className="text-2xl md:text-3xl font-semibold text-blue-400 mb-12">
+            Turn website visitors into paying customers with instant quote calculators that work 24/7.
+          </p>
+
+          <div className="flex items-center justify-center gap-8 mb-16">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2">200+</div>
+              <div className="text-gray-400">Contractors Using Cazno</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-400 mb-2">48hrs</div>
+              <div className="text-gray-400">To Go Live</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-400 mb-2">2-3x</div>
+              <div className="text-gray-400">More Leads</div>
+            </div>
+          </div>
+          
+          <Link href="/get-started" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-full font-bold text-xl transition-colors transform hover:scale-105 mb-16">
+            Get Your Calculator In 48 Hours →
           </Link>
+
+          {/* Overlapping Images */}
+          <div className="relative max-w-4xl mx-auto">
+            <div className="image-stack-container group cursor-pointer">
+              {/* Dashboard Image - Initially on top */}
+              <div className="image-stack-item dashboard-image">
+                <img 
+                  src="/images/dashboard-example.png" 
+                  alt="Contractor Dashboard Analytics" 
+                  className="w-full rounded-2xl shadow-2xl border border-gray-700"
+                />
+                <div className="absolute -bottom-4 left-4 bg-black/80 backdrop-blur-sm px-4 py-2 rounded-lg">
+                  <span className="text-white font-semibold">Real-time Analytics Dashboard</span>
+                </div>
+              </div>
+              
+              {/* Quote Image - Initially behind */}
+              <div className="image-stack-item quote-image">
+                <img 
+                  src="/images/quote-example.png" 
+                  alt="Professional Quote Generator" 
+                  className="w-full rounded-2xl shadow-2xl border border-gray-700"
+                />
+                <div className="absolute -bottom-4 right-4 bg-black/80 backdrop-blur-sm px-4 py-2 rounded-lg">
+                  <span className="text-white font-semibold">Professional Quote Generation</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <style jsx>{`
+          .image-stack-container {
+            position: relative;
+            height: 600px;
+            perspective: 1000px;
+          }
+
+          .image-stack-item {
+            position: absolute;
+            width: 70%;
+            transition: all 0.6s ease-in-out;
+          }
+
+          .dashboard-image {
+            top: 0;
+            left: 0;
+            z-index: 2;
+            transform: translateY(0) scale(1);
+          }
+
+          .quote-image {
+            top: 60px;
+            right: 0;
+            z-index: 1;
+            transform: translateY(0) scale(0.95);
+            opacity: 0.8;
+          }
+
+          /* Hover Animation */
+          .group:hover .dashboard-image {
+            z-index: 1;
+            transform: translateY(60px) scale(0.95);
+            opacity: 0.8;
+          }
+
+          .group:hover .quote-image {
+            z-index: 2;
+            transform: translateY(0) scale(1);
+            opacity: 1;
+          }
+
+          @media (max-width: 768px) {
+            .image-stack-container {
+              height: 400px;
+            }
+            
+            .image-stack-item {
+              width: 85%;
+            }
+            
+            .quote-image {
+              top: 40px;
+            }
+            
+            .group:hover .dashboard-image {
+              transform: translateY(40px) scale(0.95);
+            }
+          }
+        `}</style>
       </section>
 
       {/* Live Demo Section */}

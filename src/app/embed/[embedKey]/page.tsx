@@ -11,42 +11,49 @@ interface EmbedPageProps {
 
 export default function EmbedPage({ params }: EmbedPageProps) {
   useEffect(() => {
-    // Auto-resize iframe based on content height
+    let lastHeight = 0;
+    let resizeCount = 0;
+    const maxResizes = 5; // Prevent infinite resize loops
+    
     function resizeIframe() {
+      if (resizeCount >= maxResizes) {
+        console.warn('Max iframe resizes reached, stopping to prevent infinite loop');
+        return;
+      }
+      
       const height = Math.max(
         document.body.scrollHeight,
         document.body.offsetHeight,
-        document.documentElement.clientHeight,
         document.documentElement.scrollHeight,
         document.documentElement.offsetHeight
       );
       
-      if (window.parent && window.parent !== window) {
+      // Only send message if height changed significantly
+      if (Math.abs(height - lastHeight) > 20 && window.parent && window.parent !== window) {
+        lastHeight = height;
+        resizeCount++;
+        
         window.parent.postMessage({
           type: 'widget-resize',
           height: height
         }, '*');
+        
+        // Reset counter after successful resize
+        setTimeout(() => {
+          resizeCount = Math.max(0, resizeCount - 1);
+        }, 2000);
       }
     }
     
-    // Initial resize
-    const timer = setTimeout(resizeIframe, 100);
-    
-    // Resize on content changes
-    const observer = new MutationObserver(resizeIframe);
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true
-    });
-    
-    // Resize on window resize
-    window.addEventListener('resize', resizeIframe);
+    // Initial resize after DOM loads
+    const timer = setTimeout(() => {
+      resizeIframe();
+      // One more resize after everything is rendered
+      setTimeout(resizeIframe, 1000);
+    }, 1000);
     
     return () => {
       clearTimeout(timer);
-      observer.disconnect();
-      window.removeEventListener('resize', resizeIframe);
     };
   }, []);
 

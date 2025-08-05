@@ -11,6 +11,7 @@ interface WidgetIframeProps {
 export default function WidgetIframe({ embedKey, className, style }: WidgetIframeProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [height, setHeight] = useState(800) // Default height
+  const lastHeightRef = useRef(800)
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -28,7 +29,13 @@ export default function WidgetIframe({ embedKey, className, style }: WidgetIfram
       }
 
       if (event.data.type === 'widget-resize' && typeof event.data.height === 'number') {
-        setHeight(Math.max(400, event.data.height + 50)) // Add padding and set minimum height
+        const newHeight = Math.max(400, Math.min(5000, event.data.height + 50)) // Add padding, set min/max
+        
+        // Only update if height changed significantly (prevent infinite loops)
+        if (Math.abs(newHeight - lastHeightRef.current) > 10) {
+          lastHeightRef.current = newHeight
+          setHeight(newHeight)
+        }
       }
     }
 

@@ -156,43 +156,64 @@ export default function Home() {
         `}</style>
       </section>
 
-      {/* Problem Section - Your website is a leaky bucket */}
+      {/* Problem Section - Website visitors leave without engaging */}
       <section className="py-24 px-6 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="order-2 md:order-1">
               <div className="bg-gray-900 rounded-2xl p-8 relative border border-gray-800">
-                <div className="w-64 h-48 bg-blue-500 rounded-xl mx-auto mb-4 relative overflow-hidden">
-                  <div className="absolute top-4 left-4 right-4">
-                    <div className="bg-blue-300 w-8 h-6 rounded mx-auto mb-2"></div>
-                    <div className="bg-blue-300 w-6 h-4 rounded mx-auto mb-2"></div>
-                    <div className="bg-blue-300 w-10 h-5 rounded mx-auto"></div>
+                <div className="w-64 h-48 bg-gray-800 rounded-xl mx-auto mb-4 relative overflow-hidden border border-gray-700">
+                  {/* Website mockup */}
+                  <div className="absolute top-3 left-3 right-3 h-8 bg-gray-700 rounded flex items-center px-2">
+                    <div className="w-2 h-2 bg-red-400 rounded-full mr-1"></div>
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-1"></div>
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <div className="w-16 h-2 bg-gray-600 rounded"></div>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 h-4 bg-blue-600 rounded-b-xl"></div>
-                  {/* Money falling out */}
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                    <div className="w-3 h-6 bg-blue-400 rounded-sm transform rotate-12"></div>
+                  
+                  {/* Content area */}
+                  <div className="absolute top-14 left-3 right-3 bottom-12 bg-white rounded">
+                    <div className="p-3">
+                      <div className="w-20 h-3 bg-blue-500 rounded mb-2"></div>
+                      <div className="w-full h-2 bg-gray-200 rounded mb-1"></div>
+                      <div className="w-3/4 h-2 bg-gray-200 rounded mb-3"></div>
+                      <div className="w-16 h-6 bg-blue-100 rounded"></div>
+                    </div>
                   </div>
-                  <div className="absolute -bottom-1 left-1/3 transform -translate-x-1/2">
-                    <div className="w-3 h-6 bg-blue-400 rounded-sm transform -rotate-12"></div>
+                  
+                  {/* Visitors leaving - animated dots moving away */}
+                  <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
+                    <div className="w-3 h-3 bg-blue-400 rounded-full opacity-50"></div>
+                  </div>
+                  <div className="absolute -right-10 top-1/3">
+                    <div className="w-2 h-2 bg-blue-300 rounded-full opacity-30"></div>
+                  </div>
+                  <div className="absolute -right-8 bottom-1/3">
+                    <div className="w-2 h-2 bg-blue-300 rounded-full opacity-40"></div>
+                  </div>
+                  
+                  {/* Arrow pointing away */}
+                  <div className="absolute -right-2 top-1/2 transform -translate-y-1/2">
+                    <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
             <div className="order-1 md:order-2">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Your website is a <span className="bg-blue-500 px-2 rounded text-white">leaky bucket</span>.
+                Most visitors <span className="bg-red-500 px-2 rounded text-white">leave immediately</span> without contacting you.
               </h2>
               <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-                You spend thousands on marketing to get people to your website. But 
-                when they get there, do they actually call you? For most contractors, the 
-                answer is "less than 7%".
+                You're driving traffic to your website, but visitors bounce because they can't 
+                quickly understand what their project will cost. Without instant pricing, 
+                potential customers move on to competitors who can give them answers immediately.
               </p>
               <p className="text-lg text-gray-300 leading-relaxed">
-                The other 93% of your visitors—the ones you paid to get—click away and 
-                are lost forever. They leave because they have one simple question you're 
-                not answering: "How much will this cost?" Every visitor who leaves is a lost 
-                job and wasted money.
+                Every day, qualified leads visit your site looking for your services, but leave 
+                empty-handed because the path from interest to contact is unclear. You're missing 
+                revenue opportunities while competitors with instant pricing capture those same customers.
               </p>
             </div>
           </div>

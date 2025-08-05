@@ -44,7 +44,7 @@ export default function Home() {
       <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6">
 
         {/* Hero Navigation - only CAZNO left and Sign In right */}
-        <div className="absolute top-0 left-0 right-0 px-6 py-4">
+        <div className="absolute top-0 left-0 right-0 px-6 py-8">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
@@ -52,11 +52,11 @@ export default function Home() {
         </div>
 
         {/* Main Content */}
-        <div className="text-center max-w-5xl mx-auto relative z-10 pt-16">
+        <div className="text-center max-w-5xl mx-auto relative z-10 pt-32">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
             Your website visitors are
             <br />
-            <span className="text-red-400">leaving without buying.</span>
+            <span className="text-blue-400">leaving without buying.</span>
           </h1>
           
           <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-4xl mx-auto leading-relaxed">
@@ -79,11 +79,11 @@ export default function Home() {
               <span className="text-gray-400">200+ contractors using Cazno</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
               <span className="text-gray-400">48hrs to go live</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-300 rounded-full"></div>
               <span className="text-gray-400">2-3x more leads</span>
             </div>
           </div>
@@ -185,26 +185,26 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="order-2 md:order-1">
               <div className="bg-gray-900 rounded-2xl p-8 relative border border-gray-800">
-                <div className="w-64 h-48 bg-orange-500 rounded-xl mx-auto mb-4 relative overflow-hidden">
+                <div className="w-64 h-48 bg-blue-500 rounded-xl mx-auto mb-4 relative overflow-hidden">
                   <div className="absolute top-4 left-4 right-4">
-                    <div className="bg-green-400 w-8 h-6 rounded mx-auto mb-2"></div>
-                    <div className="bg-green-400 w-6 h-4 rounded mx-auto mb-2"></div>
-                    <div className="bg-green-400 w-10 h-5 rounded mx-auto"></div>
+                    <div className="bg-blue-300 w-8 h-6 rounded mx-auto mb-2"></div>
+                    <div className="bg-blue-300 w-6 h-4 rounded mx-auto mb-2"></div>
+                    <div className="bg-blue-300 w-10 h-5 rounded mx-auto"></div>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 h-4 bg-orange-600 rounded-b-xl"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-4 bg-blue-600 rounded-b-xl"></div>
                   {/* Money falling out */}
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                    <div className="w-3 h-6 bg-green-500 rounded-sm transform rotate-12"></div>
+                    <div className="w-3 h-6 bg-blue-400 rounded-sm transform rotate-12"></div>
                   </div>
                   <div className="absolute -bottom-1 left-1/3 transform -translate-x-1/2">
-                    <div className="w-3 h-6 bg-green-500 rounded-sm transform -rotate-12"></div>
+                    <div className="w-3 h-6 bg-blue-400 rounded-sm transform -rotate-12"></div>
                   </div>
                 </div>
               </div>
             </div>
             <div className="order-1 md:order-2">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Your website is a <span className="bg-blue-600 px-2 rounded text-white">leaky bucket</span>.
+                Your website is a <span className="bg-blue-500 px-2 rounded text-white">leaky bucket</span>.
               </h2>
               <p className="text-lg text-gray-300 mb-6 leading-relaxed">
                 You spend thousands on marketing to get people to your website. But 
@@ -228,7 +228,7 @@ export default function Home() {
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Give customers a price.
             <br />
-            Get a <span className="text-orange-400 underline decoration-orange-400">qualified lead</span>.
+            Get a <span className="text-blue-400 underline decoration-blue-400">qualified lead</span>.
           </h2>
           <p className="text-xl text-gray-300 mb-16 max-w-3xl mx-auto">
             Cazno turns your website into an automated lead machine that works 
@@ -238,11 +238,11 @@ export default function Home() {
           {/* 3-Step Process */}
           <div className="grid md:grid-cols-3 gap-12 mb-16">
             <div className="text-center">
-              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-orange-400">1</span>
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-blue-400">1</span>
               </div>
               <div className="mb-6">
-                <div className="w-16 h-16 bg-orange-500 rounded-lg mx-auto flex items-center justify-center">
+                <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -256,11 +256,11 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-orange-400">2</span>
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-blue-400">2</span>
               </div>
               <div className="mb-6">
-                <div className="w-16 h-16 bg-orange-500 rounded-lg mx-auto flex items-center justify-center">
+                <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
@@ -274,11 +274,11 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-orange-400">3</span>
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-blue-400">3</span>
               </div>
               <div className="mb-6">
-                <div className="w-16 h-16 bg-orange-500 rounded-lg mx-auto flex items-center justify-center">
+                <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -315,15 +315,15 @@ export default function Home() {
               </p>
               <div className="space-y-4">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
                   <span className="text-gray-300">Custom pricing for your services</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
                   <span className="text-gray-300">Good, Better, Best pricing tiers</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
                   <span className="text-gray-300">Material and labor calculations</span>
                 </div>
               </div>
@@ -365,15 +365,15 @@ export default function Home() {
               </p>
               <div className="space-y-4">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
                   <span className="text-gray-300">Measure lead volume and sources</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
                   <span className="text-gray-300">Make data-driven marketing decisions</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
                   <span className="text-gray-300">Prove the ROI of your website and ad campaigns</span>
                 </div>
               </div>
@@ -382,8 +382,8 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -391,8 +391,8 @@ export default function Home() {
               <p className="text-gray-400 text-sm">Interactive maps for accurate surface area calculations</p>
             </div>
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -400,8 +400,8 @@ export default function Home() {
               <p className="text-gray-400 text-sm">Capture partial information even if they don't complete the form</p>
             </div>
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M12 6V4a2 2 0 00-2-2H8a2 2 0 00-2 2v2M7 10V8a1 1 0 011-1h8a1 1 0 011 1v2m-9 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -451,9 +451,9 @@ export default function Home() {
               </ul>
             </div>
 
-            <div className="bg-gray-800 rounded-2xl p-8 border-2 border-orange-400 relative">
+            <div className="bg-gray-800 rounded-2xl p-8 border-2 border-blue-400 relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm font-semibold">Most Popular</span>
+                <span className="bg-blue-400 text-white px-3 py-1 rounded-full text-sm font-semibold">Most Popular</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Monthly</h3>
               <div className="text-4xl font-bold text-white mb-4">
@@ -484,7 +484,7 @@ export default function Home() {
           </div>
 
           <div className="mt-12 space-y-4">
-            <Link href="/get-started" className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-12 py-4 rounded-full font-bold text-xl transition-colors transform hover:scale-105">
+            <Link href="/get-started" className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-12 py-4 rounded-full font-bold text-xl transition-colors transform hover:scale-105">
               Get Your Calculator In 48 Hours →
             </Link>
             <p className="text-sm text-gray-500">30-day money-back guarantee • No long-term contracts</p>
@@ -502,7 +502,7 @@ export default function Home() {
             Join 200+ contractors who are converting more website visitors into paying customers.
           </p>
           <div className="space-y-4">
-            <Link href="/get-started" className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-12 py-4 rounded-full font-bold text-xl transition-colors transform hover:scale-105 mr-4">
+            <Link href="/get-started" className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-12 py-4 rounded-full font-bold text-xl transition-colors transform hover:scale-105 mr-4">
               Start Free Demo
             </Link>
             <Link href="/get-started" className="inline-block border-2 border-white text-white hover:bg-white hover:text-gray-900 px-12 py-4 rounded-full font-bold text-xl transition-colors">

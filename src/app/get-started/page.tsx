@@ -49,8 +49,12 @@ export default function GetStarted() {
 
         {/* Widget Form - Full Width */}
         <div className="max-w-4xl mx-auto px-6 pb-16">
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-            <WidgetIframe embedKey="roi-calculator-demo" />
+          <div className="bg-gray-900 rounded-2xl border border-gray-800">
+            <WidgetIframe 
+              embedKey="roi-calculator-demo" 
+              className="w-full rounded-2xl"
+              height="900px"
+            />
           </div>
         </div>
 

@@ -1,62 +1,31 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-
 interface WidgetIframeProps {
   embedKey: string
   className?: string
   style?: React.CSSProperties
+  width?: string | number
+  height?: string | number
 }
 
-export default function WidgetIframe({ embedKey, className, style }: WidgetIframeProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const [height, setHeight] = useState(800) // Default height
-  const lastHeightRef = useRef(800)
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // Only accept messages from our own domain or localhost
-      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : ''
-      const allowedOrigins = [
-        currentOrigin,
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:3002'
-      ]
-      
-      if (!allowedOrigins.includes(event.origin)) {
-        return
-      }
-
-      if (event.data.type === 'widget-resize' && typeof event.data.height === 'number') {
-        const newHeight = Math.max(400, Math.min(5000, event.data.height + 50)) // Add padding, set min/max
-        
-        // Only update if height changed significantly (prevent infinite loops)
-        if (Math.abs(newHeight - lastHeightRef.current) > 10) {
-          lastHeightRef.current = newHeight
-          setHeight(newHeight)
-        }
-      }
-    }
-
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [])
-
+export default function WidgetIframe({ 
+  embedKey, 
+  className, 
+  style,
+  width = "100%",
+  height = "800px"
+}: WidgetIframeProps) {
   const iframeUrl = `/embed/${embedKey}`
 
   return (
     <iframe
-      ref={iframeRef}
       src={iframeUrl}
-      width="100%"
+      width={width}
       height={height}
       frameBorder="0"
-      scrolling="no"
       className={className}
       style={{
         border: 'none',
-        overflow: 'hidden',
         ...style
       }}
       title="Cazno Widget"

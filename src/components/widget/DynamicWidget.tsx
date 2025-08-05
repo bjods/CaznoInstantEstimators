@@ -464,13 +464,13 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+    <div className="flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
       {/* Header with Progress */}
-      <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-semibold" style={{ color: theme.primaryText }}>{currentStepConfig.title}</h1>
-            <div className="flex items-center gap-4">
+      <header className="px-4 py-3" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex justify-between items-center mb-3">
+            <h1 className="text-lg font-semibold" style={{ color: theme.primaryText }}>{currentStepConfig.title}</h1>
+            <div className="flex items-center gap-3">
               {/* Show compact price if pricing calculator is configured and showInstantQuote is true */}
               {config.pricingCalculator && config.showInstantQuote && (
                 <CompactPriceDisplay 
@@ -496,10 +496,10 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 py-8">
-        <div className="max-w-7xl mx-auto">
+      <main className="px-4 py-6">
+        <div className="max-w-4xl mx-auto">
           {/* Step Components */}
-          <div className="space-y-8 mb-12">
+          <div className="space-y-6 mb-8">
             {currentStepConfig.components.map((component, idx) => (
               <div key={`${currentStep}-${idx}`} className="space-y-4">
                 {/* Component Subheading */}
@@ -526,7 +526,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
           {/* Show full price calculator on the last config step (if no quote step) */}
           {isLastConfigStep && !hasQuoteStep && config.pricingCalculator && config.showInstantQuote && (
-            <div className="mb-12">
+            <div className="mb-8">
               <PriceCalculator 
                 pricingCalculator={config.pricingCalculator}
                 formData={formData}

@@ -42,27 +42,6 @@ export default function Home() {
       )}
 
       <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6">
-        {/* Dotted Pattern Background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute bottom-0 left-0 w-full h-2/3">
-            <svg className="w-full h-full" viewBox="0 0 1920 800" fill="none">
-              {Array.from({ length: 50 }).map((_, i) => (
-                <g key={i}>
-                  {Array.from({ length: 100 }).map((_, j) => (
-                    <circle
-                      key={j}
-                      cx={j * 20 + (i % 2) * 10}
-                      cy={i * 16}
-                      r="1.5"
-                      fill="white"
-                      opacity={Math.random() * 0.8 + 0.2}
-                    />
-                  ))}
-                </g>
-              ))}
-            </svg>
-          </div>
-        </div>
 
         {/* Hero Navigation - only CAZNO left and Sign In right */}
         <div className="absolute top-0 left-0 right-0 px-6 py-4">

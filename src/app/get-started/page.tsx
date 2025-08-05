@@ -52,7 +52,7 @@ export default function GetStarted() {
           <WidgetIframe 
             embedKey="roi-calculator-demo" 
             className="w-full rounded-2xl shadow-2xl"
-            height="1200px"
+            height="1500px"
             style={{ border: '1px solid #374151' }}
           />
         </div>

@@ -33,7 +33,7 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-4">
               <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
-              <Link href="#" className="bg-blue-900/50 backdrop-blur-sm text-white px-6 py-2 rounded-full font-medium hover:bg-blue-900/70 transition-colors">
+              <Link href="/get-started" className="bg-blue-900/50 backdrop-blur-sm text-white px-6 py-2 rounded-full font-medium hover:bg-blue-900/70 transition-colors">
                 Get Started →
               </Link>
             </div>
@@ -61,7 +61,7 @@ export default function Home() {
             companies.
           </h1>
           
-          <Link href="/onboarding" className="inline-block bg-blue-900/50 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-900/70 transition-colors transform hover:scale-105">
+          <Link href="/get-started" className="inline-block bg-blue-900/50 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-900/70 transition-colors transform hover:scale-105">
             GET STARTED
           </Link>
         </div>

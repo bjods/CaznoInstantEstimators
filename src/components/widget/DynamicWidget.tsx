@@ -307,7 +307,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div className="flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
         <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-7xl mx-auto">
@@ -382,7 +382,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     const { total, breakdown } = calculateQuoteData()
 
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div className="flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
         <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-7xl mx-auto">
@@ -464,7 +464,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+    <div className="flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
       {/* Header with Progress */}
       <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-7xl mx-auto">

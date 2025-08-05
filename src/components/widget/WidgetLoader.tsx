@@ -128,7 +128,7 @@ export default function WidgetLoader({ embedKey }: WidgetLoaderProps) {
 
   return (
     <WidgetThemeProvider theme={widgetTheme}>
-      <div style={{ backgroundColor: widgetTheme.backgroundColor }} className="min-h-screen">
+      <div style={{ backgroundColor: widgetTheme.backgroundColor }}>
         <DynamicWidget config={{...widget.config, id: widget.id}} />
       </div>
     </WidgetThemeProvider>

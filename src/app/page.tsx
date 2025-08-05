@@ -20,6 +20,31 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0a0f1f]">
+      {/* Fixed Navigation Bar */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        showNav ? 'bg-[#0a0f1f]/95 backdrop-blur-sm border-b border-gray-800' : 'bg-transparent'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
+            {showNav && (
+              <div className="hidden md:flex items-center space-x-6">
+                <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
+                <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
+                <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
+                <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center space-x-4">
+            <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
+            <Link href="#" className="bg-[#3b82f6] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2563eb] transition-colors">
+              Get Started →
+            </Link>
+          </div>
+        </div>
+      </nav>
+
       <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#0a0f1f] text-white px-6">
         {/* Dotted Pattern Background */}
         <div className="absolute inset-0 opacity-20">
@@ -43,10 +68,28 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Logo at top */}
-        <div className="absolute top-8 left-8">
-          <span className="text-xl font-bold">Cazno</span>
-        </div>
+        {/* Hero Navigation - visible when not scrolled */}
+        {!showNav && (
+          <div className="absolute top-0 left-0 right-0 px-6 py-4">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
+              <div className="flex items-center space-x-8">
+                <div className="hidden md:flex items-center space-x-6">
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
+                  <Link href="#" className="bg-[#3b82f6] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2563eb] transition-colors">
+                    Get Started →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="text-center max-w-4xl mx-auto relative z-10">
@@ -58,7 +101,7 @@ export default function Home() {
             companies.
           </h1>
           
-          <Link href="/onboarding" className="inline-block bg-[#3b82f6] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#2563eb] transition-colors transform hover:scale-105">
+          <Link href="/onboarding" className="inline-block bg-lime-400 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-lime-300 transition-colors transform hover:scale-105">
             GET STARTED
           </Link>
         </div>
@@ -91,8 +134,8 @@ export default function Home() {
               onClick={() => setActiveCalculator('fencing')}
               className={`px-6 py-3 rounded-full transition-colors ${
                 activeCalculator === 'fencing' 
-                  ? 'bg-[#3b82f6] text-white' 
-                  : 'bg-[#1a2332] text-gray-300 hover:bg-[#1e2938]'
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               FENCING
@@ -101,8 +144,8 @@ export default function Home() {
               onClick={() => setActiveCalculator('concrete')}
               className={`px-6 py-3 rounded-full transition-colors ${
                 activeCalculator === 'concrete' 
-                  ? 'bg-[#3b82f6] text-white' 
-                  : 'bg-[#1a2332] text-gray-300 hover:bg-[#1e2938]'
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               CONCRETE
@@ -111,8 +154,8 @@ export default function Home() {
               onClick={() => setActiveCalculator('landscaping')}
               className={`px-6 py-3 rounded-full transition-colors ${
                 activeCalculator === 'landscaping' 
-                  ? 'bg-[#3b82f6] text-white' 
-                  : 'bg-[#1a2332] text-gray-300 hover:bg-[#1e2938]'
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               LANDSCAPING
@@ -121,8 +164,8 @@ export default function Home() {
               onClick={() => setActiveCalculator('roofing')}
               className={`px-6 py-3 rounded-full transition-colors ${
                 activeCalculator === 'roofing' 
-                  ? 'bg-[#3b82f6] text-white' 
-                  : 'bg-[#1a2332] text-gray-300 hover:bg-[#1e2938]'
+                  ? 'bg-black text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               ROOFING
@@ -197,7 +240,7 @@ export default function Home() {
           <p className="text-xl text-gray-400 mb-12">
             Join hundreds of contractors already using Cazno to grow their business.
           </p>
-          <Link href="/onboarding" className="inline-block bg-[#3b82f6] text-white px-12 py-4 rounded-full font-bold text-xl hover:bg-[#2563eb] transition-colors transform hover:scale-105">
+          <Link href="/onboarding" className="inline-block bg-lime-400 text-black px-12 py-4 rounded-full font-bold text-xl hover:bg-lime-300 transition-colors transform hover:scale-105">
             GET STARTED
           </Link>
         </div>

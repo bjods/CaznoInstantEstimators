@@ -4,55 +4,59 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 export default function Home() {
-  const [showNav, setShowNav] = useState(false)
+  const [showNav, setShowNav] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
   const [activeCalculator, setActiveCalculator] = useState('fencing')
 
   useEffect(() => {
     const handleScroll = () => {
-      const heroHeight = window.innerHeight
-      const scrolled = window.scrollY > heroHeight - 100
-      setShowNav(scrolled)
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY < 10) {
+        // Always show nav at the very top
+        setShowNav(true)
+      } else if (currentScrollY > lastScrollY) {
+        // Scrolling down - hide nav
+        setShowNav(false)
+      } else {
+        // Scrolling up - show nav
+        setShowNav(true)
+      }
+      
+      setLastScrollY(currentScrollY)
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [lastScrollY])
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Fixed Navigation Bar - Only shows when scrolled past hero */}
-      {showNav && (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
-            <div className="hidden md:flex items-center space-x-6">
-              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
-              <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
-              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
-              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
-              <Link href="/get-started" className="bg-blue-900/50 backdrop-blur-sm text-white px-6 py-2 rounded-full font-medium hover:bg-blue-900/70 transition-colors">
-                Get Started →
-              </Link>
-            </div>
+      {/* Fixed Navigation Bar - Hide on scroll down, show on scroll up */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20 transition-transform duration-300 ${
+        showNav ? 'translate-y-0' : '-translate-y-full'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
+          <div className="hidden md:flex items-center space-x-6">
+            <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
+            <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
+            <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
+            <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
           </div>
-        </nav>
-      )}
-
-      <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6">
-
-        {/* Hero Navigation - only CAZNO left and Sign In right */}
-        <div className="absolute top-0 left-0 right-0 px-6 py-8">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
+          <div className="flex items-center space-x-4">
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
+            <Link href="/get-started" className="bg-blue-900/50 backdrop-blur-sm text-white px-6 py-2 rounded-full font-medium hover:bg-blue-900/70 transition-colors">
+              Get Started →
+            </Link>
           </div>
         </div>
+      </nav>
+
+      <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6 pt-20">
 
         {/* Main Content */}
-        <div className="text-center max-w-5xl mx-auto relative z-10 pt-32">
+        <div className="text-center max-w-5xl mx-auto relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
             Turn website visitors into paying customers with instant quote calculators that work 24/7.
           </h1>

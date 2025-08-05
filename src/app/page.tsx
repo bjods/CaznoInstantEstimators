@@ -19,7 +19,7 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0f1f]">
+    <div className="min-h-screen bg-black">
       {/* Fixed Navigation Bar - Only shows when scrolled past hero */}
       {showNav && (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
@@ -33,7 +33,7 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-4">
               <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
-              <Link href="#" className="bg-[#3b82f6] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2563eb] transition-colors">
+              <Link href="#" className="bg-blue-900/50 backdrop-blur-sm text-white px-6 py-2 rounded-full font-medium hover:bg-blue-900/70 transition-colors">
                 Get Started →
               </Link>
             </div>
@@ -41,7 +41,7 @@ export default function Home() {
         </nav>
       )}
 
-      <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#0a0f1f] text-white px-6">
+      <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6">
         {/* Dotted Pattern Background */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute bottom-0 left-0 w-full h-2/3">
@@ -82,14 +82,14 @@ export default function Home() {
             companies.
           </h1>
           
-          <Link href="/onboarding" className="inline-block bg-lime-400 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-lime-300 transition-colors transform hover:scale-105">
+          <Link href="/onboarding" className="inline-block bg-blue-900/50 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-900/70 transition-colors transform hover:scale-105">
             GET STARTED
           </Link>
         </div>
       </section>
 
       {/* Live Demo Section */}
-      <section id="demo" className="py-24 px-6 bg-[#0a0f1f]">
+      <section id="demo" className="py-24 px-6 bg-black">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-16">
             Award-winning estimate calculators.
@@ -98,7 +98,7 @@ export default function Home() {
           {/* Large Calculator Card */}
           <div className="max-w-4xl mx-auto mb-16">
             <div 
-              className={`w-full h-96 rounded-2xl shadow-xl transition-all duration-500 bg-[#1a2332] border border-gray-800`}
+              className={`w-full h-96 rounded-2xl shadow-xl transition-all duration-500 bg-gray-900 border border-gray-800`}
             >
               {/* Blank card - will add calculator content later */}
             </div>
@@ -156,7 +156,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section id="stats" className="py-24 px-6 bg-[#0a0f1f]">
+      <section id="stats" className="py-24 px-6 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
@@ -180,7 +180,7 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-24 px-6 bg-[#0a0f1f]">
+      <section id="about" className="py-24 px-6 bg-black">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">
             Built for home service professionals.
@@ -194,7 +194,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-24 px-6 bg-[#1a2332] text-white">
+      <section id="testimonials" className="py-24 px-6 bg-gray-900 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-6xl font-bold mb-16">
             "Cazno totally got what we
@@ -213,7 +213,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-6 bg-[#0a0f1f]">
+      <section className="py-24 px-6 bg-black">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">
             Ready to start converting?
@@ -221,7 +221,7 @@ export default function Home() {
           <p className="text-xl text-gray-400 mb-12">
             Join hundreds of contractors already using Cazno to grow their business.
           </p>
-          <Link href="/onboarding" className="inline-block bg-lime-400 text-black px-12 py-4 rounded-full font-bold text-xl hover:bg-lime-300 transition-colors transform hover:scale-105">
+          <Link href="/onboarding" className="inline-block bg-blue-900/50 backdrop-blur-sm text-white px-12 py-4 rounded-full font-bold text-xl hover:bg-blue-900/70 transition-colors transform hover:scale-105">
             GET STARTED
           </Link>
         </div>

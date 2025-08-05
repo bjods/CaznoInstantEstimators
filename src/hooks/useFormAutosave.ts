@@ -6,6 +6,7 @@ interface UseFormAutosaveProps {
   widgetId: string
   formData: Record<string, any>
   currentStep: string
+  utmData?: Record<string, string>
   submissionFlowConfig?: {
     early_capture: boolean
     autosave_enabled: boolean
@@ -26,6 +27,7 @@ export function useFormAutosave({
   widgetId,
   formData,
   currentStep,
+  utmData = {},
   submissionFlowConfig,
   onSubmissionCreated
 }: UseFormAutosaveProps) {
@@ -73,7 +75,8 @@ export function useFormAutosave({
           sessionId: autosaveState.sessionId,
           formData,
           currentStep,
-          isEarlyCapture
+          isEarlyCapture,
+          utmData
         })
       })
 

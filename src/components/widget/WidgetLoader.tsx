@@ -33,8 +33,29 @@ export default function WidgetLoader({ embedKey }: WidgetLoaderProps) {
   const [widget, setWidget] = useState<WidgetData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [utmData, setUtmData] = useState<Record<string, string>>({})
 
   useEffect(() => {
+    // Capture UTM parameters when widget loads
+    const captureUTMParams = () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      const utm = {
+        utm_source: urlParams.get('utm_source') || '',
+        utm_medium: urlParams.get('utm_medium') || '',
+        utm_campaign: urlParams.get('utm_campaign') || '',
+        utm_term: urlParams.get('utm_term') || '',
+        utm_content: urlParams.get('utm_content') || ''
+      }
+      
+      // Only store if we have at least one UTM parameter
+      const hasUTMParams = Object.values(utm).some(value => value !== '')
+      if (hasUTMParams) {
+        setUtmData(utm)
+      }
+    }
+
+    captureUTMParams()
+
     const fetchWidget = async () => {
       try {
         const response = await fetch(`/api/widget-config/${embedKey}`)
@@ -129,7 +150,7 @@ export default function WidgetLoader({ embedKey }: WidgetLoaderProps) {
   return (
     <WidgetThemeProvider theme={widgetTheme}>
       <div style={{ backgroundColor: widgetTheme.backgroundColor }} className="min-h-screen">
-        <DynamicWidget config={{...widget.config, id: widget.id}} />
+        <DynamicWidget config={{...widget.config, id: widget.id}} utmData={utmData} />
       </div>
     </WidgetThemeProvider>
   )

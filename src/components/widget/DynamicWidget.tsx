@@ -12,9 +12,10 @@ import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
+  utmData?: Record<string, string>
 }
 
-export function DynamicWidget({ config }: DynamicWidgetProps) {
+export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   const theme = useWidgetTheme()
   
   // Check if widget has personal info built into its steps
@@ -49,6 +50,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     widgetId: config.id || '',
     formData,
     currentStep: getCurrentStepName(),
+    utmData,
     submissionFlowConfig: config.submissionFlow || {
       early_capture: true,
       autosave_enabled: true,

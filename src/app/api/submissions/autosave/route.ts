@@ -19,7 +19,8 @@ const autosaveSchema = z.object({
     'Form data cannot be empty'
   ),
   currentStep: z.string().min(1, 'Current step is required'),
-  isEarlyCapture: z.boolean().optional()
+  isEarlyCapture: z.boolean().optional(),
+  utmData: z.record(z.string()).optional()
 })
 
 interface AutosaveRequest {
@@ -28,6 +29,7 @@ interface AutosaveRequest {
   formData: Record<string, any>
   currentStep: string
   isEarlyCapture?: boolean // First time creating the submission
+  utmData?: Record<string, string>
 }
 
 export async function OPTIONS(request: NextRequest) {
@@ -134,7 +136,7 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const { widgetId, sessionId, formData, currentStep, isEarlyCapture = false } = body
+    const { widgetId, sessionId, formData, currentStep, isEarlyCapture = false, utmData = {} } = body
     
     console.log('Autosave request:', {
       widgetId,
@@ -234,7 +236,13 @@ export async function POST(request: NextRequest) {
           },
           service_data: { ...existingSubmission.service_data, ...formData },
           current_step: currentStep,
-          last_interaction_at: new Date().toISOString()
+          last_interaction_at: new Date().toISOString(),
+          // Only update UTM data if we don't already have it (preserve original attribution)
+          utm_source: existingSubmission.utm_source || utmData.utm_source || null,
+          utm_medium: existingSubmission.utm_medium || utmData.utm_medium || null,
+          utm_campaign: existingSubmission.utm_campaign || utmData.utm_campaign || null,
+          utm_term: existingSubmission.utm_term || utmData.utm_term || null,
+          utm_content: existingSubmission.utm_content || utmData.utm_content || null
         }
 
         const { data: updatedSubmission, error: updateError } = await supabase
@@ -288,7 +296,12 @@ export async function POST(request: NextRequest) {
         completion_status: isEarlyCapture ? 'started' : 'in_progress',
         current_step: currentStep,
         source: 'widget',
-        last_interaction_at: new Date().toISOString()
+        last_interaction_at: new Date().toISOString(),
+        utm_source: utmData.utm_source || null,
+        utm_medium: utmData.utm_medium || null,
+        utm_campaign: utmData.utm_campaign || null,
+        utm_term: utmData.utm_term || null,
+        utm_content: utmData.utm_content || null
       }
 
       const { data: newSubmission, error: createError } = await supabase

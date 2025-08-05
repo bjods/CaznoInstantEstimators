@@ -13,9 +13,9 @@ export default function WidgetIframe({
   className, 
   style,
   width = "100%",
-  height = "800px"
+  height = "600px"
 }: WidgetIframeProps) {
-  const iframeUrl = `/embed/${embedKey}`
+  const iframeUrl = `/iframe/${embedKey}`
 
   return (
     <iframe
@@ -25,8 +25,12 @@ export default function WidgetIframe({
       className={className}
       style={{
         border: 'none',
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         ...style
       }}
+      title="Quote Calculator"
+      loading="lazy"
     />
   )
 }

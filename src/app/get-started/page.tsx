@@ -51,9 +51,7 @@ export default function GetStarted() {
         <div className="max-w-4xl mx-auto px-6 pb-16">
           <WidgetIframe 
             embedKey="roi-calculator-demo" 
-            className="w-full rounded-2xl shadow-2xl"
-            height="1500px"
-            style={{ border: '1px solid #374151' }}
+            className="w-full"
           />
         </div>
 

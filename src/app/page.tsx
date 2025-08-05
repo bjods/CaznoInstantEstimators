@@ -53,40 +53,17 @@ export default function Home() {
 
         {/* Main Content */}
         <div className="text-center max-w-5xl mx-auto relative z-10 pt-32">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
-            Your website visitors are
-            <br />
-            <span className="text-blue-400">leaving without buying.</span>
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+            Turn website visitors into paying customers with instant quote calculators that work 24/7.
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-4xl mx-auto leading-relaxed">
-            73% of contractors lose qualified leads because customers can't get instant pricing. 
-            <br />
-            While you're writing estimates, your competitors are closing deals.
-          </p>
-
-          <p className="text-xl md:text-2xl font-semibold text-blue-400 mb-8">
-            Turn website visitors into paying customers with instant quote calculators that work 24/7.
+          <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
+            Give the website visitors you're already getting what they want (instant pricing), and capture more, high quality leads.
           </p>
           
-          <Link href="/get-started" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold text-lg transition-colors transform hover:scale-105 mb-8">
-            Get Your Calculator In 48 Hours →
+          <Link href="/get-started" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold text-lg transition-colors transform hover:scale-105 mb-12">
+            Get Started
           </Link>
-
-          <div className="flex items-center justify-center gap-6 mb-12 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-gray-400">200+ contractors using Cazno</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span className="text-gray-400">48hrs to go live</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-300 rounded-full"></div>
-              <span className="text-gray-400">2-3x more leads</span>
-            </div>
-          </div>
 
           {/* Overlapping Images */}
           <div className="relative max-w-4xl mx-auto">

@@ -52,7 +52,7 @@ export default function Home() {
         </div>
 
         {/* Main Content */}
-        <div className="text-center max-w-5xl mx-auto relative z-10">
+        <div className="text-center max-w-5xl mx-auto relative z-10 pt-16">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
             Your website visitors are
             <br />

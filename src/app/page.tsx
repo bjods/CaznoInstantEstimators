@@ -628,7 +628,7 @@ export default function Home() {
 
       {/* Pricing Section */}
       <section className="py-24 px-6 bg-gray-900">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Simple, transparent pricing
           </h2>
@@ -636,72 +636,71 @@ export default function Home() {
             Get your calculator live in 48 hours. No hidden fees, cancel anytime.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            <div className="bg-gray-800 rounded-2xl p-8 border-2 border-gray-700">
-              <h3 className="text-xl font-bold text-white mb-2">Setup Fee</h3>
-              <div className="text-4xl font-bold text-white mb-4">
-                $650 <span className="text-lg font-normal text-gray-400">CAD</span>
+          <div className="bg-gray-800 rounded-2xl p-8 border-2 border-blue-400 relative">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-blue-400 text-white px-4 py-2 rounded-full text-sm font-semibold">Complete Solution</span>
+            </div>
+            
+            <div className="mb-6">
+              <div className="text-center mb-4">
+                <div className="text-3xl font-bold text-white mb-2">
+                  $149 <span className="text-lg font-normal text-gray-400">CAD/month</span>
+                </div>
+                <div className="text-lg text-gray-300">
+                  + $650 <span className="text-sm text-gray-400">CAD one-time setup fee</span>
+                </div>
               </div>
-              <p className="text-gray-400 mb-6">One-time setup and customization</p>
-              <ul className="text-left space-y-2 text-gray-300">
+            </div>
+
+            <div className="mb-8">
+              <h4 className="text-lg font-semibold text-white mb-4">Your monthly subscription includes:</h4>
+              <ul className="text-left space-y-3 text-gray-300">
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  Custom calculator design
+                  Hosting
                 </li>
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  Pricing configuration
+                  Unlimited form submissions
                 </li>
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  Website integration
+                  Email/SMS notifications
+                </li>
+                <li className="flex items-center">
+                  <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Analytics
+                </li>
+                <li className="flex items-center">
+                  <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Regular updates
+                </li>
+                <li className="flex items-center">
+                  <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Support
                 </li>
               </ul>
             </div>
 
-            <div className="bg-gray-800 rounded-2xl p-8 border-2 border-blue-400 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-blue-400 text-white px-3 py-1 rounded-full text-sm font-semibold">Most Popular</span>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Monthly</h3>
-              <div className="text-4xl font-bold text-white mb-4">
-                $129 <span className="text-lg font-normal text-gray-400">CAD/month</span>
-              </div>
-              <p className="text-gray-400 mb-6">Everything you need to convert leads</p>
-              <ul className="text-left space-y-2 text-gray-300">
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Unlimited quotes
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Analytics dashboard
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Email support
-                </li>
-              </ul>
-            </div>
-          </div>
+            <p className="text-sm text-gray-400 mb-6 italic">
+              No hidden fees or surprise charges.
+            </p>
 
-          <div className="mt-12 space-y-4">
-            <Link href="/get-started" className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-12 py-4 rounded-full font-bold text-xl transition-colors transform hover:scale-105">
-              Get Your Calculator In 48 Hours →
+            <Link href="/get-started" className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-bold text-lg transition-colors transform hover:scale-105 w-full">
+              Get Started
             </Link>
-            <p className="text-sm text-gray-500">30-day money-back guarantee • No long-term contracts</p>
           </div>
         </div>
       </section>

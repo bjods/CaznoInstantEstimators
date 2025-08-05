@@ -1,6 +1,6 @@
 'use client'
 
-import WidgetLoader from '@/components/widget/WidgetLoader'
+import WidgetIframe from '@/components/widget/WidgetIframe'
 import Link from 'next/link'
 
 export default function GetStarted() {
@@ -50,7 +50,7 @@ export default function GetStarted() {
         {/* Widget Form - Full Width */}
         <div className="max-w-4xl mx-auto px-6 pb-16">
           <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-            <WidgetLoader embedKey="roi-calculator-demo" />
+            <WidgetIframe embedKey="roi-calculator-demo" />
           </div>
         </div>
 

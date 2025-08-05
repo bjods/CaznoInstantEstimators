@@ -8,11 +8,13 @@ This guide explains how to create and configure widgets in Supabase for each com
 1. [Database Structure](#database-structure)
 2. [Creating a New Business](#creating-a-new-business)
 3. [Creating a Widget](#creating-a-widget)
-4. [Analytics Dashboard Configuration](#analytics-dashboard-configuration)
-5. [Component Reference](#component-reference)
-6. [Submission Flow Configuration](#submission-flow-configuration)
-7. [Scheduling Configuration](#scheduling-configuration)
-8. [Configuration Examples](#configuration-examples)
+4. [Widget Security Configuration](#widget-security-configuration)
+5. [Widget Embedding Methods](#widget-embedding-methods)
+6. [Analytics Dashboard Configuration](#analytics-dashboard-configuration)
+7. [Component Reference](#component-reference)
+8. [Submission Flow Configuration](#submission-flow-configuration)
+9. [Scheduling Configuration](#scheduling-configuration)
+10. [Configuration Examples](#configuration-examples)
 
 ## Database Structure
 
@@ -535,6 +537,124 @@ WHERE id = 'your-widget-id';
 ```sql
 UPDATE widgets SET security_enabled = false WHERE id = 'your-widget-id';
 -- Remember to re-enable after testing!
+```
+
+## Widget Embedding Methods
+
+### Iframe Embedding (Recommended)
+
+The iframe embedding method provides complete style isolation and prevents CSS conflicts between your website and the widget. This is the recommended approach for production websites.
+
+#### Basic Iframe Embedding
+
+```html
+<iframe 
+  src="https://yourdomain.com/embed/your-widget-embed-key"
+  width="100%"
+  height="800"
+  frameborder="0"
+  style="border: none; border-radius: 8px;"
+  title="Instant Estimate Widget">
+</iframe>
+```
+
+#### React/Next.js Component Embedding
+
+```tsx
+import WidgetIframe from '@/components/widget/WidgetIframe'
+
+export default function ContactPage() {
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <WidgetIframe 
+        embedKey="your-widget-embed-key"
+        className="rounded-lg shadow-lg"
+      />
+    </div>
+  )
+}
+```
+
+#### Auto-Resizing Iframe
+
+The iframe automatically adjusts its height based on the widget content. The widget sends resize messages to the parent window:
+
+```javascript
+// The widget automatically sends messages like this:
+window.parent.postMessage({
+  type: 'widget-resize',
+  height: actualContentHeight
+}, '*');
+
+// Your page can listen for these messages:
+window.addEventListener('message', (event) => {
+  if (event.data.type === 'widget-resize') {
+    const iframe = document.getElementById('widget-iframe');
+    iframe.style.height = event.data.height + 'px';
+  }
+});
+```
+
+### Direct Embedding (Legacy)
+
+Direct embedding loads the widget components directly into your page. **Not recommended** for production due to potential CSS conflicts.
+
+```jsx
+import WidgetLoader from '@/components/widget/WidgetLoader'
+
+export default function ContactPage() {
+  return (
+    <div className="widget-container">
+      <WidgetLoader embedKey="your-widget-embed-key" />
+    </div>
+  )
+}
+```
+
+### Embedding Best Practices
+
+1. **Use Iframe Embedding**: Prevents CSS conflicts and provides better security
+2. **Set Proper Dimensions**: Start with 800px height, let auto-resize handle the rest
+3. **Add Loading States**: Show a skeleton or spinner while the widget loads
+4. **Handle Errors**: Provide fallback content if the widget fails to load
+5. **Mobile Responsive**: Ensure the iframe is responsive on mobile devices
+
+```html
+<!-- Example with loading state -->
+<div id="widget-container" style="position: relative; min-height: 600px;">
+  <div id="widget-loading" style="text-align: center; padding: 100px 0;">
+    Loading instant estimate form...
+  </div>
+  <iframe 
+    id="widget-iframe"
+    src="https://yourdomain.com/embed/your-widget-embed-key"
+    width="100%"
+    height="800"
+    frameborder="0"
+    style="border: none; border-radius: 8px; display: none;"
+    onload="document.getElementById('widget-loading').style.display='none'; this.style.display='block';"
+    title="Instant Estimate Widget">
+  </iframe>
+</div>
+```
+
+### Security Considerations
+
+- **Domain Validation**: Ensure your widget's `allowed_domains` includes your website
+- **HTTPS Only**: Always embed widgets over HTTPS in production
+- **CSP Headers**: Configure Content Security Policy to allow iframe embedding
+- **Sandbox Attributes**: Use appropriate iframe sandbox attributes for security
+
+```html
+<!-- Secure iframe with sandbox attributes -->
+<iframe 
+  src="https://yourdomain.com/embed/your-widget-embed-key"
+  width="100%" 
+  height="800"
+  frameborder="0"
+  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+  title="Instant Estimate Widget">
+</iframe>
 ```
 
 ## Analytics Dashboard Configuration

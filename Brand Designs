@@ -1,0 +1,174 @@
+# System Instructions - Instant Estimate Pro
+
+## Product Vision
+
+**We build revenue machines, not software.**
+
+Instant Estimate Pro is a custom-built lead capture system that transforms how home service businesses handle estimates. Each client gets a bespoke solution that fits perfectly into their existing workflow, generating 3-10x more qualified leads through instant, AI-powered pricing.
+
+## How The System Works
+
+### Core Flow
+1. **Widget loads on client website** → Lightning fast, no lag
+2. **Customer fills multi-step form** → Smooth, guided experience  
+3. **AI calculates instant pricing** → Accurate quotes in seconds
+4. **Lead captured with pricing** → Hot leads, ready to close
+5. **Business notified instantly** → Strike while iron is hot
+
+### Technical Architecture
+- **Frontend**: Dynamic React widgets that morph based on JSON config
+- **Backend**: Supabase for real-time data, n8n for pricing logic
+- **Intelligence**: GPT-4 processes complex pricing rules
+- **Delivery**: Embedded via simple script tag, works everywhere
+
+### Key Differentiators
+- **100% Custom** - Not templates. Built specifically for each business.
+- **Instant Quotes** - Competitors make customers wait 24-48 hours
+- **Smart Pricing** - AI handles complex rules, seasonal adjustments, modifiers
+- **Zero Friction** - Customers get prices without phone calls
+
+## Market Positioning
+
+### Who We Serve
+**Local home service businesses ($1-10M revenue) who:**
+- Currently take 24-48 hours to provide quotes
+- Lose leads to faster competitors  
+- Have complex pricing with many variables
+- Want to dominate their local market
+
+### Target Verticals (in order)
+1. **Fencing** - Linear pricing, urgent needs, high tickets
+2. **Concrete** - Area-based, weather dependent, premium pricing
+3. **Hardscaping** - Complex quotes, design element, affluent customers
+
+### Pricing Strategy
+- **Starter**: $297/mo - Widget + 3 changes + email alerts
+- **Professional**: $497/mo - Everything + SMS + CRM integration
+- **Enterprise**: $997/mo - White label + unlimited changes + priority
+
+**Value Prop**: Pay $497/month, get 20+ leads worth $100k+
+
+## Brand Voice & Tone
+
+### Core Principles
+**Bold. Direct. No BS.**
+
+We don't apologize for being expensive. We don't explain why instant estimates matter. We show results and let the revenue speak.
+
+### Voice Characteristics
+- **Confident**: "Your competitors quote in days. You quote in seconds."
+- **Direct**: "Get 3x more leads or pay nothing."
+- **Premium**: "We only work with 5 businesses per city."
+- **Results-focused**: "Last month our clients closed $2.4M in new business."
+
+### What We Say
+✅ "Convert more leads into revenue"
+✅ "Your 24/7 sales machine"  
+✅ "Built for your exact business"
+✅ "Go live in 48 hours"
+
+### What We Don't Say
+❌ "Affordable pricing"
+❌ "Easy DIY setup"
+❌ "Works for any business"
+❌ "Free trial available"
+
+## Design Language
+
+### Visual Principles
+- **Minimal**: White space is luxury
+- **Sharp**: Hard edges, no rounded corners on CTAs
+- **High Contrast**: Pure black (#000) on white (#FFF)
+- **Single Accent**: Electric blue (#0066FF) for actions only
+
+### Typography
+- **Headers**: Inter or SF Pro Display - Bold, massive
+- **Body**: Inter or SF Pro Text - Regular, generous spacing
+- **Numbers**: Tabular figures always, especially pricing
+
+### UI Patterns
+- **Forms**: Single column, one question per step
+- **Buttons**: Full width on mobile, generous padding
+- **Feedback**: Instant validation, clear success states
+- **Motion**: Subtle, purposeful, never decorative
+
+## Copy Guidelines
+
+### Headlines
+- **Max 8 words**
+- **Benefit, not feature**
+- **Specific numbers when possible**
+
+Examples:
+- "Get instant estimates on your website"
+- "Convert 3x more fence leads"  
+- "Quote jobs in 30 seconds"
+
+### Body Copy
+- **Short sentences.** One idea each.
+- **Active voice** always
+- **Specifics over generalizations**
+- **Proof over promises**
+
+### CTAs
+Primary: "Get Instant Estimates"
+Secondary: "See Your First Lead"
+Urgent: "Start Converting Today"
+
+## Customer Communication
+
+### Onboarding
+**Day 1**: "Your widget is live. First lead coming soon."
+**Day 7**: "14 leads captured. 3 jobs closed. $18,400 revenue."
+**Day 30**: "Monthly report: 67 leads, $64,000 in quotes."
+
+### Support Tone
+- **Immediate**: "Fixed. Try now."
+- **Proactive**: "Noticed your conversion dipped. Adjusting pricing rules."
+- **Educational**: "Pro tip: Add urgency pricing for 40% higher close rates."
+
+## Development Principles
+
+### Code Standards
+- **Ship daily** - Better live at 80% than perfect never
+- **Measure everything** - Data drives decisions
+- **Customer-first** - Their revenue is our north star
+- **No complexity** - If it needs explanation, rebuild it
+
+### Feature Decisions
+Ask: "Will this directly increase customer revenue?"
+- Yes → Build it
+- Maybe → Test with one client
+- No → Reject
+
+### Quality Bar
+- **Page load**: Under 1 second
+- **Form completion**: Under 60 seconds  
+- **Quote accuracy**: Within 10% of final
+- **Uptime**: 99.9% minimum
+
+## Success Metrics
+
+### Customer Success
+- **Lead Volume**: 10x increase in 30 days
+- **Conversion Rate**: 25%+ form completion
+- **Revenue Impact**: 3x ROI minimum
+- **Time to Quote**: Under 60 seconds
+
+### Business Success  
+- **MRR Growth**: 50% month-over-month
+- **Churn**: Under 5% monthly
+- **CAC Payback**: Under 3 months
+- **NPS**: 70+ from clients
+
+## The Mission
+
+**We don't build forms. We build revenue machines.**
+
+Every widget we deploy should fundamentally transform how that business captures and converts leads. If a plumber in Ohio can't sleep because leads are pouring in at midnight, we've succeeded.
+
+Speed wins deals. We make our clients the fastest.
+
+---
+
+*"Your competition quotes tomorrow. You quote now."*

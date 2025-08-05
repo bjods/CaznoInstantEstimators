@@ -1,6 +1,7 @@
 'use client'
 
 import { KeyboardEvent } from 'react'
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
 
 export interface PhoneInputProps {
   value: string
@@ -19,6 +20,8 @@ export function PhoneInput({
   required = false,
   onEnter
 }: PhoneInputProps) {
+  const theme = useWidgetTheme()
+  
   const formatPhoneNumber = (phoneNumber: string) => {
     // Remove all non-digits
     const cleaned = phoneNumber.replace(/\D/g, '')
@@ -59,9 +62,12 @@ export function PhoneInput({
 
   return (
     <div className="space-y-2">
-      <label className="block text-lg font-medium text-gray-700">
+      <label 
+        className="block text-lg font-medium"
+        style={{ color: theme.labelText }}
+      >
         {label}
-        
+        {required && <span style={{ color: theme.errorColor }}> *</span>}
       </label>
       <input
         type="tel"
@@ -70,16 +76,34 @@ export function PhoneInput({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         required={required}
-        className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors ${
-          isValid 
-            ? 'border-gray-300' 
-            : 'border-red-300 bg-red-50'
-        }`}
+        className="w-full px-4 py-3 text-lg border-2 rounded-lg outline-none transition-colors"
+        style={{
+          backgroundColor: isValid ? theme.inputBackground : `${theme.errorColor}10`,
+          borderColor: isValid ? theme.inputBorder : theme.errorColor,
+          color: theme.inputText,
+        }}
+        onFocus={(e) => {
+          e.target.style.borderColor = theme.inputFocusBorder
+          e.target.style.boxShadow = `0 0 0 2px ${theme.inputFocusBorder}25`
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = isValid ? theme.inputBorder : theme.errorColor
+          e.target.style.boxShadow = 'none'
+        }}
       />
       {!isValid && (
-        <p className="text-sm text-red-600">Please enter a valid phone number</p>
+        <p className="text-sm" style={{ color: theme.errorColor }}>
+          Please enter a valid phone number
+        </p>
       )}
-      <p className="text-sm text-gray-500">Format: (555) 123-4567</p>
+      <p className="text-sm" style={{ color: theme.secondaryText }}>
+        Format: (555) 123-4567
+      </p>
+      <style jsx>{`
+        input::placeholder {
+          color: ${theme.inputPlaceholder};
+        }
+      `}</style>
     </div>
   )
 }

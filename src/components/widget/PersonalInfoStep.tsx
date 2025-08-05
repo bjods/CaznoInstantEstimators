@@ -5,6 +5,7 @@ import { NameInput } from '@/components/widget-library/inputs/NameInput'
 import { EmailInput } from '@/components/widget-library/inputs/EmailInput'
 import { PhoneInput } from '@/components/widget-library/inputs/PhoneInput'
 import { AddressAutocomplete } from '@/components/widget-library/inputs/AddressAutocomplete'
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
 
 interface PersonalInfoStepProps {
   formData: {
@@ -19,6 +20,7 @@ interface PersonalInfoStepProps {
 }
 
 export function PersonalInfoStep({ formData, updateField, onComplete }: PersonalInfoStepProps) {
+  const theme = useWidgetTheme()
   const [currentFocus, setCurrentFocus] = useState<string>('firstName')
 
   const focusNext = (fieldName: string) => {
@@ -54,14 +56,23 @@ export function PersonalInfoStep({ formData, updateField, onComplete }: Personal
             updateField('address', '123 Main St, Toronto, ON')
             setTimeout(() => onComplete(), 100)
           }}
-          className="text-sm text-gray-500 hover:text-blue-600 underline transition-colors"
+          className="text-sm underline transition-colors"
+          style={{ 
+            color: theme.secondaryText
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = theme.primaryColor
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = theme.secondaryText
+          }}
         >
           🚀 Skip for Testing (Auto-fill & Continue)
         </button>
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide text-left">Enter your contact info to start building a quote</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-left" style={{ color: theme.secondaryText }}>Enter your contact info to start building a quote</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <NameInput
             value={formData.firstName}
@@ -120,11 +131,21 @@ export function PersonalInfoStep({ formData, updateField, onComplete }: Personal
         <button
           onClick={onComplete}
           disabled={!isFormValid()}
-          className={`px-12 py-4 rounded-lg font-semibold text-lg transition-all duration-200 ${
-            isFormValid()
-              ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg hover:shadow-xl'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
+          className="px-12 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            backgroundColor: isFormValid() ? theme.primaryColor : theme.disabledBackground,
+            color: isFormValid() ? theme.primaryButtonText : theme.disabledText
+          }}
+          onMouseEnter={(e) => {
+            if (isFormValid()) {
+              e.currentTarget.style.backgroundColor = `${theme.primaryColor}dd`
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (isFormValid()) {
+              e.currentTarget.style.backgroundColor = theme.primaryColor
+            }
+          }}
         >
           Continue
         </button>

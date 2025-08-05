@@ -8,12 +8,14 @@ import { QuoteStep } from './QuoteStep'
 import QuoteStepDisplay from '../widgets/QuoteStepDisplay'
 import { WidgetConfig, CTAButton, SchedulingSelection } from '@/types'
 import { useFormAutosave } from '@/hooks/useFormAutosave'
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
 }
 
 export function DynamicWidget({ config }: DynamicWidgetProps) {
+  const theme = useWidgetTheme()
   const [currentStep, setCurrentStep] = useState(-1) // Start at -1 for personal info step
   const [formData, setFormData] = useState<Record<string, any>>({
     firstName: '',
@@ -294,20 +296,23 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
   // Show personal info step
   if (currentStep === -1) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-xl font-semibold text-gray-900">Personal Information</h1>
-              <div className="text-sm text-gray-500">
+              <h1 className="text-xl font-semibold" style={{ color: theme.primaryText }}>Personal Information</h1>
+              <div className="text-sm" style={{ color: theme.secondaryText }}>
                 Step 1 of {totalSteps} (14%)
               </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full rounded-full h-2" style={{ backgroundColor: theme.progressBackground }}>
               <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(1 / totalSteps) * 100}%` }}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${(1 / totalSteps) * 100}%`,
+                  backgroundColor: theme.progressFill
+                }}
               />
             </div>
           </div>
@@ -366,20 +371,23 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
     const { total, breakdown } = calculateQuoteData()
 
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-xl font-semibold text-gray-900">{config.quoteStep.title}</h1>
-              <div className="text-sm text-gray-500">
+              <h1 className="text-xl font-semibold" style={{ color: theme.primaryText }}>{config.quoteStep.title}</h1>
+              <div className="text-sm" style={{ color: theme.secondaryText }}>
                 Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
               </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full rounded-full h-2" style={{ backgroundColor: theme.progressBackground }}>
               <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentStepForProgress + 1) / totalSteps) * 100}%` }}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${((currentStepForProgress + 1) / totalSteps) * 100}%`,
+                  backgroundColor: theme.progressFill
+                }}
               />
             </div>
           </div>
@@ -408,11 +416,22 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
         </main>
 
         {/* Footer with Navigation */}
-        <footer className="bg-white border-t border-gray-200 px-6 py-6">
+        <footer className="px-6 py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <button
               onClick={handlePrevious}
-              className="px-8 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="px-8 py-3 rounded-lg transition-colors font-medium"
+              style={{
+                backgroundColor: theme.backgroundColor,
+                border: `1px solid ${theme.borderColor}`,
+                color: theme.primaryText
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${theme.primaryColor}10`
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.backgroundColor
+              }}
             >
               Previous
             </button>
@@ -427,19 +446,19 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
 
   if (!currentStepConfig) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-red-600">Invalid step configuration</p>
+      <div className="p-6 text-center" style={{ backgroundColor: theme.backgroundColor }}>
+        <p style={{ color: theme.errorColor }}>Invalid step configuration</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
       {/* Header with Progress */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-semibold text-gray-900">{currentStepConfig.title}</h1>
+            <h1 className="text-xl font-semibold" style={{ color: theme.primaryText }}>{currentStepConfig.title}</h1>
             <div className="flex items-center gap-4">
               {/* Show compact price if pricing calculator is configured and showInstantQuote is true */}
               {config.pricingCalculator && config.showInstantQuote && (
@@ -448,15 +467,18 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
                   formData={formData}
                 />
               )}
-              <div className="text-sm text-gray-500">
+              <div className="text-sm" style={{ color: theme.secondaryText }}>
                 Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
               </div>
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full rounded-full h-2" style={{ backgroundColor: theme.progressBackground }}>
             <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStepForProgress + 1) / totalSteps) * 100}%` }}
+              className="h-2 rounded-full transition-all duration-300"
+              style={{ 
+                width: `${((currentStepForProgress + 1) / totalSteps) * 100}%`,
+                backgroundColor: theme.progressFill
+              }}
             />
           </div>
         </div>
@@ -471,7 +493,7 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
               <div key={`${currentStep}-${idx}`} className="space-y-4">
                 {/* Component Subheading */}
                 {(component.props.label || component.props.helpText) && (
-                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide text-left">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-left" style={{ color: theme.secondaryText }}>
                     {component.props.label || component.props.helpText}
                   </h2>
                 )}
@@ -504,12 +526,27 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
       </main>
 
       {/* Footer with Navigation */}
-      <footer className="bg-white border-t border-gray-200 px-6 py-6">
+      <footer className="px-6 py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}
             disabled={currentStep === -1}
-            className="px-8 py-3 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors font-medium"
+            className="px-8 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            style={{
+              backgroundColor: theme.backgroundColor,
+              border: `1px solid ${theme.borderColor}`,
+              color: theme.primaryText
+            }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = `${theme.primaryColor}10`
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = theme.backgroundColor
+              }
+            }}
           >
             Previous
           </button>
@@ -517,7 +554,17 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
           {(isLastStep && !hasQuoteStep) ? (
             <button
               onClick={handleSubmit}
-              className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg"
+              className="px-12 py-3 rounded-lg transition-colors font-medium text-lg"
+              style={{
+                backgroundColor: theme.primaryColor,
+                color: theme.primaryButtonText
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${theme.primaryColor}dd`
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.primaryColor
+              }}
             >
               Get Quote
             </button>
@@ -525,7 +572,21 @@ export function DynamicWidget({ config }: DynamicWidgetProps) {
             <button
               onClick={handleNext}
               disabled={componentState && !componentState.canProceed}
-              className="px-12 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-12 py-3 rounded-lg transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: theme.primaryColor,
+                color: theme.primaryButtonText
+              }}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = `${theme.primaryColor}dd`
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = theme.primaryColor
+                }
+              }}
             >
               {isLastConfigStep && hasQuoteStep ? 'View Quote' : getNextButtonText()}
             </button>

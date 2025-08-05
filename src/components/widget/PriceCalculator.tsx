@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { PricingCalculator, PricingResult } from '@/types'
 import { calculatePriceSync, formatPrice, calculatePriceRange } from '@/lib/pricingCalculator'
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
 
 interface PriceCalculatorProps {
   pricingCalculator: PricingCalculator
@@ -15,6 +16,7 @@ export function PriceCalculator({
   formData, 
   className = '' 
 }: PriceCalculatorProps) {
+  const theme = useWidgetTheme()
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null)
   const [isVisible, setIsVisible] = useState(false)
 
@@ -39,7 +41,7 @@ export function PriceCalculator({
     switch (display.format) {
       case 'fixed':
         return (
-          <div className="text-3xl font-bold text-green-600">
+          <div className="text-3xl font-bold" style={{ color: theme.successColor }}>
             {formatPrice(finalPrice)}
           </div>
         )
@@ -51,7 +53,7 @@ export function PriceCalculator({
           display.rangeConfig
         )
         return (
-          <div className="text-3xl font-bold text-green-600">
+          <div className="text-3xl font-bold" style={{ color: theme.successColor }}>
             {formatPrice(min)} - {formatPrice(max)}
           </div>
         )
@@ -59,14 +61,14 @@ export function PriceCalculator({
       
       case 'minimum':
         return (
-          <div className="text-3xl font-bold text-green-600">
+          <div className="text-3xl font-bold" style={{ color: theme.successColor }}>
             Starting at {formatPrice(finalPrice)}
           </div>
         )
         
       default:
         return (
-          <div className="text-3xl font-bold text-green-600">
+          <div className="text-3xl font-bold" style={{ color: theme.successColor }}>
             {formatPrice(finalPrice)}
           </div>
         )
@@ -74,9 +76,16 @@ export function PriceCalculator({
   }
 
   return (
-    <div className={`bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200 ${className}`}>
+    <div 
+      className={`rounded-xl p-6 border-2 ${className}`}
+      style={{
+        background: `linear-gradient(135deg, ${theme.cardBackground}, ${theme.inputBackground})`,
+        borderColor: theme.successColor,
+        boxShadow: `0 4px 12px ${theme.successColor}20`
+      }}
+    >
       <div className="text-center">
-        <div className="text-lg text-gray-700 mb-2">
+        <div className="text-lg mb-2" style={{ color: theme.primaryText }}>
           Your Instant Estimate
         </div>
         
@@ -84,15 +93,15 @@ export function PriceCalculator({
         
         {/* Price Breakdown */}
         {display.showCalculation && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="text-sm text-gray-600 space-y-2">
+          <div className="mt-4 pt-4 border-t" style={{ borderColor: theme.borderColor }}>
+            <div className="text-sm space-y-2" style={{ color: theme.secondaryText }}>
               
               {/* Base Price */}
               <div className="flex justify-between items-center">
                 <span>
                   Base Price ({pricingResult.breakdown.baseQuantity} {pricingResult.breakdown.baseUnit} × {formatPrice(pricingResult.breakdown.baseAmount)})
                 </span>
-                <span className="font-medium">
+                <span className="font-medium" style={{ color: theme.primaryText }}>
                   {formatPrice(pricingResult.basePrice)}
                 </span>
               </div>
@@ -103,11 +112,14 @@ export function PriceCalculator({
                   <span className="capitalize">
                     {modifier.description}
                   </span>
-                  <span className={`font-medium ${
-                    modifier.operation === 'add' ? 'text-orange-600' : 
-                    modifier.operation === 'subtract' ? 'text-green-600' :
-                    'text-blue-600'
-                  }`}>
+                  <span 
+                    className="font-medium"
+                    style={{
+                      color: modifier.operation === 'add' ? theme.errorColor : 
+                             modifier.operation === 'subtract' ? theme.successColor :
+                             theme.primaryColor
+                    }}
+                  >
                     {modifier.operation === 'add' && '+'}
                     {modifier.operation === 'subtract' && '-'}
                     {modifier.operation === 'multiply' && '×'}
@@ -121,25 +133,31 @@ export function PriceCalculator({
               
               {/* Minimum Charge Applied */}
               {pricingResult.breakdown.minChargeApplied && (
-                <div className="flex justify-between items-center text-orange-600">
+                <div className="flex justify-between items-center" style={{ color: theme.errorColor }}>
                   <span>Minimum Charge Applied</span>
-                  <span className="font-medium">
+                  <span className="font-medium" style={{ color: theme.errorColor }}>
                     {formatPrice(pricingResult.finalPrice)}
                   </span>
                 </div>
               )}
               
               {/* Total */}
-              <div className="flex justify-between items-center pt-2 border-t border-gray-200 font-semibold text-gray-800">
+              <div 
+                className="flex justify-between items-center pt-2 border-t font-semibold"
+                style={{ 
+                  borderColor: theme.borderColor,
+                  color: theme.primaryText
+                }}
+              >
                 <span>Total</span>
-                <span>{formatPrice(pricingResult.finalPrice)}</span>
+                <span style={{ color: theme.successColor }}>{formatPrice(pricingResult.finalPrice)}</span>
               </div>
             </div>
           </div>
         )}
         
         {/* Disclaimer */}
-        <div className="mt-4 text-xs text-gray-500">
+        <div className="mt-4 text-xs" style={{ color: theme.secondaryText }}>
           * Final price may vary based on site conditions and additional requirements
         </div>
       </div>
@@ -153,6 +171,7 @@ export function CompactPriceDisplay({
   formData, 
   className = '' 
 }: PriceCalculatorProps) {
+  const theme = useWidgetTheme()
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null)
 
   useEffect(() => {
@@ -185,7 +204,14 @@ export function CompactPriceDisplay({
   }
 
   return (
-    <div className={`inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium ${className}`}>
+    <div 
+      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${className}`}
+      style={{
+        backgroundColor: `${theme.successColor}20`,
+        color: theme.successColor,
+        border: `1px solid ${theme.successColor}40`
+      }}
+    >
       <span className="mr-1">💰</span>
       {renderCompactPrice()}
     </div>

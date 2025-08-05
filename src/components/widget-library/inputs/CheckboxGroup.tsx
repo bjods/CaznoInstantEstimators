@@ -1,3 +1,7 @@
+'use client'
+
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
+
 export interface CheckboxGroupProps {
   value: string[]
   onChange: (value: string[]) => void
@@ -15,6 +19,8 @@ export function CheckboxGroup({
   helpText,
   required
 }: CheckboxGroupProps) {
+  const theme = useWidgetTheme()
+  
   const handleChange = (optionValue: string, checked: boolean) => {
     if (checked) {
       onChange([...value, optionValue])
@@ -26,9 +32,12 @@ export function CheckboxGroup({
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label 
+          className="block text-sm font-medium"
+          style={{ color: theme.labelText }}
+        >
           {label}
-          
+          {required && <span style={{ color: theme.errorColor }}> *</span>}
         </label>
       )}
       
@@ -36,19 +45,42 @@ export function CheckboxGroup({
         {options.map((option) => (
           <label
             key={option.value}
-            className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+            className="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
+            style={{
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.borderColor,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = theme.borderColorLight + '20'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = theme.cardBackground
+            }}
           >
             <input
               type="checkbox"
               value={option.value}
               checked={value.includes(option.value)}
               onChange={(e) => handleChange(option.value, e.target.checked)}
-              className="mt-1 mr-4 text-blue-500 focus:ring-blue-500"
+              className="mt-1 mr-4 transition-colors"
+              style={{
+                accentColor: theme.primaryColor,
+              }}
             />
             <div className="flex-1">
-              <div className="font-medium text-gray-900">{option.label}</div>
+              <div 
+                className="font-medium"
+                style={{ color: theme.primaryText }}
+              >
+                {option.label}
+              </div>
               {option.description && (
-                <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                <div 
+                  className="text-sm mt-1"
+                  style={{ color: theme.secondaryText }}
+                >
+                  {option.description}
+                </div>
               )}
             </div>
           </label>
@@ -56,7 +88,9 @@ export function CheckboxGroup({
       </div>
       
       {helpText && (
-        <p className="text-sm text-gray-500">{helpText}</p>
+        <p className="text-sm" style={{ color: theme.secondaryText }}>
+          {helpText}
+        </p>
       )}
     </div>
   )

@@ -1,3 +1,7 @@
+'use client'
+
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
+
 export interface RadioGroupProps {
   value: string
   onChange: (value: string) => void
@@ -15,12 +19,17 @@ export function RadioGroup({
   helpText,
   required
 }: RadioGroupProps) {
+  const theme = useWidgetTheme()
+  
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label 
+          className="block text-sm font-medium"
+          style={{ color: theme.labelText }}
+        >
           {label}
-          
+          {required && <span style={{ color: theme.errorColor }}> *</span>}
         </label>
       )}
       
@@ -30,19 +39,31 @@ export function RadioGroup({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`
-              w-full text-left p-4 rounded-lg transition-all border-2 font-medium
-              ${value === option.value
-                ? 'bg-blue-100 text-blue-800 border-blue-500'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+            className="w-full text-left p-4 rounded-lg transition-all border-2 font-medium"
+            style={{
+              backgroundColor: value === option.value ? theme.primaryColor + '20' : theme.cardBackground,
+              borderColor: value === option.value ? theme.primaryColor : theme.borderColor,
+              color: value === option.value ? theme.primaryColor : theme.primaryText,
+            }}
+            onMouseEnter={(e) => {
+              if (value !== option.value) {
+                e.currentTarget.style.borderColor = theme.borderColorLight
               }
-            `}
+            }}
+            onMouseLeave={(e) => {
+              if (value !== option.value) {
+                e.currentTarget.style.borderColor = theme.borderColor
+              }
+            }}
           >
             <div className="font-medium">{option.label}</div>
             {option.description && (
-              <div className={`text-sm mt-1 ${
-                value === option.value ? 'text-blue-600' : 'text-gray-500'
-              }`}>
+              <div 
+                className="text-sm mt-1"
+                style={{ 
+                  color: value === option.value ? theme.primaryColor : theme.secondaryText 
+                }}
+              >
                 {option.description}
               </div>
             )}
@@ -51,7 +72,9 @@ export function RadioGroup({
       </div>
       
       {helpText && (
-        <p className="text-sm text-gray-500">{helpText}</p>
+        <p className="text-sm" style={{ color: theme.secondaryText }}>
+          {helpText}
+        </p>
       )}
     </div>
   )

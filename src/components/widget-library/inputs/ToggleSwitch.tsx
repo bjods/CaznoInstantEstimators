@@ -1,3 +1,7 @@
+'use client'
+
+import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
+
 export interface ToggleSwitchProps {
   value: boolean
   onChange: (value: boolean) => void
@@ -13,11 +17,17 @@ export function ToggleSwitch({
   helpText,
   required
 }: ToggleSwitchProps) {
+  const theme = useWidgetTheme()
+  
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label 
+          className="block text-sm font-medium"
+          style={{ color: theme.labelText }}
+        >
           {label}
+          {required && <span style={{ color: theme.errorColor }}> *</span>}
         </label>
       )}
       
@@ -26,13 +36,32 @@ export function ToggleSwitch({
         <button
           type="button"
           onClick={() => onChange(true)}
-          className={`
-            px-8 py-3 font-medium text-lg rounded-xl transition-all duration-200
-            ${value 
-              ? 'bg-blue-500 text-white shadow-lg hover:bg-blue-600' 
-              : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+          className="px-8 py-3 font-medium text-lg rounded-xl transition-all duration-200"
+          style={value ? {
+            backgroundColor: theme.primaryButton,
+            color: theme.primaryButtonText,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          } : {
+            backgroundColor: theme.secondaryButton,
+            color: theme.secondaryButtonText,
+            border: `1px solid ${theme.borderColor}`
+          }}
+          onMouseEnter={(e) => {
+            if (value) {
+              e.currentTarget.style.backgroundColor = theme.primaryButtonHover
+            } else {
+              e.currentTarget.style.backgroundColor = theme.secondaryButtonHover
+              e.currentTarget.style.borderColor = theme.borderColorLight
             }
-          `}
+          }}
+          onMouseLeave={(e) => {
+            if (value) {
+              e.currentTarget.style.backgroundColor = theme.primaryButton
+            } else {
+              e.currentTarget.style.backgroundColor = theme.secondaryButton
+              e.currentTarget.style.borderColor = theme.borderColor
+            }
+          }}
         >
           Yes
         </button>
@@ -41,20 +70,41 @@ export function ToggleSwitch({
         <button
           type="button"
           onClick={() => onChange(false)}
-          className={`
-            px-8 py-3 font-medium text-lg rounded-xl transition-all duration-200
-            ${!value 
-              ? 'bg-blue-500 text-white shadow-lg hover:bg-blue-600' 
-              : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+          className="px-8 py-3 font-medium text-lg rounded-xl transition-all duration-200"
+          style={!value ? {
+            backgroundColor: theme.primaryButton,
+            color: theme.primaryButtonText,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          } : {
+            backgroundColor: theme.secondaryButton,
+            color: theme.secondaryButtonText,
+            border: `1px solid ${theme.borderColor}`
+          }}
+          onMouseEnter={(e) => {
+            if (!value) {
+              e.currentTarget.style.backgroundColor = theme.primaryButtonHover
+            } else {
+              e.currentTarget.style.backgroundColor = theme.secondaryButtonHover
+              e.currentTarget.style.borderColor = theme.borderColorLight
             }
-          `}
+          }}
+          onMouseLeave={(e) => {
+            if (!value) {
+              e.currentTarget.style.backgroundColor = theme.primaryButton
+            } else {
+              e.currentTarget.style.backgroundColor = theme.secondaryButton
+              e.currentTarget.style.borderColor = theme.borderColor
+            }
+          }}
         >
           No
         </button>
       </div>
       
       {helpText && (
-        <p className="text-sm text-gray-500">{helpText}</p>
+        <p className="text-sm" style={{ color: theme.secondaryText }}>
+          {helpText}
+        </p>
       )}
     </div>
   )

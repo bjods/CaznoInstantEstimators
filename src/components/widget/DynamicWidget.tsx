@@ -375,44 +375,50 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     triggerQuoteCompletion()
   }, [isQuoteStep, config.quoteStep, config.pricingCalculator, formData, completeSubmission])
 
-  // PostMessage height communication
+  // PostMessage height communication and auto-scroll
   useEffect(() => {
     const sendHeight = () => {
-      const height = Math.max(
-        document.documentElement.scrollHeight,
-        document.body.scrollHeight,
-        document.documentElement.offsetHeight,
-        document.body.offsetHeight
-      )
+      // Scroll to top on step changes
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       
-      window.parent.postMessage({
-        type: 'cazno-resize',
-        height: height
-      }, '*')
+      // Calculate actual content height without extra padding
+      setTimeout(() => {
+        const height = Math.min(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight
+        )
+        
+        window.parent.postMessage({
+          type: 'cazno-resize',
+          height: height
+        }, '*')
+      }, 100)
     }
 
     // Send height on mount
-    setTimeout(sendHeight, 100)
+    setTimeout(sendHeight, 200)
 
-    // Send height on step changes
-    sendHeight()
+    // Send height on step changes with scroll to top
+    if (currentStep !== undefined) {
+      sendHeight()
+    }
 
     // Send height when validation errors appear
     if (Object.keys(fieldErrors).length > 0 || showValidation) {
-      setTimeout(sendHeight, 150)
+      setTimeout(sendHeight, 200)
     }
   }, [currentStep, fieldErrors, showValidation])
 
   // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {
     return (
-      <div ref={widgetContainerRef} className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
-        <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-xl font-semibold" style={{ color: theme.primaryText }}>Personal Information</h1>
-              <div className="text-sm" style={{ color: theme.secondaryText }}>
+        <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+              <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>Personal Information</h1>
+              <div className="text-xs md:text-sm" style={{ color: theme.secondaryText }}>
                 Step 1 of {totalSteps} (14%)
               </div>
             </div>
@@ -429,18 +435,20 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-6 py-8">
-          <PersonalInfoStep
-            formData={{
-              firstName: formData.firstName || '',
-              lastName: formData.lastName || '',
-              email: formData.email || '',
-              phone: formData.phone || '',
-              address: formData.address || ''
-            }}
-            updateField={updateField}
-            onComplete={completePersonalInfo}
-          />
+        <main className="flex-1 px-4 md:px-6 py-6 md:py-8">
+          <div className="max-w-4xl mx-auto">
+            <PersonalInfoStep
+              formData={{
+                firstName: formData.firstName || '',
+                lastName: formData.lastName || '',
+                email: formData.email || '',
+                phone: formData.phone || '',
+                address: formData.address || ''
+              }}
+              updateField={updateField}
+              onComplete={completePersonalInfo}
+            />
+          </div>
         </main>
       </div>
     )
@@ -481,13 +489,13 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     const { total, breakdown } = calculateQuoteData()
 
     return (
-      <div ref={widgetContainerRef} className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
-        <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-xl font-semibold" style={{ color: theme.primaryText }}>{config.quoteStep.title}</h1>
-              <div className="text-sm" style={{ color: theme.secondaryText }}>
+        <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+              <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>{config.quoteStep.title}</h1>
+              <div className="text-xs md:text-sm" style={{ color: theme.secondaryText }}>
                 Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
               </div>
             </div>
@@ -514,23 +522,25 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
               onBack={handlePrevious}
             />
           ) : (
-            <div className="px-6 py-8">
-              <QuoteStep
-                config={config.quoteStep}
-                pricingCalculator={config.pricingCalculator}
-                formData={formData}
-                onButtonClick={handleCTAButtonClick}
-              />
+            <div className="px-4 md:px-6 py-6 md:py-8">
+              <div className="max-w-4xl mx-auto">
+                <QuoteStep
+                  config={config.quoteStep}
+                  pricingCalculator={config.pricingCalculator}
+                  formData={formData}
+                  onButtonClick={handleCTAButtonClick}
+                />
+              </div>
             </div>
           )}
         </main>
 
         {/* Footer with Navigation */}
-        <footer className="px-6 py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <footer className="px-4 md:px-6 py-4 md:py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
+          <div className="max-w-4xl mx-auto flex justify-between items-center">
             <button
               onClick={handlePrevious}
-              className="px-8 py-3 rounded-lg transition-colors font-medium"
+              className="px-6 md:px-8 py-3 rounded-lg transition-colors font-medium text-sm md:text-base"
               style={{
                 backgroundColor: theme.backgroundColor,
                 border: `1px solid ${theme.borderColor}`,
@@ -563,21 +573,23 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   }
 
   return (
-    <div ref={widgetContainerRef} className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+    <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
       {/* Header with Progress */}
-      <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-semibold" style={{ color: theme.primaryText }}>{currentStepConfig.title}</h1>
-            <div className="flex items-center gap-4">
+      <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+            <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>{currentStepConfig.title}</h1>
+            <div className="flex items-center gap-2 md:gap-4">
               {/* Show compact price if pricing calculator is configured and showInstantQuote is true */}
               {config.pricingCalculator && config.showInstantQuote && (
-                <CompactPriceDisplay 
-                  pricingCalculator={config.pricingCalculator}
-                  formData={formData}
-                />
+                <div className="hidden sm:block">
+                  <CompactPriceDisplay 
+                    pricingCalculator={config.pricingCalculator}
+                    formData={formData}
+                  />
+                </div>
               )}
-              <div className="text-sm" style={{ color: theme.secondaryText }}>
+              <div className="text-xs md:text-sm" style={{ color: theme.secondaryText }}>
                 Step {currentStepForProgress + 1} of {totalSteps} ({Math.round(((currentStepForProgress + 1) / totalSteps) * 100)}%)
               </div>
             </div>
@@ -595,10 +607,10 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 py-8">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 px-4 md:px-6 py-6 md:py-8">
+        <div className="max-w-4xl mx-auto">
           {/* Step Components */}
-          <div className="space-y-6 mb-12">
+          <div className="space-y-4 md:space-y-6 mb-8 md:mb-12">
             {currentStepConfig.components.map((component, idx) => (
               <div key={`${currentStep}-${idx}`}>
                 <DynamicComponent
@@ -619,7 +631,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
 
           {/* Show full price calculator on the last config step (if no quote step) */}
           {isLastConfigStep && !hasQuoteStep && config.pricingCalculator && config.showInstantQuote && (
-            <div className="mb-12">
+            <div className="mb-6 md:mb-12">
               <PriceCalculator 
                 pricingCalculator={config.pricingCalculator}
                 formData={formData}
@@ -631,8 +643,8 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
 
 
       {/* Footer with Navigation */}
-      <footer className="px-6 py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <footer className="px-4 md:px-6 py-4 md:py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <button
             onClick={handlePrevious}
             disabled={currentStep === (hasBuiltInPersonalInfo ? 0 : -1)}
@@ -659,7 +671,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
           {(isLastStep && !hasQuoteStep) ? (
             <button
               onClick={handleSubmit}
-              className="px-12 py-3 rounded-lg transition-colors font-medium text-lg"
+              className="w-full sm:w-auto px-8 md:px-12 py-3 rounded-lg transition-colors font-medium text-base md:text-lg"
               style={{
                 backgroundColor: theme.primaryColor,
                 color: theme.primaryButtonText
@@ -677,7 +689,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
             <button
               onClick={handleNext}
               disabled={componentState && !componentState.canProceed}
-              className="px-12 py-3 rounded-lg transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-8 md:px-12 py-3 rounded-lg transition-colors font-medium text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: theme.primaryColor,
                 color: theme.primaryButtonText

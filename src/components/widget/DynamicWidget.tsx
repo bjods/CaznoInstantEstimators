@@ -397,20 +397,13 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     if (isMobile) {
       document.body.style.cssText = `
         height: 100vh;
-        max-height: 100vh;
         overflow-y: auto;
-        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        position: relative;
       `
       document.documentElement.style.cssText = `
         height: 100vh;
-        max-height: 100vh;
         overflow: hidden;
       `
     }
@@ -449,10 +442,10 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     }, '*')
   }, [currentStep])
 
-  // Show personal info step (only if not built into widget steps)  
+  // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {
     return (
-      <div ref={widgetContainerRef} className="min-h-full flex flex-col md:min-h-full" style={{ backgroundColor: theme.backgroundColor, minHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100vh' : 'auto', maxHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100vh' : 'none' }}>
+      <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
         <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-4xl mx-auto">
@@ -529,7 +522,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     const { total, breakdown } = calculateQuoteData()
 
     return (
-      <div ref={widgetContainerRef} className="min-h-full flex flex-col md:min-h-full" style={{ backgroundColor: theme.backgroundColor, minHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100vh' : 'auto', maxHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100vh' : 'none' }}>
+      <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
         <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-4xl mx-auto">
@@ -613,7 +606,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   }
 
   return (
-    <div ref={widgetContainerRef} className="min-h-full flex flex-col md:min-h-full" style={{ backgroundColor: theme.backgroundColor, minHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100vh' : 'auto', maxHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '100vh' : 'none' }}>
+    <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
       {/* Header with Progress */}
       <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-4xl mx-auto">

@@ -36,6 +36,8 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     name: '' // Combined name field for some components
   })
   const [componentState, setComponentState] = useState<any>(null)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [showValidation, setShowValidation] = useState(false)
   const quoteCompletionTriggered = useRef(false)
 
   // Get current step name for tracking
@@ -77,6 +79,50 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       
       return updated
     })
+    
+    // Clear validation errors when user starts typing
+    if (showValidation) {
+      setShowValidation(false)
+      setValidationErrors([])
+    }
+  }
+
+  // Validate current step's required fields
+  const validateCurrentStep = () => {
+    if (!hasBuiltInPersonalInfo && currentStep === -1) {
+      // Validate personal info step
+      const errors: string[] = []
+      if (!formData.firstName?.trim()) errors.push('First name is required')
+      if (!formData.lastName?.trim()) errors.push('Last name is required')  
+      if (!formData.email?.trim()) errors.push('Email is required')
+      if (!formData.phone?.trim()) errors.push('Phone is required')
+      return errors
+    }
+
+    if (currentStep >= 0 && currentStep < config.steps.length) {
+      const currentStepConfig = config.steps[currentStep]
+      const errors: string[] = []
+
+      currentStepConfig.components.forEach(component => {
+        if (component.props.required) {
+          const fieldName = component.props.name
+          const fieldValue = formData[fieldName]
+          const fieldLabel = component.props.label || fieldName
+
+          // Check if field is empty or invalid
+          if (!fieldValue || 
+              (typeof fieldValue === 'string' && !fieldValue.trim()) ||
+              (Array.isArray(fieldValue) && fieldValue.length === 0) ||
+              (component.type === 'select_dropdown' && fieldValue === '')) {
+            errors.push(`${fieldLabel} is required`)
+          }
+        }
+      })
+
+      return errors
+    }
+
+    return []
   }
 
   const handleMeetingBooked = async (appointment: SchedulingSelection) => {
@@ -127,6 +173,14 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   }
 
   const handleNext = () => {
+    // Validate current step before proceeding
+    const errors = validateCurrentStep()
+    if (errors.length > 0) {
+      setValidationErrors(errors)
+      setShowValidation(true)
+      return
+    }
+
     // Special handling for component-driven navigation
     if (componentState) {
       if (componentState.type === 'measurement_hub' && !componentState.canProceed) {
@@ -138,6 +192,10 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
         return
       }
     }
+    
+    // Clear any previous validation errors
+    setShowValidation(false)
+    setValidationErrors([])
     
     // Progress saved automatically on step completion
     
@@ -501,16 +559,9 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       <main className="flex-1 px-6 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Step Components */}
-          <div className="space-y-8 mb-12">
+          <div className="space-y-6 mb-12">
             {currentStepConfig.components.map((component, idx) => (
-              <div key={`${currentStep}-${idx}`} className="space-y-4">
-                {/* Component Subheading */}
-                {(component.props.label || component.props.helpText) && (
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-left" style={{ color: theme.secondaryText }}>
-                    {component.props.label || component.props.helpText}
-                  </h2>
-                )}
-                
+              <div key={`${currentStep}-${idx}`}>
                 <DynamicComponent
                   type={component.type}
                   props={component.props}
@@ -537,6 +588,31 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
           )}
         </div>
       </main>
+
+      {/* Validation Errors */}
+      {showValidation && validationErrors.length > 0 && (
+        <div className="px-6 py-4" style={{ backgroundColor: `${theme.errorColor}10` }}>
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-5 h-5 mt-0.5" style={{ color: theme.errorColor }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium" style={{ color: theme.errorColor }}>
+                  Please complete the following required fields:
+                </h3>
+                <ul className="mt-2 text-sm space-y-1" style={{ color: theme.errorColor }}>
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>• {error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer with Navigation */}
       <footer className="px-6 py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>

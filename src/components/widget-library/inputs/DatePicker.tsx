@@ -31,7 +31,6 @@ export function DatePicker({
           style={{ color: theme.labelText }}
         >
           {label}
-          {required && <span style={{ color: theme.errorColor }}> *</span>}
         </label>
       )}
       

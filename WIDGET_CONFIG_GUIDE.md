@@ -11,10 +11,11 @@ This guide explains how to create and configure widgets in Supabase for each com
 4. [Widget Security Configuration](#widget-security-configuration)
 5. [Widget Iframe Implementation](#widget-iframe-implementation)
 6. [Analytics Dashboard Configuration](#analytics-dashboard-configuration)
-7. [Component Reference](#component-reference)
-8. [Submission Flow Configuration](#submission-flow-configuration)
-9. [Scheduling Configuration](#scheduling-configuration)
-10. [Configuration Examples](#configuration-examples)
+7. [Component Labeling and Display](#component-labeling-and-display)
+8. [Component Reference](#component-reference)
+9. [Submission Flow Configuration](#submission-flow-configuration)
+10. [Scheduling Configuration](#scheduling-configuration)
+11. [Configuration Examples](#configuration-examples)
 
 ## Database Structure
 
@@ -779,6 +780,131 @@ WHERE business_id = 'your-business-id'
 GROUP BY EXTRACT(hour FROM created_at)
 ORDER BY hour_of_day;
 ```
+
+## Component Labeling and Display
+
+### Premium Design Approach
+
+Cazno widgets use a **single-label system** for a clean, professional appearance. Each component displays only its main label directly on the input field - no additional subheadings or duplicate text.
+
+**Key Principles:**
+- ✅ **One label per field**: Use the `label` property for the primary field label
+- ❌ **No duplicate headings**: Avoid redundant `helpText` when `label` exists
+- ✅ **Clean spacing**: Reduced vertical gaps between components
+- ❌ **No asterisks**: Required field indication handled through smart validation
+- ✅ **Professional validation**: Errors shown only when user attempts to proceed
+
+### Labeling Best Practices
+
+**Good Example:**
+```json
+{
+  "type": "text_input",
+  "props": {
+    "name": "business_name",
+    "label": "Business Name",
+    "placeholder": "ABC Fencing & Concrete",
+    "required": true
+  }
+}
+```
+
+**Avoid This:**
+```json
+{
+  "type": "text_input", 
+  "props": {
+    "name": "business_name",
+    "label": "Business Name",
+    "helpText": "BUSINESS NAME", // ❌ Creates duplicate heading
+    "placeholder": "ABC Fencing & Concrete *", // ❌ Don't use asterisks
+    "required": true
+  }
+}
+```
+
+### Label Guidelines
+
+**Use `label` for:**
+- Primary field identification
+- Clear, concise field names
+- Professional terminology
+
+**Use `helpText` only when:**
+- Additional context is truly needed
+- Explaining complex requirements
+- Providing examples (rare cases)
+
+**Use `placeholder` for:**
+- Example values
+- Format hints
+- Encouraging input
+
+### Smart Validation System
+
+Cazno widgets feature a **smart validation system** that provides a professional user experience without cluttering the interface with asterisks or constant error messages.
+
+#### How It Works
+
+**1. Clean Initial State:**
+- No visual indicators for required fields
+- No asterisks or special marking
+- Clean, uncluttered interface
+
+**2. Smart Error Handling:**
+- Validation only triggered when user tries to proceed
+- Clear, contextual error messages
+- Automatic error clearing when user starts typing
+
+**3. User-Friendly Messages:**
+- Uses field labels in error messages
+- Groups all errors in one place
+- Professional tone and styling
+
+#### Configuration
+
+Set any field as required by adding `"required": true` to the component props:
+
+```json
+{
+  "type": "text_input",
+  "props": {
+    "name": "business_name",
+    "label": "Business Name", 
+    "required": true,
+    "placeholder": "ABC Fencing Co"
+  }
+}
+```
+
+#### Supported Validation
+
+The system validates:
+- **Text fields**: Must not be empty or whitespace-only
+- **Email fields**: Must not be empty (basic validation)
+- **Dropdowns**: Must have a selection (not empty string)
+- **Checkboxes**: Must have at least one selection
+- **Arrays**: Must not be empty
+
+#### Error Display
+
+When validation fails, users see:
+- 📍 **Location**: Error panel appears above the Next button
+- 🎨 **Styling**: Subtle background with warning icon
+- 📝 **Content**: "Please complete the following required fields:"
+- 📋 **List**: Bulleted list of specific field errors
+
+#### Best Practices
+
+**✅ Do:**
+- Use clear, descriptive field labels (they become error messages)
+- Only mark truly essential fields as required
+- Test the validation flow during setup
+
+**❌ Avoid:**
+- Making too many fields required (poor UX)
+- Using generic field names as labels
+- Relying on asterisks or visual markers
 
 ## Component Reference
 

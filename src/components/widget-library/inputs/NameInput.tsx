@@ -38,7 +38,6 @@ export const NameInput = forwardRef<HTMLInputElement, NameInputProps>(({
         style={{ color: theme.labelText }}
       >
         {label}
-        {required && <span style={{ color: theme.errorColor }}> *</span>}
       </label>
       <input
         ref={ref}

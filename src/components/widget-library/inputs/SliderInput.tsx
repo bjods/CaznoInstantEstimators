@@ -33,7 +33,6 @@ export function SliderInput({
           style={{ color: theme.labelText }}
         >
           {label}
-          {required && <span style={{ color: theme.errorColor }}> *</span>}
         </label>
       )}
       

@@ -29,7 +29,6 @@ export function RadioGroup({
           style={{ color: theme.labelText }}
         >
           {label}
-          {required && <span style={{ color: theme.errorColor }}> *</span>}
         </label>
       )}
       

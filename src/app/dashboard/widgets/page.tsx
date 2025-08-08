@@ -28,7 +28,6 @@ export default function WidgetsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showEmbedModal, setShowEmbedModal] = useState<string | null>(null)
-  const [embedType, setEmbedType] = useState<'auto-resize'>('auto-resize')
   const [copiedEmbed, setCopiedEmbed] = useState<string | null>(null)
 
   useEffect(() => {
@@ -60,27 +59,7 @@ export default function WidgetsPage() {
     })
   }
 
-  const getWidgetUrl = (embedKey: string) => {
-    return `${window.location.origin}/iframe/${embedKey}`
-  }
 
-  const copyEmbedCode = (embedKey: string) => {
-    const embedCode = `<!-- Cazno Auto-Resizing Widget -->
-<script src="${window.location.origin}/widget-embed.js"></script>
-<div id="cazno-widget-${embedKey}"></div>
-<script>
-CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
-</script>`
-    navigator.clipboard.writeText(embedCode)
-    // You could add a toast notification here
-  }
-
-  const copyBasicIframe = (embedKey: string) => {
-    const embedCode = `<iframe src="${getWidgetUrl(embedKey)}" width="100%" height="600" frameBorder="0"></iframe>`
-    navigator.clipboard.writeText(embedCode)
-    setCopiedEmbed(embedKey + '-basic')
-    setTimeout(() => setCopiedEmbed(null), 2000)
-  }
 
   const getEmbedCode = (embedKey: string) => {
     return `<iframe 
@@ -237,7 +216,7 @@ window.addEventListener('message', function(e) {
               
               <div className="flex items-center space-x-3 ml-6">
                 <Link
-                  href={`/iframe/${widget.embed_key}`}
+                  href={`/embed/${widget.embed_key}`}
                   target="_blank"
                   className="flex items-center space-x-2 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
@@ -277,19 +256,9 @@ window.addEventListener('message', function(e) {
         <div className="bg-white rounded-md p-4 mb-4">
           <h3 className="text-sm font-medium text-gray-900 mb-2">Example with UTM Parameters:</h3>
           <code className="text-xs bg-gray-100 p-2 rounded block text-gray-800 break-all">
-            &lt;script src="{window.location.origin}/widget-embed.js"&gt;&lt;/script&gt;<br/>
-            &lt;div id="cazno-widget"&gt;&lt;/div&gt;<br/>
-            &lt;script&gt;<br/>
-            &nbsp;&nbsp;// Widget with UTM tracking<br/>
-            &nbsp;&nbsp;CaznoWidget.init('your-embed-key', &#123;<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;target: '#cazno-widget',<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;utm: &#123;<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;source: 'facebook',<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;campaign: 'spring_promo'<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&#125;<br/>
-            &nbsp;&nbsp;&#125;);<br/>
-            &lt;/script&gt;
+            &lt;iframe src="{window.location.origin}/embed/your-embed-key?utm_source=facebook&amp;utm_campaign=spring_promo" width="100%" height="800" style="border: none;"&gt;&lt;/iframe&gt;
           </code>
+          <p className="text-xs text-gray-600 mt-2">Add UTM parameters directly to the iframe src URL.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -387,7 +356,7 @@ window.addEventListener('message', function(e) {
                     📖 Complete Embed Guide
                   </Link>
                   <Link
-                    href={`/iframe/${showEmbedModal}`}
+                    href={`/embed/${showEmbedModal}`}
                     target="_blank"
                     className="text-blue-600 hover:text-blue-800 text-sm underline"
                   >

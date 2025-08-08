@@ -23,14 +23,38 @@ export default function EmbedPage({ params }: EmbedPageProps) {
         @media (max-width: 768px) {
           html, body {
             height: 100vh;
+            max-height: 100vh;
             overflow-x: hidden;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
           }
           
           body {
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: contain;
+          }
+
+          #__next {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+          }
+
+          /* Force all content to respect viewport constraints */
+          .min-h-full {
+            min-height: 100vh !important;
+            max-height: 100vh !important;
+          }
+
+          /* Ensure main content area scrolls properly */
+          main {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
           }
         }
       `}</style>

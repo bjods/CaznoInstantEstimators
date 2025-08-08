@@ -7,6 +7,7 @@ export default function Home() {
   const [showNav, setShowNav] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [activeCalculator, setActiveCalculator] = useState('fencing')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,19 +39,55 @@ export default function Home() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold text-white">CAZNO</Link>
+          
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">Case Studies</Link>
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">About</Link>
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">Solutions</Link>
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">Resources</Link>
           </div>
-          <div className="flex items-center space-x-4">
+          
+          {/* Desktop CTA */}
+          <div className="hidden md:flex items-center space-x-4">
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">Sign In</Link>
             <Link href="/get-started" className="bg-blue-900/50 backdrop-blur-sm text-white px-6 py-2 rounded-full font-medium hover:bg-blue-900/70 transition-colors">
               Get Started →
             </Link>
           </div>
+
+          {/* Mobile Hamburger Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white p-2"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-white/20">
+            <div className="px-6 py-4 space-y-4">
+              <Link href="#" className="block text-gray-300 hover:text-white transition-colors">Case Studies</Link>
+              <Link href="#" className="block text-gray-300 hover:text-white transition-colors">About</Link>
+              <Link href="#" className="block text-gray-300 hover:text-white transition-colors">Solutions</Link>
+              <Link href="#" className="block text-gray-300 hover:text-white transition-colors">Resources</Link>
+              <div className="pt-4 border-t border-white/20 space-y-4">
+                <Link href="#" className="block text-gray-300 hover:text-white transition-colors">Sign In</Link>
+                <Link href="/get-started" className="block bg-blue-900/50 text-white px-6 py-3 rounded-full font-medium hover:bg-blue-900/70 transition-colors text-center">
+                  Get Started →
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6 pt-20">

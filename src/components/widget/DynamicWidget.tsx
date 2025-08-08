@@ -9,7 +9,6 @@ import QuoteStepDisplay from '../widgets/QuoteStepDisplay'
 import { WidgetConfig, CTAButton, SchedulingSelection } from '@/types'
 import { useFormAutosave } from '@/hooks/useFormAutosave'
 import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
-import { usePostMessage } from '@/hooks/usePostMessage'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
@@ -66,11 +65,6 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     }
   })
 
-  // Initialize PostMessage system for iframe communication
-  const { sendHeightUpdate, sendFormSubmitted, sendWidgetReady } = usePostMessage({
-    widgetId: config.id || 'unknown',
-    debug: process.env.NODE_ENV === 'development'
-  })
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => {
@@ -275,13 +269,6 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
 
       if (result.success) {
         console.log('Submission completed successfully:', result.data)
-        
-        // Send PostMessage notification to parent
-        sendFormSubmitted({
-          submissionId: result.data?.submissionId,
-          pricing: pricingBreakdown
-        })
-        
         // You can add success feedback here (e.g., show thank you message)
       } else {
         console.error('Failed to complete submission:', result.error)
@@ -388,64 +375,33 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     triggerQuoteCompletion()
   }, [isQuoteStep, config.quoteStep, config.pricingCalculator, formData, completeSubmission])
 
-  // Height monitoring and PostMessage communication
+  // PostMessage height communication
   useEffect(() => {
-    if (!widgetContainerRef.current) return
-
-    // Send widget ready message on initial load
-    const initialHeight = document.documentElement.scrollHeight
-    sendWidgetReady(initialHeight)
-
-    // Create ResizeObserver to monitor height changes
-    resizeObserverRef.current = new ResizeObserver((entries) => {
-      // Use setTimeout to ensure DOM has settled after changes
-      setTimeout(() => {
-        const newHeight = Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight,
-          document.documentElement.offsetHeight,
-          document.body.offsetHeight
-        )
-        
-        // Add small buffer to prevent scrollbars
-        sendHeightUpdate(newHeight + 20)
-      }, 100)
-    })
-
-    // Observe the main container and document body
-    resizeObserverRef.current.observe(widgetContainerRef.current)
-    resizeObserverRef.current.observe(document.body)
-
-    // Also send height updates on step changes
-    const stepChangeHeight = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-      document.documentElement.offsetHeight,
-      document.body.offsetHeight
-    )
-    sendHeightUpdate(stepChangeHeight + 20)
-
-    return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect()
-      }
+    const sendHeight = () => {
+      const height = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+        document.documentElement.offsetHeight,
+        document.body.offsetHeight
+      )
+      
+      window.parent.postMessage({
+        type: 'cazno-resize',
+        height: height
+      }, '*')
     }
-  }, [currentStep, sendHeightUpdate, sendWidgetReady])
 
-  // Send height update when validation errors appear/disappear
-  useEffect(() => {
+    // Send height on mount
+    setTimeout(sendHeight, 100)
+
+    // Send height on step changes
+    sendHeight()
+
+    // Send height when validation errors appear
     if (Object.keys(fieldErrors).length > 0 || showValidation) {
-      setTimeout(() => {
-        const newHeight = Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight,
-          document.documentElement.offsetHeight,
-          document.body.offsetHeight
-        )
-        sendHeightUpdate(newHeight + 20)
-      }, 150) // Delay to allow error messages to render
+      setTimeout(sendHeight, 150)
     }
-  }, [fieldErrors, showValidation, sendHeightUpdate])
+  }, [currentStep, fieldErrors, showValidation])
 
   // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {

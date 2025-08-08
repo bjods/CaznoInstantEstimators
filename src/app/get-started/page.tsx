@@ -6,7 +6,15 @@ import Script from 'next/script'
 export default function GetStarted() {
   return (
     <>
-      <Script src="/widget-embed.js" strategy="beforeInteractive" />
+      <Script id="cazno-resize" strategy="afterInteractive">
+        {`
+          window.addEventListener('message', function(e) {
+            if (e.data.type === 'cazno-resize') {
+              document.getElementById('cazno-widget').height = e.data.height + 'px';
+            }
+          });
+        `}
+      </Script>
       <div className="min-h-screen bg-black">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10">
@@ -51,11 +59,13 @@ export default function GetStarted() {
 
         {/* Widget Form - Full Width */}
         <div className="max-w-4xl mx-auto px-6 pb-16">
-          <div 
-            data-cazno-widget="roi-calculator-demo" 
-            data-cazno-resize="true"
-            style={{ minHeight: '400px' }}
-          ></div>
+          <iframe 
+            id="cazno-widget"
+            src="/embed/roi-calculator-demo"
+            width="100%"
+            height="800"
+            style={{ border: 'none' }}
+          />
         </div>
 
         {/* What to Expect Section */}

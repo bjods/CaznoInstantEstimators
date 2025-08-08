@@ -83,11 +83,20 @@ CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
   }
 
   const getEmbedCode = (embedKey: string) => {
-    return `<!-- Cazno Auto-Resizing Widget -->
-<script src="${window.location.origin}/widget-embed.js"></script>
-<div id="cazno-widget-${embedKey}"></div>
+    return `<iframe 
+  id="cazno-widget"
+  src="${window.location.origin}/embed/${embedKey}"
+  width="100%"
+  height="800"
+  style="border: none;">
+</iframe>
+
 <script>
-CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
+window.addEventListener('message', function(e) {
+  if (e.data.type === 'cazno-resize') {
+    document.getElementById('cazno-widget').height = e.data.height + 'px';
+  }
+});
 </script>`
   }
 
@@ -326,9 +335,8 @@ CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
                   <h3 className="text-green-900 font-medium mb-2">✅ Auto-Resizing Widget</h3>
                   <ul className="text-green-800 text-sm space-y-1">
                     <li>• <strong>No scroll bars</strong> - Widget automatically adjusts height</li>
-                    <li>• <strong>Analytics tracking</strong> - Google Analytics & Facebook Pixel integration</li>
-                    <li>• <strong>Form notifications</strong> - Get notified when forms are submitted</li>
-                    <li>• <strong>Better mobile experience</strong> - Responsive height adjustment</li>
+                    <li>• <strong>Simple integration</strong> - Just iframe + one script</li>
+                    <li>• <strong>Works everywhere</strong> - Any website, any platform</li>
                   </ul>
                 </div>
               </div>
@@ -362,9 +370,8 @@ CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
                 <h3 className="text-sm font-medium text-gray-900 mb-3">How to use:</h3>
                 <ol className="text-sm text-gray-600 space-y-2">
                   <li>1. Copy the embed code above</li>
-                  <li>2. Paste it into your website's HTML where you want the widget to appear</li>
-                  <li>3. Save and publish your changes</li>
-                  <li>4. The widget will automatically resize and track form submissions</li>
+                  <li>2. Paste it into your website's HTML</li>
+                  <li>3. Save and publish - the widget will auto-resize</li>
                 </ol>
               </div>
 

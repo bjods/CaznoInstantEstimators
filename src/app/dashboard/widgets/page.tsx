@@ -8,7 +8,9 @@ import {
   Cog6ToothIcon,
   CalendarIcon,
   LinkIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  ClipboardDocumentIcon,
+  CodeBracketIcon
 } from '@heroicons/react/24/outline'
 
 interface Widget {
@@ -25,6 +27,9 @@ export default function WidgetsPage() {
   const [widgets, setWidgets] = useState<Widget[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showEmbedModal, setShowEmbedModal] = useState<string | null>(null)
+  const [embedType, setEmbedType] = useState<'auto-resize' | 'basic'>('auto-resize')
+  const [copiedEmbed, setCopiedEmbed] = useState<string | null>(null)
 
   useEffect(() => {
     fetchWidgets()
@@ -60,9 +65,40 @@ export default function WidgetsPage() {
   }
 
   const copyEmbedCode = (embedKey: string) => {
-    const embedCode = `<iframe src="${getWidgetUrl(embedKey)}" width="100%" height="600" frameBorder="0"></iframe>`
+    const embedCode = `<!-- Cazno Auto-Resizing Widget -->
+<script src="${window.location.origin}/widget-embed.js"></script>
+<div id="cazno-widget-${embedKey}"></div>
+<script>
+CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
+</script>`
     navigator.clipboard.writeText(embedCode)
     // You could add a toast notification here
+  }
+
+  const copyBasicIframe = (embedKey: string) => {
+    const embedCode = `<iframe src="${getWidgetUrl(embedKey)}" width="100%" height="600" frameBorder="0"></iframe>`
+    navigator.clipboard.writeText(embedCode)
+    setCopiedEmbed(embedKey + '-basic')
+    setTimeout(() => setCopiedEmbed(null), 2000)
+  }
+
+  const getEmbedCode = (embedKey: string, type: 'auto-resize' | 'basic') => {
+    if (type === 'auto-resize') {
+      return `<!-- Cazno Auto-Resizing Widget -->
+<script src="${window.location.origin}/widget-embed.js"></script>
+<div id="cazno-widget-${embedKey}"></div>
+<script>
+CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
+</script>`
+    } else {
+      return `<iframe src="${getWidgetUrl(embedKey)}" width="100%" height="600" frameBorder="0"></iframe>`
+    }
+  }
+
+  const copyToClipboard = async (text: string, embedKey: string, type: string) => {
+    await navigator.clipboard.writeText(text)
+    setCopiedEmbed(embedKey + '-' + type)
+    setTimeout(() => setCopiedEmbed(null), 2000)
   }
 
   if (loading) {
@@ -213,11 +249,12 @@ export default function WidgetsPage() {
                 </Link>
                 
                 <button
-                  onClick={() => copyEmbedCode(widget.embed_key)}
-                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  title="Copy embed code"
+                  onClick={() => setShowEmbedModal(widget.embed_key)}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  title="Get embed code"
                 >
-                  Copy Embed
+                  <CodeBracketIcon className="w-4 h-4" />
+                  <span>Embed Code</span>
                 </button>
               </div>
             </div>
@@ -233,9 +270,20 @@ export default function WidgetsPage() {
         </p>
         
         <div className="bg-white rounded-md p-4 mb-4">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">Example Usage:</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-2">Example with UTM Parameters:</h3>
           <code className="text-xs bg-gray-100 p-2 rounded block text-gray-800 break-all">
-            &lt;iframe src="{getWidgetUrl('your-embed-key')}?utm_source=facebook&amp;utm_campaign=spring_promo" width="100%" height="600" frameBorder="0"&gt;&lt;/iframe&gt;
+            &lt;script src="{window.location.origin}/widget-embed.js"&gt;&lt;/script&gt;<br/>
+            &lt;div id="cazno-widget"&gt;&lt;/div&gt;<br/>
+            &lt;script&gt;<br/>
+            &nbsp;&nbsp;// Widget with UTM tracking<br/>
+            &nbsp;&nbsp;CaznoWidget.init('your-embed-key', &#123;<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;target: '#cazno-widget',<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;utm: &#123;<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;source: 'facebook',<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;campaign: 'spring_promo'<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&#125;<br/>
+            &nbsp;&nbsp;&#125;);<br/>
+            &lt;/script&gt;
           </code>
         </div>
 
@@ -258,6 +306,136 @@ export default function WidgetsPage() {
           </div>
         </div>
       </div>
+
+      {/* Embed Code Modal */}
+      {showEmbedModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Embed Your Widget</h2>
+                <button
+                  onClick={() => setShowEmbedModal(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Embed Type Selection */}
+              <div className="mb-6">
+                <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setEmbedType('auto-resize')}
+                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      embedType === 'auto-resize'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Auto-Resizing (Recommended)
+                  </button>
+                  <button
+                    onClick={() => setEmbedType('basic')}
+                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      embedType === 'basic'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Basic iframe
+                  </button>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mb-6">
+                {embedType === 'auto-resize' ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 className="text-green-900 font-medium mb-2">✅ Auto-Resizing Widget (Recommended)</h3>
+                    <ul className="text-green-800 text-sm space-y-1">
+                      <li>• <strong>No scroll bars</strong> - Widget automatically adjusts height</li>
+                      <li>• <strong>Analytics tracking</strong> - Google Analytics & Facebook Pixel integration</li>
+                      <li>• <strong>Form notifications</strong> - Get notified when forms are submitted</li>
+                      <li>• <strong>Better mobile experience</strong> - Responsive height adjustment</li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 className="text-yellow-900 font-medium mb-2">⚠️ Basic iframe</h3>
+                    <ul className="text-yellow-800 text-sm space-y-1">
+                      <li>• Fixed height may cause scroll bars</li>
+                      <li>• No automatic analytics tracking</li>
+                      <li>• Less responsive on mobile devices</li>
+                      <li>• Use only if auto-resizing doesn't work</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Code Display */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-gray-900">Embed Code:</label>
+                  <button
+                    onClick={() => copyToClipboard(getEmbedCode(showEmbedModal, embedType), showEmbedModal, embedType)}
+                    className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      copiedEmbed === `${showEmbedModal}-${embedType}`
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <ClipboardDocumentIcon className="w-4 h-4" />
+                    <span>{copiedEmbed === `${showEmbedModal}-${embedType}` ? 'Copied!' : 'Copy Code'}</span>
+                  </button>
+                </div>
+                
+                <pre className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm overflow-x-auto">
+                  <code className="text-gray-800">
+                    {getEmbedCode(showEmbedModal, embedType)}
+                  </code>
+                </pre>
+              </div>
+
+              {/* Usage Instructions */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">How to use:</h3>
+                <ol className="text-sm text-gray-600 space-y-2">
+                  <li>1. Copy the embed code above</li>
+                  <li>2. Paste it into your website's HTML where you want the widget to appear</li>
+                  <li>3. Save and publish your changes</li>
+                  {embedType === 'auto-resize' && (
+                    <li>4. The widget will automatically resize and track form submissions</li>
+                  )}
+                </ol>
+              </div>
+
+              {/* Additional Resources */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">Need help?</h3>
+                <div className="flex space-x-4">
+                  <Link
+                    href="/WIDGET_EMBED_GUIDE.md"
+                    target="_blank"
+                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                  >
+                    📖 Complete Embed Guide
+                  </Link>
+                  <Link
+                    href={`/iframe/${showEmbedModal}`}
+                    target="_blank"
+                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                  >
+                    👁️ Preview Widget
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

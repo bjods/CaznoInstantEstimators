@@ -36,7 +36,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     name: '' // Combined name field for some components
   })
   const [componentState, setComponentState] = useState<any>(null)
-  const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [showValidation, setShowValidation] = useState(false)
   const quoteCompletionTriggered = useRef(false)
 
@@ -80,28 +80,36 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       return updated
     })
     
-    // Clear validation errors when user starts typing
-    if (showValidation) {
-      setShowValidation(false)
-      setValidationErrors([])
+    // Clear validation errors for this field when user starts typing
+    if (showValidation && fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const updated = { ...prev }
+        delete updated[name]
+        return updated
+      })
+      
+      // If no more errors, hide validation
+      if (Object.keys(fieldErrors).length <= 1) {
+        setShowValidation(false)
+      }
     }
   }
 
   // Validate current step's required fields
   const validateCurrentStep = () => {
+    const errors: Record<string, string> = {}
+
     if (!hasBuiltInPersonalInfo && currentStep === -1) {
       // Validate personal info step
-      const errors: string[] = []
-      if (!formData.firstName?.trim()) errors.push('First name is required')
-      if (!formData.lastName?.trim()) errors.push('Last name is required')  
-      if (!formData.email?.trim()) errors.push('Email is required')
-      if (!formData.phone?.trim()) errors.push('Phone is required')
+      if (!formData.firstName?.trim()) errors.firstName = 'First name is required!'
+      if (!formData.lastName?.trim()) errors.lastName = 'Last name is required!'  
+      if (!formData.email?.trim()) errors.email = 'Email is required!'
+      if (!formData.phone?.trim()) errors.phone = 'Phone is required!'
       return errors
     }
 
     if (currentStep >= 0 && currentStep < config.steps.length) {
       const currentStepConfig = config.steps[currentStep]
-      const errors: string[] = []
 
       currentStepConfig.components.forEach(component => {
         if (component.props.required) {
@@ -114,7 +122,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
               (typeof fieldValue === 'string' && !fieldValue.trim()) ||
               (Array.isArray(fieldValue) && fieldValue.length === 0) ||
               (component.type === 'select_dropdown' && fieldValue === '')) {
-            errors.push(`${fieldLabel} is required`)
+            errors[fieldName] = `${fieldLabel} is required!`
           }
         }
       })
@@ -122,7 +130,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       return errors
     }
 
-    return []
+    return {}
   }
 
   const handleMeetingBooked = async (appointment: SchedulingSelection) => {
@@ -175,8 +183,8 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   const handleNext = () => {
     // Validate current step before proceeding
     const errors = validateCurrentStep()
-    if (errors.length > 0) {
-      setValidationErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
       setShowValidation(true)
       return
     }
@@ -195,7 +203,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     
     // Clear any previous validation errors
     setShowValidation(false)
-    setValidationErrors([])
+    setFieldErrors({})
     
     // Progress saved automatically on step completion
     
@@ -572,6 +580,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
                   onNavigateNext={handleNext}
                   onComponentStateChange={setComponentState}
                   onMeetingBooked={handleMeetingBooked}
+                  error={showValidation ? fieldErrors[component.props.name] : undefined}
                 />
               </div>
             ))}
@@ -589,30 +598,6 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
         </div>
       </main>
 
-      {/* Validation Errors */}
-      {showValidation && validationErrors.length > 0 && (
-        <div className="px-6 py-4" style={{ backgroundColor: `${theme.errorColor}10` }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <svg className="w-5 h-5 mt-0.5" style={{ color: theme.errorColor }} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-medium" style={{ color: theme.errorColor }}>
-                  Please complete the following required fields:
-                </h3>
-                <ul className="mt-2 text-sm space-y-1" style={{ color: theme.errorColor }}>
-                  {validationErrors.map((error, index) => (
-                    <li key={index}>• {error}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Footer with Navigation */}
       <footer className="px-6 py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>

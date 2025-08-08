@@ -11,9 +11,10 @@ interface DynamicComponentProps {
   onNavigateNext?: () => void
   onComponentStateChange?: (componentState: any) => void
   onMeetingBooked?: (appointment: SchedulingSelection) => void
+  error?: string
 }
 
-export function DynamicComponent({ type, props, value, onChange, formData, config, onNavigateNext, onComponentStateChange, onMeetingBooked }: DynamicComponentProps) {
+export function DynamicComponent({ type, props, value, onChange, formData, config, onNavigateNext, onComponentStateChange, onMeetingBooked, error }: DynamicComponentProps) {
   const Component = ComponentMap[type as keyof typeof ComponentMap]
   
   if (!Component) {
@@ -31,7 +32,7 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
   if ((type === 'map_with_drawing' || type === 'area_measurement') && formData) {
     // Look for address in form data - common field names
     const address = formData.address || formData.property_address || formData.location || formData.site_address
-    return <Component {...props} value={value} onChange={onChange} address={address} />
+    return <Component {...props} value={value} onChange={onChange} address={address} error={error} />
   }
   
   // Special handling for measurement hub
@@ -41,7 +42,7 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
     const selectedServices = formData.selected_services || formData.services || formData.service_type || []
     const servicesArray = Array.isArray(selectedServices) ? selectedServices : [selectedServices]
     
-    return <Component {...props} value={value} onChange={onChange} address={address} selectedServices={servicesArray} onNavigateNext={onNavigateNext} onComponentStateChange={onComponentStateChange} />
+    return <Component {...props} value={value} onChange={onChange} address={address} selectedServices={servicesArray} onNavigateNext={onNavigateNext} onComponentStateChange={onComponentStateChange} error={error} />
   }
   
   // Special handling for service details hub
@@ -53,7 +54,7 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
     // Extract servicesConfig from props (it's passed in the widget configuration)
     const { servicesConfig, ...otherProps } = props
     
-    return <Component {...otherProps} value={value} onChange={onChange} selectedServices={servicesArray} servicesConfig={servicesConfig} onNavigateNext={onNavigateNext} onComponentStateChange={onComponentStateChange} />
+    return <Component {...otherProps} value={value} onChange={onChange} selectedServices={servicesArray} servicesConfig={servicesConfig} onNavigateNext={onNavigateNext} onComponentStateChange={onComponentStateChange} error={error} />
   }
   
   // Special handling for scheduling input
@@ -72,6 +73,7 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
       value={value} 
       onChange={onChange}
       onMeetingBooked={onMeetingBooked}
+      error={error}
     />
   }
   
@@ -81,8 +83,9 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
       {...props} 
       value={value} 
       onChange={onChange}
+      error={error}
     />
   }
   
-  return <Component {...props} value={value} onChange={onChange} />
+  return <Component {...props} value={value} onChange={onChange} error={error} />
 }

@@ -1,46 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
-
-function AutoResizeWidget({ embedKey }: { embedKey: string }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    // Load the widget embed script
-    const script = document.createElement('script')
-    script.src = '/widget-embed.js'
-    script.async = true
-
-    script.onload = () => {
-      if (window.CaznoWidget && containerRef.current) {
-        window.CaznoWidget.embed(embedKey, containerRef.current)
-      }
-    }
-
-    document.head.appendChild(script)
-
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script)
-      }
-    }
-  }, [embedKey])
-
-  return <div ref={containerRef} className="w-full" />
-}
-
-declare global {
-  interface Window {
-    CaznoWidget: any
-  }
-}
+import Script from 'next/script'
 
 export default function GetStarted() {
   return (
-    <div className="min-h-screen bg-black">
+    <>
+      <Script src="/widget-embed.js" strategy="beforeInteractive" />
+      <div className="min-h-screen bg-black">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -84,7 +51,11 @@ export default function GetStarted() {
 
         {/* Widget Form - Full Width */}
         <div className="max-w-4xl mx-auto px-6 pb-16">
-          <AutoResizeWidget embedKey="roi-calculator-demo" />
+          <div 
+            data-cazno-widget="roi-calculator-demo" 
+            data-cazno-resize="true"
+            style={{ minHeight: '400px' }}
+          ></div>
         </div>
 
         {/* What to Expect Section */}
@@ -122,6 +93,7 @@ export default function GetStarted() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

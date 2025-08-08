@@ -1,110 +1,166 @@
 (function() {
+  'use strict';
+
+  // Prevent double loading
+  if (window.CaznoWidget) {
+    return;
+  }
+
+  let messageListener = null;
+  const activeWidgets = new Map();
+
   window.CaznoWidget = {
-    init: function(embedKey, options) {
-      const container = document.querySelector(options.target);
-      if (!container) {
-        console.error('Cazno Widget: Target container not found');
-        return;
+    initInlineWidget: function(config) {
+      const { url, parentElement, resize = true, theme = {} } = config;
+      
+      if (!parentElement) {
+        console.error('Cazno Widget: parentElement is required');
+        return null;
       }
 
-      // Create iframe for the widget
+      // Extract embed key from URL
+      const embedKey = url.split('/').pop();
+      
+      // Create iframe
       const iframe = document.createElement('iframe');
       iframe.id = 'cazno-widget-' + embedKey;
-      iframe.src = `${window.location.origin}/widget/${embedKey}`;
-      iframe.style.width = '100%';
-      iframe.style.minHeight = '400px';
-      iframe.style.height = '600px'; // Initial height
-      iframe.style.border = 'none';
-      iframe.style.borderRadius = '8px';
-      iframe.style.background = (options && options.theme && options.theme.cardBackground) || '#ffffff';
-      iframe.style.overflow = 'hidden';
+      iframe.src = `/iframe/${embedKey}`;
+      iframe.style.cssText = `
+        width: 100%;
+        min-height: 400px;
+        height: 600px;
+        border: none;
+        border-radius: 8px;
+        background: ${theme.cardBackground || '#ffffff'};
+        transition: height 0.3s ease;
+      `;
       
       // Clear container and add iframe
-      container.innerHTML = '';
-      container.appendChild(iframe);
+      parentElement.innerHTML = '';
+      parentElement.appendChild(iframe);
 
-      // Handle iframe messages for dynamic resizing and events
-      window.addEventListener('message', function(event) {
-        // Security: Only accept messages from Cazno domain
-        if (event.origin !== window.location.origin && 
-            event.origin !== 'https://cazno.app' && 
-            event.origin !== 'https://www.cazno.app') {
-          return;
-        }
+      // Setup message listener only once
+      if (!messageListener && resize) {
+        messageListener = function(event) {
+          // Security: Only accept from same origin or Cazno domains
+          if (event.origin !== window.location.origin && 
+              event.origin !== 'https://cazno.app' && 
+              event.origin !== 'https://www.cazno.app') {
+            return;
+          }
 
-        const { type, payload } = event.data;
-        if (!type || !payload || payload.widgetId !== embedKey) return;
+          const { type, payload } = event.data;
+          if (!type || !payload) return;
 
-        switch(type) {
-          case 'cazno:widget:ready':
-            console.log('Cazno widget ready', payload);
-            if (payload.initialHeight) {
-              iframe.style.height = payload.initialHeight + 'px';
-            }
-            break;
+          const widget = activeWidgets.get(payload.widgetId);
+          if (!widget) return;
 
-          case 'cazno:widget:resize':
-            // Auto-resize iframe to fit content
-            if (payload.height && payload.height > 0) {
-              iframe.style.height = Math.max(payload.height, 300) + 'px';
-            }
-            break;
-
-          case 'cazno:form:submitted':
-            // Track successful submission
-            console.log('Form submitted!', payload);
-            
-            // Trigger custom event for parent page to listen to
-            const submitEvent = new CustomEvent('caznoFormSubmitted', {
-              detail: {
-                widgetId: payload.widgetId,
-                submissionId: payload.submissionId,
-                hasQuote: payload.hasQuote,
-                success: payload.success
+          switch(type) {
+            case 'cazno:widget:ready':
+              if (payload.initialHeight) {
+                widget.iframe.style.height = Math.max(payload.initialHeight, 300) + 'px';
               }
-            });
-            window.dispatchEvent(submitEvent);
+              break;
 
-            // Google Analytics integration
-            if (window.gtag) {
-              gtag('event', 'cazno_form_submission', {
-                widget_id: payload.widgetId,
-                submission_id: payload.submissionId,
-                has_quote: payload.hasQuote
+            case 'cazno:widget:resize':
+              if (payload.height && payload.height > 0) {
+                widget.iframe.style.height = Math.max(payload.height, 300) + 'px';
+              }
+              break;
+
+            case 'cazno:form:submitted':
+              // Trigger custom event
+              const submitEvent = new CustomEvent('cazno_form_submitted', {
+                detail: payload
               });
-            }
+              window.dispatchEvent(submitEvent);
 
-            // Facebook Pixel integration
-            if (window.fbq) {
-              fbq('track', 'Lead', {
-                content_name: 'Cazno Widget Form',
-                widget_id: payload.widgetId
-              });
-            }
-            break;
+              // Analytics integrations
+              if (window.gtag) {
+                gtag('event', 'cazno_form_submission', {
+                  widget_id: payload.widgetId,
+                  submission_id: payload.submissionId,
+                  has_quote: payload.hasQuote
+                });
+              }
 
-          default:
-            console.log('Unknown Cazno message type:', type);
-        }
-      });
+              if (window.fbq) {
+                fbq('track', 'Lead', {
+                  content_name: 'Cazno Widget Form',
+                  widget_id: payload.widgetId
+                });
+              }
+              break;
+          }
+        };
+        
+        window.addEventListener('message', messageListener);
+      }
 
-      return {
+      // Track active widget
+      const widgetInstance = {
         iframe: iframe,
         embedKey: embedKey,
         destroy: function() {
+          activeWidgets.delete(embedKey);
           if (iframe && iframe.parentNode) {
             iframe.parentNode.removeChild(iframe);
           }
+          
+          // Remove listener if no active widgets
+          if (activeWidgets.size === 0 && messageListener) {
+            window.removeEventListener('message', messageListener);
+            messageListener = null;
+          }
         }
       };
+
+      activeWidgets.set(embedKey, widgetInstance);
+      return widgetInstance;
+    },
+
+    // Simple embed method (Calendly-style)
+    embed: function(embedKey, containerSelector, options = {}) {
+      const container = typeof containerSelector === 'string' 
+        ? document.querySelector(containerSelector)
+        : containerSelector;
+
+      if (!container) {
+        console.error('Cazno Widget: Container not found');
+        return null;
+      }
+
+      return this.initInlineWidget({
+        url: `/iframe/${embedKey}`,
+        parentElement: container,
+        resize: true,
+        theme: options.theme || {}
+      });
     }
   };
 
-  // Simple initialization for basic HTML embeds
-  window.CaznoWidget.embed = function(embedKey, containerId, options) {
-    return window.CaznoWidget.init(embedKey, {
-      target: containerId ? '#' + containerId : '.cazno-widget',
-      theme: options || {}
+  // Auto-initialize widgets with data attributes (Typeform-style)
+  function initDataWidgets() {
+    const widgets = document.querySelectorAll('[data-cazno-widget]');
+    widgets.forEach(function(element) {
+      const embedKey = element.getAttribute('data-cazno-widget');
+      const resize = element.getAttribute('data-cazno-resize') !== 'false';
+      
+      if (embedKey && !element.querySelector('iframe')) {
+        window.CaznoWidget.initInlineWidget({
+          url: `/iframe/${embedKey}`,
+          parentElement: element,
+          resize: resize
+        });
+      }
     });
-  };
+  }
+
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDataWidgets);
+  } else {
+    initDataWidgets();
+  }
+
 })();

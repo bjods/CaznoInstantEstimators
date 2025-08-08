@@ -75,6 +75,12 @@ window.addEventListener('message', function(e) {
   if (e.data.type === 'cazno-resize') {
     document.getElementById('cazno-widget').height = e.data.height + 'px';
   }
+  if (e.data.type === 'cazno-scroll-top') {
+    document.getElementById('cazno-widget').scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
+  }
 });
 </script>`
   }

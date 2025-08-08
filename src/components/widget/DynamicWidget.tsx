@@ -378,9 +378,6 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   // PostMessage height communication and auto-scroll
   useEffect(() => {
     const sendHeight = () => {
-      // Scroll to top on step changes
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      
       // Calculate actual content height without extra padding
       setTimeout(() => {
         const height = Math.min(
@@ -398,7 +395,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     // Send height on mount
     setTimeout(sendHeight, 200)
 
-    // Send height on step changes with scroll to top
+    // Send height on step changes
     if (currentStep !== undefined) {
       sendHeight()
     }
@@ -408,6 +405,18 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       setTimeout(sendHeight, 200)
     }
   }, [currentStep, fieldErrors, showValidation])
+
+  // Separate effect for auto-scroll to top
+  useEffect(() => {
+    // Scroll iframe content to top on step changes
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    
+    // Also notify parent to scroll iframe into view
+    window.parent.postMessage({
+      type: 'cazno-scroll-top',
+      step: currentStep
+    }, '*')
+  }, [currentStep])
 
   // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {
@@ -644,7 +653,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
 
       {/* Footer with Navigation */}
       <footer className="px-4 md:px-6 py-4 md:py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}
             disabled={currentStep === (hasBuiltInPersonalInfo ? 0 : -1)}
@@ -671,7 +680,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
           {(isLastStep && !hasQuoteStep) ? (
             <button
               onClick={handleSubmit}
-              className="w-full sm:w-auto px-8 md:px-12 py-3 rounded-lg transition-colors font-medium text-base md:text-lg"
+              className="px-8 md:px-12 py-3 rounded-lg transition-colors font-medium text-base md:text-lg"
               style={{
                 backgroundColor: theme.primaryColor,
                 color: theme.primaryButtonText
@@ -689,7 +698,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
             <button
               onClick={handleNext}
               disabled={componentState && !componentState.canProceed}
-              className="w-full sm:w-auto px-8 md:px-12 py-3 rounded-lg transition-colors font-medium text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 md:px-12 py-3 rounded-lg transition-colors font-medium text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: theme.primaryColor,
                 color: theme.primaryButtonText

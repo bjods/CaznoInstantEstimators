@@ -888,11 +888,11 @@ The system validates:
 
 #### Error Display
 
-When validation fails, users see:
-- 📍 **Location**: Error panel appears above the Next button
-- 🎨 **Styling**: Subtle background with warning icon
-- 📝 **Content**: "Please complete the following required fields:"
-- 📋 **List**: Bulleted list of specific field errors
+When validation fails, users see field-specific errors:
+- 📍 **Location**: Error messages appear directly underneath each invalid field
+- 🎨 **Styling**: Red border on field, warning icon (!) inside field, red error text
+- 📝 **Content**: Individual messages like "Business Name is required!"
+- 🔄 **Auto-clearing**: Errors disappear when user starts typing in that field
 
 #### Best Practices
 

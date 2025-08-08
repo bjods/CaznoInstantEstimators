@@ -9,6 +9,7 @@ import QuoteStepDisplay from '../widgets/QuoteStepDisplay'
 import { WidgetConfig, CTAButton, SchedulingSelection } from '@/types'
 import { useFormAutosave } from '@/hooks/useFormAutosave'
 import { useWidgetTheme } from '@/contexts/WidgetThemeContext'
+import { usePostMessage } from '@/hooks/usePostMessage'
 
 interface DynamicWidgetProps {
   config: WidgetConfig
@@ -39,6 +40,8 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [showValidation, setShowValidation] = useState(false)
   const quoteCompletionTriggered = useRef(false)
+  const widgetContainerRef = useRef<HTMLDivElement>(null)
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
   // Get current step name for tracking
   const getCurrentStepName = () => {
@@ -61,6 +64,12 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     onSubmissionCreated: (submissionId, sessionId) => {
       console.log('Submission created:', submissionId, 'Session:', sessionId)
     }
+  })
+
+  // Initialize PostMessage system for iframe communication
+  const { sendHeightUpdate, sendFormSubmitted, sendWidgetReady } = usePostMessage({
+    widgetId: config.id || 'unknown',
+    debug: process.env.NODE_ENV === 'development'
   })
 
   const updateField = (name: string, value: any) => {
@@ -266,6 +275,13 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
 
       if (result.success) {
         console.log('Submission completed successfully:', result.data)
+        
+        // Send PostMessage notification to parent
+        sendFormSubmitted({
+          submissionId: result.data?.submissionId,
+          pricing: pricingBreakdown
+        })
+        
         // You can add success feedback here (e.g., show thank you message)
       } else {
         console.error('Failed to complete submission:', result.error)
@@ -372,10 +388,69 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     triggerQuoteCompletion()
   }, [isQuoteStep, config.quoteStep, config.pricingCalculator, formData, completeSubmission])
 
+  // Height monitoring and PostMessage communication
+  useEffect(() => {
+    if (!widgetContainerRef.current) return
+
+    // Send widget ready message on initial load
+    const initialHeight = document.documentElement.scrollHeight
+    sendWidgetReady(initialHeight)
+
+    // Create ResizeObserver to monitor height changes
+    resizeObserverRef.current = new ResizeObserver((entries) => {
+      // Use setTimeout to ensure DOM has settled after changes
+      setTimeout(() => {
+        const newHeight = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          document.documentElement.offsetHeight,
+          document.body.offsetHeight
+        )
+        
+        // Add small buffer to prevent scrollbars
+        sendHeightUpdate(newHeight + 20)
+      }, 100)
+    })
+
+    // Observe the main container and document body
+    resizeObserverRef.current.observe(widgetContainerRef.current)
+    resizeObserverRef.current.observe(document.body)
+
+    // Also send height updates on step changes
+    const stepChangeHeight = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+      document.documentElement.offsetHeight,
+      document.body.offsetHeight
+    )
+    sendHeightUpdate(stepChangeHeight + 20)
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
+      }
+    }
+  }, [currentStep, sendHeightUpdate, sendWidgetReady])
+
+  // Send height update when validation errors appear/disappear
+  useEffect(() => {
+    if (Object.keys(fieldErrors).length > 0 || showValidation) {
+      setTimeout(() => {
+        const newHeight = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          document.documentElement.offsetHeight,
+          document.body.offsetHeight
+        )
+        sendHeightUpdate(newHeight + 20)
+      }, 150) // Delay to allow error messages to render
+    }
+  }, [fieldErrors, showValidation, sendHeightUpdate])
+
   // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div ref={widgetContainerRef} className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
         <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-7xl mx-auto">
@@ -450,7 +525,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     const { total, breakdown } = calculateQuoteData()
 
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div ref={widgetContainerRef} className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
         <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-7xl mx-auto">
@@ -532,7 +607,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+    <div ref={widgetContainerRef} className="min-h-screen flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
       {/* Header with Progress */}
       <header className="px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-7xl mx-auto">

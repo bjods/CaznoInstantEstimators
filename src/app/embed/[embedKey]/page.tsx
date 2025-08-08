@@ -19,6 +19,20 @@ export default function EmbedPage({ params }: EmbedPageProps) {
           margin: 0;
           padding: 0;
         }
+
+        @media (max-width: 768px) {
+          html, body {
+            height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+          }
+          
+          body {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+          }
+        }
       `}</style>
       <WidgetLoader embedKey={params.embedKey} />
     </>

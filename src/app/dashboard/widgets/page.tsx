@@ -73,13 +73,32 @@ export default function WidgetsPage() {
 <script>
 window.addEventListener('message', function(e) {
   if (e.data.type === 'cazno-resize') {
-    document.getElementById('cazno-widget').height = e.data.height + 'px';
+    const iframe = document.getElementById('cazno-widget');
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+      // On mobile: fixed viewport height with internal scrolling
+      iframe.height = window.innerHeight + 'px';
+    } else {
+      // On desktop: auto-resize to content
+      iframe.height = e.data.height + 'px';
+    }
   }
   if (e.data.type === 'cazno-scroll-top') {
     document.getElementById('cazno-widget').scrollIntoView({ 
       behavior: 'smooth', 
       block: 'start' 
     });
+  }
+});
+
+// Set initial height based on device
+window.addEventListener('load', function() {
+  const iframe = document.getElementById('cazno-widget');
+  const isMobile = window.innerWidth <= 768;
+  
+  if (isMobile) {
+    iframe.height = window.innerHeight + 'px';
   }
 });
 </script>`

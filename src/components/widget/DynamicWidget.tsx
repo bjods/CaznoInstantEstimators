@@ -375,7 +375,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     triggerQuoteCompletion()
   }, [isQuoteStep, config.quoteStep, config.pricingCalculator, formData, completeSubmission])
 
-  // PostMessage height communication and auto-scroll
+  // PostMessage height communication and mobile styling setup
   useEffect(() => {
     const sendHeight = () => {
       // Calculate actual content height without extra padding
@@ -392,17 +392,41 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       }, 100)
     }
 
+    // Add mobile-optimized styles to body for iOS bounce scrolling
+    const isMobile = window.innerWidth <= 768
+    if (isMobile) {
+      document.body.style.cssText = `
+        height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        position: relative;
+      `
+      document.documentElement.style.cssText = `
+        height: 100vh;
+        overflow: hidden;
+      `
+    }
+
     // Send height on mount
     setTimeout(sendHeight, 200)
 
-    // Send height on step changes
-    if (currentStep !== undefined) {
+    // Send height on step changes (only for desktop)
+    if (currentStep !== undefined && !isMobile) {
       sendHeight()
     }
 
-    // Send height when validation errors appear
-    if (Object.keys(fieldErrors).length > 0 || showValidation) {
+    // Send height when validation errors appear (only for desktop)
+    if ((Object.keys(fieldErrors).length > 0 || showValidation) && !isMobile) {
       setTimeout(sendHeight, 200)
+    }
+
+    return () => {
+      // Cleanup mobile styles if needed
+      if (isMobile) {
+        document.body.style.cssText = ''
+        document.documentElement.style.cssText = ''
+      }
     }
   }, [currentStep, fieldErrors, showValidation])
 

@@ -56,7 +56,7 @@ export default function WidgetsPage() {
   }
 
   const getWidgetUrl = (embedKey: string) => {
-    return `${window.location.origin}/widget/${embedKey}`
+    return `${window.location.origin}/iframe/${embedKey}`
   }
 
   const copyEmbedCode = (embedKey: string) => {
@@ -196,7 +196,7 @@ export default function WidgetsPage() {
               
               <div className="flex items-center space-x-3 ml-6">
                 <Link
-                  href={`/widget/${widget.embed_key}`}
+                  href={`/iframe/${widget.embed_key}`}
                   target="_blank"
                   className="flex items-center space-x-2 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
@@ -223,6 +223,40 @@ export default function WidgetsPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* UTM Parameter Instructions */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-blue-900 mb-3">Track Lead Sources with UTM Parameters</h2>
+        <p className="text-blue-800 mb-4">
+          Add UTM parameters to your widget URLs to track where your leads are coming from. This data will appear in your Analytics dashboard.
+        </p>
+        
+        <div className="bg-white rounded-md p-4 mb-4">
+          <h3 className="text-sm font-medium text-gray-900 mb-2">Example Usage:</h3>
+          <code className="text-xs bg-gray-100 p-2 rounded block text-gray-800 break-all">
+            &lt;iframe src="{getWidgetUrl('your-embed-key')}?utm_source=facebook&amp;utm_campaign=spring_promo" width="100%" height="600" frameBorder="0"&gt;&lt;/iframe&gt;
+          </code>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 className="text-sm font-medium text-blue-900 mb-2">Common UTM Parameters:</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li><strong>utm_source:</strong> facebook, google, email</li>
+              <li><strong>utm_medium:</strong> social, cpc, newsletter</li>
+              <li><strong>utm_campaign:</strong> spring_promo, new_service</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-blue-900 mb-2">Benefits:</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Track which marketing channels work best</li>
+              <li>• See lead sources in Analytics dashboard</li>
+              <li>• Make data-driven marketing decisions</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   )

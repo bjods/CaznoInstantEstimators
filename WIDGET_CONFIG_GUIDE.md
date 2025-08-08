@@ -9,7 +9,7 @@ This guide explains how to create and configure widgets in Supabase for each com
 2. [Creating a New Business](#creating-a-new-business)
 3. [Creating a Widget](#creating-a-widget)
 4. [Widget Security Configuration](#widget-security-configuration)
-5. [Widget Embedding Methods](#widget-embedding-methods)
+5. [Widget Iframe Implementation](#widget-iframe-implementation)
 6. [Analytics Dashboard Configuration](#analytics-dashboard-configuration)
 7. [Component Reference](#component-reference)
 8. [Submission Flow Configuration](#submission-flow-configuration)
@@ -539,17 +539,17 @@ UPDATE widgets SET security_enabled = false WHERE id = 'your-widget-id';
 -- Remember to re-enable after testing!
 ```
 
-## Widget Embedding Methods
+## Widget Iframe Implementation
 
-### Iframe Embedding (Recommended)
+### Iframe Only Access
 
-The iframe embedding method provides complete style isolation and prevents CSS conflicts between your website and the widget. This is the recommended approach for production websites.
+Widgets can only be accessed through iframe embedding to ensure complete style isolation and prevent CSS conflicts between your website and the widget. Direct widget access has been disabled for security.
 
 #### Basic Iframe Embedding
 
 ```html
 <iframe 
-  src="https://yourdomain.com/embed/your-widget-embed-key"
+  src="https://yourdomain.com/iframe/your-widget-embed-key"
   width="100%"
   height="800"
   frameborder="0"
@@ -595,21 +595,6 @@ window.addEventListener('message', (event) => {
 });
 ```
 
-### Direct Embedding (Legacy)
-
-Direct embedding loads the widget components directly into your page. **Not recommended** for production due to potential CSS conflicts.
-
-```jsx
-import WidgetLoader from '@/components/widget/WidgetLoader'
-
-export default function ContactPage() {
-  return (
-    <div className="widget-container">
-      <WidgetLoader embedKey="your-widget-embed-key" />
-    </div>
-  )
-}
-```
 
 ### Embedding Best Practices
 
@@ -627,7 +612,7 @@ export default function ContactPage() {
   </div>
   <iframe 
     id="widget-iframe"
-    src="https://yourdomain.com/embed/your-widget-embed-key"
+    src="https://yourdomain.com/iframe/your-widget-embed-key"
     width="100%"
     height="800"
     frameborder="0"
@@ -648,7 +633,7 @@ export default function ContactPage() {
 ```html
 <!-- Secure iframe with sandbox attributes -->
 <iframe 
-  src="https://yourdomain.com/embed/your-widget-embed-key"
+  src="https://yourdomain.com/iframe/your-widget-embed-key"
   width="100%" 
   height="800"
   frameborder="0"
@@ -1849,12 +1834,12 @@ CREATE TABLE bookings (
 
 After creating a widget, test it at:
 ```
-https://yourdomain.com/widget/[embed_key]
+https://yourdomain.com/iframe/[embed_key]
 ```
 
 For local testing:
 ```
-http://localhost:3000/widget/[embed_key]
+http://localhost:3000/iframe/[embed_key]
 ```
 
 ## Quote Step Configuration

@@ -9,7 +9,7 @@
 
       // Create iframe for the widget
       const iframe = document.createElement('iframe');
-      iframe.src = `${window.location.origin}/widget/${embedKey}`;
+      iframe.src = `${window.location.origin}/iframe/${embedKey}`;
       iframe.style.width = '100%';
       iframe.style.height = '500px';
       iframe.style.border = 'none';

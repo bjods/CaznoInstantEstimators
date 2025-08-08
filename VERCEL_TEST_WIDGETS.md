@@ -7,28 +7,28 @@
 All test widgets now include `cazno-instant-estimators.vercel.app` in their allowed domains and are ready for live testing on your Vercel deployment.
 
 ### **1. Premium Fence Estimator** (High Security)
-- **URL**: https://cazno-instant-estimators.vercel.app/widget/fence-premium-v2
+- **URL**: https://cazno-instant-estimators.vercel.app/iframe/fence-premium-v2
 - **Embed Key**: `fence-premium-v2`
 - **Security**: High security with HTTPS required
 - **Domains**: `testfence.com`, `www.testfence.com`, `*.staging.testfence.com`, `cazno-instant-estimators.vercel.app`
 - **Rate Limit**: 500 requests/hour, 5 embeds max per domain
 
 ### **2. Multi-Service Estimator** (Development Friendly)
-- **URL**: https://cazno-instant-estimators.vercel.app/widget/multi-service-dev
+- **URL**: https://cazno-instant-estimators.vercel.app/iframe/multi-service-dev
 - **Embed Key**: `multi-service-dev`
 - **Security**: Development-friendly with HTTP allowed
 - **Domains**: `localhost`, `*.vercel.app`, `*.netlify.app`, `dev.testbusiness.com`, `cazno-instant-estimators.vercel.app`
 - **Rate Limit**: 10,000 requests/hour, 100 embeds max per domain
 
 ### **3. Hardscaping Quote Tool** (Multi-Client)
-- **URL**: https://cazno-instant-estimators.vercel.app/widget/hardscape-quotes
+- **URL**: https://cazno-instant-estimators.vercel.app/iframe/hardscape-quotes
 - **Embed Key**: `hardscape-quotes`
 - **Security**: Production security for agencies
 - **Domains**: `client1.com`, `*.client1.com`, `client2.org`, `www.client2.org`, `agency-demos.com`, `*.agency-demos.com`, `cazno-instant-estimators.vercel.app`
 - **Rate Limit**: 2,000 requests/hour, 20 embeds max per domain
 
 ### **4. Vercel Demo Widget** (New - Specifically for Vercel)
-- **URL**: https://cazno-instant-estimators.vercel.app/widget/vercel-demo-widget
+- **URL**: https://cazno-instant-estimators.vercel.app/iframe/vercel-demo-widget
 - **Embed Key**: `vercel-demo-widget`
 - **Security**: Vercel-optimized configuration
 - **Domains**: `cazno-instant-estimators.vercel.app`, `*.vercel.app`
@@ -36,7 +36,7 @@ All test widgets now include `cazno-instant-estimators.vercel.app` in their allo
 - **Features**: 2-step form (Service Selection → Contact Info)
 
 ### **5. Basic Contact Form** (Unsecured - For Comparison)
-- **URL**: https://cazno-instant-estimators.vercel.app/widget/basic-contact-unsecured
+- **URL**: https://cazno-instant-estimators.vercel.app/iframe/basic-contact-unsecured
 - **Embed Key**: `basic-contact-unsecured`
 - **Security**: Disabled (allows any domain)
 - **Domains**: None (NULL - accepts all domains)
@@ -93,9 +93,9 @@ All test widgets now include `cazno-instant-estimators.vercel.app` in their allo
 ### **1. Test Widget Loading**
 ```bash
 # These should all work on Vercel:
-curl https://cazno-instant-estimators.vercel.app/widget/vercel-demo-widget
-curl https://cazno-instant-estimators.vercel.app/widget/fence-premium-v2
-curl https://cazno-instant-estimators.vercel.app/widget/multi-service-dev
+curl https://cazno-instant-estimators.vercel.app/iframe/vercel-demo-widget
+curl https://cazno-instant-estimators.vercel.app/iframe/fence-premium-v2
+curl https://cazno-instant-estimators.vercel.app/iframe/multi-service-dev
 ```
 
 ### **2. Test Dashboard Interface**

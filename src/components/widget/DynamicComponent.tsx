@@ -75,5 +75,14 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
     />
   }
   
+  // Special handling for calendar placeholder
+  if (type === 'calendar_placeholder') {
+    return <Component 
+      {...props} 
+      value={value} 
+      onChange={onChange}
+    />
+  }
+  
   return <Component {...props} value={value} onChange={onChange} />
 }

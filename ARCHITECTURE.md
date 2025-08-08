@@ -24,7 +24,7 @@ Instant Estimate System is a custom form builder for home service businesses tha
 /dashboard/widgets/[id]    → Customize specific widget
 /dashboard/settings        → Business settings
 /dashboard/billing         → Subscription management
-/widget/[embedKey]         → Public widget (embeddable)
+/iframe/[embedKey]         → Public widget (iframe only)
 /api/*                     → Backend API routes
 ```
 

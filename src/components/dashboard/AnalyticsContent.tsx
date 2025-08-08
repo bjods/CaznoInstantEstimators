@@ -33,6 +33,11 @@ interface Submission {
   booking_confirmed?: boolean
   started_at?: string
   created_at: string
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_term?: string
+  utm_content?: string
   widgets?: {
     name: string
     embed_key: string
@@ -91,6 +96,7 @@ export default function AnalyticsContent({
     const businessHoursSubmissions: Submission[] = []
     const appointmentsByHour: Record<number, number> = {}
     const bookingsByDay: Record<string, number> = {}
+    const leadSources: Record<string, number> = {}
     
     filteredData.submissions.forEach(submission => {
       const date = new Date(submission.created_at)
@@ -112,6 +118,10 @@ export default function AnalyticsContent({
       }
       estimatesByService[service].count += 1
       estimatesByService[service].value += estimatedPrice
+      
+      // Track lead sources
+      const source = submission.utm_source || 'Direct'
+      leadSources[source] = (leadSources[source] || 0) + 1
       
       // Booking analytics (only for booking widgets)
       if (hasBooking && (submission.appointment_date || submission.booking_confirmed)) {
@@ -161,6 +171,7 @@ export default function AnalyticsContent({
       estimatesByService,
       bookingsByDay,
       appointmentsByHour,
+      leadSources,
       formCompletionRate,
       bookingCompletionRate,
       afterHours: {
@@ -377,6 +388,39 @@ export default function AnalyticsContent({
             {Object.keys(analyticsData.estimatesByService).length === 0 && (
               <div className="text-center py-8">
                 <p className="text-gray-500 text-sm">No service data available yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Lead Sources */}
+        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Lead Sources</h2>
+          <div className="space-y-3">
+            {Object.entries(analyticsData.leadSources).map(([source, count]) => {
+              const maxCount = Math.max(...Object.values(analyticsData.leadSources)) || 1
+              const percentage = (count / maxCount) * 100
+              
+              return (
+                <div key={source} className="flex items-center space-x-3">
+                  <div className="w-20 text-sm text-gray-900 font-medium">
+                    {source}
+                  </div>
+                  <div className="flex-1 bg-gray-200 rounded-full h-3 relative">
+                    <div 
+                      className="bg-indigo-500 h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="w-12 text-sm text-gray-600 text-right">
+                    {count}
+                  </div>
+                </div>
+              )
+            })}
+            {Object.keys(analyticsData.leadSources).length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-sm">No lead source data available yet</p>
               </div>
             )}
           </div>

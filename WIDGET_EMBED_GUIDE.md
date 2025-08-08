@@ -2,11 +2,11 @@
 
 This guide explains how to embed Cazno widgets on your website with auto-resizing functionality and analytics integration.
 
-## Quick Start
+## How to Embed Your Widget
 
-The easiest way to embed a Cazno widget is with our JavaScript library that provides automatic height adjustment and form submission tracking.
+Embedding a Cazno widget is simple and provides automatic height adjustment with no scroll bars.
 
-### Method 1: Simple Embed (Recommended)
+### Simple Embed
 
 ```html
 <!-- Include Cazno Widget Script -->
@@ -21,7 +21,7 @@ CaznoWidget.embed('YOUR_EMBED_KEY', 'cazno-widget');
 </script>
 ```
 
-### Method 2: Advanced Embed with Options
+### Advanced Embed with Options
 
 ```html
 <!-- Include Cazno Widget Script -->
@@ -194,34 +194,15 @@ widget.destroy();
 - Check that the tracking scripts are initialized properly
 - Verify events in your analytics dashboard
 
-## Migration from Basic Iframe
+## Why Use This Method?
 
-If you're currently using a basic iframe embed:
+The auto-resizing embed method provides the best user experience:
 
-### Old Method (Basic Iframe)
-```html
-<iframe src="https://cazno.app/iframe/YOUR_EMBED_KEY" 
-        width="100%" 
-        height="600" 
-        frameborder="0">
-</iframe>
-```
-
-### New Method (Auto-Resizing)
-```html
-<script src="https://cazno.app/widget-embed.js"></script>
-<div id="cazno-widget"></div>
-<script>
-CaznoWidget.embed('YOUR_EMBED_KEY', 'cazno-widget');
-</script>
-```
-
-**Benefits of upgrading:**
-- ✅ No scroll bars - perfect height every time
-- ✅ Better mobile experience  
-- ✅ Automatic analytics tracking
-- ✅ Form submission notifications
-- ✅ Better user experience
+- ✅ **No scroll bars** - Widget automatically adjusts to content height
+- ✅ **Better mobile experience** - Responsive height adjustment on all devices  
+- ✅ **Automatic analytics tracking** - Built-in Google Analytics and Facebook Pixel integration
+- ✅ **Form submission notifications** - Get notified when users complete forms
+- ✅ **Seamless integration** - Looks like part of your website
 
 ## Support
 

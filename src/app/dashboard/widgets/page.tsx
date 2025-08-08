@@ -28,7 +28,7 @@ export default function WidgetsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showEmbedModal, setShowEmbedModal] = useState<string | null>(null)
-  const [embedType, setEmbedType] = useState<'auto-resize' | 'basic'>('auto-resize')
+  const [embedType, setEmbedType] = useState<'auto-resize'>('auto-resize')
   const [copiedEmbed, setCopiedEmbed] = useState<string | null>(null)
 
   useEffect(() => {
@@ -82,22 +82,18 @@ CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
     setTimeout(() => setCopiedEmbed(null), 2000)
   }
 
-  const getEmbedCode = (embedKey: string, type: 'auto-resize' | 'basic') => {
-    if (type === 'auto-resize') {
-      return `<!-- Cazno Auto-Resizing Widget -->
+  const getEmbedCode = (embedKey: string) => {
+    return `<!-- Cazno Auto-Resizing Widget -->
 <script src="${window.location.origin}/widget-embed.js"></script>
 <div id="cazno-widget-${embedKey}"></div>
 <script>
 CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
 </script>`
-    } else {
-      return `<iframe src="${getWidgetUrl(embedKey)}" width="100%" height="600" frameBorder="0"></iframe>`
-    }
   }
 
-  const copyToClipboard = async (text: string, embedKey: string, type: string) => {
+  const copyToClipboard = async (text: string, embedKey: string) => {
     await navigator.clipboard.writeText(text)
-    setCopiedEmbed(embedKey + '-' + type)
+    setCopiedEmbed(embedKey)
     setTimeout(() => setCopiedEmbed(null), 2000)
   }
 
@@ -324,55 +320,17 @@ CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
                 </button>
               </div>
 
-              {/* Embed Type Selection */}
-              <div className="mb-6">
-                <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setEmbedType('auto-resize')}
-                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      embedType === 'auto-resize'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Auto-Resizing (Recommended)
-                  </button>
-                  <button
-                    onClick={() => setEmbedType('basic')}
-                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      embedType === 'basic'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Basic iframe
-                  </button>
-                </div>
-              </div>
-
               {/* Description */}
               <div className="mb-6">
-                {embedType === 'auto-resize' ? (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h3 className="text-green-900 font-medium mb-2">✅ Auto-Resizing Widget (Recommended)</h3>
-                    <ul className="text-green-800 text-sm space-y-1">
-                      <li>• <strong>No scroll bars</strong> - Widget automatically adjusts height</li>
-                      <li>• <strong>Analytics tracking</strong> - Google Analytics & Facebook Pixel integration</li>
-                      <li>• <strong>Form notifications</strong> - Get notified when forms are submitted</li>
-                      <li>• <strong>Better mobile experience</strong> - Responsive height adjustment</li>
-                    </ul>
-                  </div>
-                ) : (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h3 className="text-yellow-900 font-medium mb-2">⚠️ Basic iframe</h3>
-                    <ul className="text-yellow-800 text-sm space-y-1">
-                      <li>• Fixed height may cause scroll bars</li>
-                      <li>• No automatic analytics tracking</li>
-                      <li>• Less responsive on mobile devices</li>
-                      <li>• Use only if auto-resizing doesn't work</li>
-                    </ul>
-                  </div>
-                )}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h3 className="text-green-900 font-medium mb-2">✅ Auto-Resizing Widget</h3>
+                  <ul className="text-green-800 text-sm space-y-1">
+                    <li>• <strong>No scroll bars</strong> - Widget automatically adjusts height</li>
+                    <li>• <strong>Analytics tracking</strong> - Google Analytics & Facebook Pixel integration</li>
+                    <li>• <strong>Form notifications</strong> - Get notified when forms are submitted</li>
+                    <li>• <strong>Better mobile experience</strong> - Responsive height adjustment</li>
+                  </ul>
+                </div>
               </div>
 
               {/* Code Display */}
@@ -380,21 +338,21 @@ CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
                 <div className="flex items-center justify-between mb-3">
                   <label className="text-sm font-medium text-gray-900">Embed Code:</label>
                   <button
-                    onClick={() => copyToClipboard(getEmbedCode(showEmbedModal, embedType), showEmbedModal, embedType)}
+                    onClick={() => copyToClipboard(getEmbedCode(showEmbedModal), showEmbedModal)}
                     className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      copiedEmbed === `${showEmbedModal}-${embedType}`
+                      copiedEmbed === showEmbedModal
                         ? 'bg-green-100 text-green-700'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     <ClipboardDocumentIcon className="w-4 h-4" />
-                    <span>{copiedEmbed === `${showEmbedModal}-${embedType}` ? 'Copied!' : 'Copy Code'}</span>
+                    <span>{copiedEmbed === showEmbedModal ? 'Copied!' : 'Copy Code'}</span>
                   </button>
                 </div>
                 
                 <pre className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm overflow-x-auto">
                   <code className="text-gray-800">
-                    {getEmbedCode(showEmbedModal, embedType)}
+                    {getEmbedCode(showEmbedModal)}
                   </code>
                 </pre>
               </div>
@@ -406,9 +364,7 @@ CaznoWidget.embed('${embedKey}', 'cazno-widget-${embedKey}');
                   <li>1. Copy the embed code above</li>
                   <li>2. Paste it into your website's HTML where you want the widget to appear</li>
                   <li>3. Save and publish your changes</li>
-                  {embedType === 'auto-resize' && (
-                    <li>4. The widget will automatically resize and track form submissions</li>
-                  )}
+                  <li>4. The widget will automatically resize and track form submissions</li>
                 </ol>
               </div>
 

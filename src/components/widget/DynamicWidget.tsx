@@ -445,9 +445,9 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {
     return (
-      <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div ref={widgetContainerRef} className="m-4 md:m-6 rounded-lg shadow-sm min-h-full flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         {/* Header with Progress */}
-        <header className="mx-4 md:mx-6 mt-4 px-4 md:px-6 py-4 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>Personal Information</h1>
@@ -468,7 +468,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 md:px-6 py-6 md:py-8">
+        <main className="flex-1 px-4 md:px-6 py-6 md:py-8" style={{ backgroundColor: theme.backgroundColor }}>
           <div className="max-w-4xl mx-auto">
             <PersonalInfoStep
               formData={{
@@ -522,9 +522,9 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     const { total, breakdown } = calculateQuoteData()
 
     return (
-      <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+      <div ref={widgetContainerRef} className="m-4 md:m-6 rounded-lg shadow-sm min-h-full flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         {/* Header with Progress */}
-        <header className="mx-4 md:mx-6 mt-4 px-4 md:px-6 py-4 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>{config.quoteStep.title}</h1>
@@ -545,7 +545,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1">
+        <main className="flex-1" style={{ backgroundColor: theme.backgroundColor }}>
           {config.quoteStep.component === 'QuoteStepDisplay' ? (
             <QuoteStepDisplay
               formData={formData}
@@ -569,7 +569,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
         </main>
 
         {/* Footer with Navigation */}
-        <footer className="mx-4 md:mx-6 mb-4 px-4 md:px-6 py-4 md:py-6 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <footer className="px-4 md:px-6 py-4 md:py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-4xl mx-auto flex justify-between items-center">
             <button
               onClick={handlePrevious}
@@ -606,9 +606,9 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   }
 
   return (
-    <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
+    <div ref={widgetContainerRef} className="m-4 md:m-6 rounded-lg shadow-sm min-h-full flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
       {/* Header with Progress */}
-      <header className="mx-4 md:mx-6 mt-4 px-4 md:px-6 py-4 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+      <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
             <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>{currentStepConfig.title}</h1>
@@ -640,7 +640,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 md:px-6 py-6 md:py-8">
+      <main className="flex-1 px-4 md:px-6 py-6 md:py-8" style={{ backgroundColor: theme.backgroundColor }}>
         <div className="max-w-4xl mx-auto">
           {/* Step Components */}
           <div className="space-y-4 md:space-y-6 mb-8 md:mb-12">
@@ -676,7 +676,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
 
 
       {/* Footer with Navigation */}
-      <footer className="mx-4 md:mx-6 mb-4 px-4 md:px-6 py-4 md:py-6 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+      <footer className="px-4 md:px-6 py-4 md:py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}

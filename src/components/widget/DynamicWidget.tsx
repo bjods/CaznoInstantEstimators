@@ -445,7 +445,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   // Show personal info step (only if not built into widget steps)
   if (!hasBuiltInPersonalInfo && currentStep === -1) {
     return (
-      <div ref={widgetContainerRef} className="m-4 md:m-6 rounded-lg shadow-sm min-h-full flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+      <div ref={widgetContainerRef} className="rounded-lg shadow-sm min-h-screen flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         {/* Header with Progress */}
         <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-4xl mx-auto">
@@ -522,7 +522,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     const { total, breakdown } = calculateQuoteData()
 
     return (
-      <div ref={widgetContainerRef} className="m-4 md:m-6 rounded-lg shadow-sm min-h-full flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+      <div ref={widgetContainerRef} className="rounded-lg shadow-sm min-h-screen flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         {/* Header with Progress */}
         <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
           <div className="max-w-4xl mx-auto">
@@ -606,7 +606,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   }
 
   return (
-    <div ref={widgetContainerRef} className="m-4 md:m-6 rounded-lg shadow-sm min-h-full flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+    <div ref={widgetContainerRef} className="rounded-lg shadow-sm min-h-screen flex flex-col" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
       {/* Header with Progress */}
       <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
         <div className="max-w-4xl mx-auto">

@@ -18,7 +18,6 @@ export default function EmbedPage({ params }: EmbedPageProps) {
           -moz-osx-font-smoothing: grayscale;
           margin: 0;
           padding: 0;
-          background-color: #000000;
         }
 
         @media (max-width: 768px) {

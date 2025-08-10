@@ -447,7 +447,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     return (
       <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
-        <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
+        <header className="mx-4 md:mx-6 mt-4 px-4 md:px-6 py-4 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>Personal Information</h1>
@@ -524,7 +524,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
     return (
       <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
         {/* Header with Progress */}
-        <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
+        <header className="mx-4 md:mx-6 mt-4 px-4 md:px-6 py-4 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>{config.quoteStep.title}</h1>
@@ -569,7 +569,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
         </main>
 
         {/* Footer with Navigation */}
-        <footer className="px-4 md:px-6 py-4 md:py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
+        <footer className="mx-4 md:mx-6 mb-4 px-4 md:px-6 py-4 md:py-6 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
           <div className="max-w-4xl mx-auto flex justify-between items-center">
             <button
               onClick={handlePrevious}
@@ -608,7 +608,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
   return (
     <div ref={widgetContainerRef} className="min-h-full flex flex-col" style={{ backgroundColor: theme.backgroundColor }}>
       {/* Header with Progress */}
-      <header className="px-4 md:px-6 py-4" style={{ backgroundColor: theme.cardBackground, borderBottom: `1px solid ${theme.borderColor}` }}>
+      <header className="mx-4 md:mx-6 mt-4 px-4 md:px-6 py-4 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
             <h1 className="text-lg md:text-xl font-semibold" style={{ color: theme.primaryText }}>{currentStepConfig.title}</h1>
@@ -676,7 +676,7 @@ export function DynamicWidget({ config, utmData = {} }: DynamicWidgetProps) {
 
 
       {/* Footer with Navigation */}
-      <footer className="px-4 md:px-6 py-4 md:py-6" style={{ backgroundColor: theme.cardBackground, borderTop: `1px solid ${theme.borderColor}` }}>
+      <footer className="mx-4 md:mx-6 mb-4 px-4 md:px-6 py-4 md:py-6 rounded-lg shadow-sm" style={{ backgroundColor: theme.cardBackground, border: `1px solid ${theme.borderColor}`, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <button
             onClick={handlePrevious}

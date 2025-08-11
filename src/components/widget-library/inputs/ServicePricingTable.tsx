@@ -8,6 +8,7 @@ interface Service {
   id: string
   name: string
   basePrice: number
+  minPrice: number
   pricingMethod: 'fixed' | 'per_sqft' | 'per_linear_ft' | 'per_hour' | 'custom'
   unit?: string
 }
@@ -24,32 +25,32 @@ interface ServicePricingTableProps {
 // Pre-populated services by business type
 const SUGGESTED_SERVICES: Record<string, Service[]> = {
   fencing: [
-    { id: '1', name: 'Wood Fence Installation', basePrice: 25, pricingMethod: 'per_linear_ft' },
-    { id: '2', name: 'Chain Link Fence', basePrice: 15, pricingMethod: 'per_linear_ft' },
-    { id: '3', name: 'Vinyl Fence Installation', basePrice: 35, pricingMethod: 'per_linear_ft' },
-    { id: '4', name: 'Fence Repair', basePrice: 150, pricingMethod: 'fixed' },
-    { id: '5', name: 'Gate Installation', basePrice: 500, pricingMethod: 'fixed' }
+    { id: '1', name: 'Wood Fence Installation', basePrice: 25, minPrice: 500, pricingMethod: 'per_linear_ft' },
+    { id: '2', name: 'Chain Link Fence', basePrice: 15, minPrice: 300, pricingMethod: 'per_linear_ft' },
+    { id: '3', name: 'Vinyl Fence Installation', basePrice: 35, minPrice: 700, pricingMethod: 'per_linear_ft' },
+    { id: '4', name: 'Fence Repair', basePrice: 150, minPrice: 150, pricingMethod: 'fixed' },
+    { id: '5', name: 'Gate Installation', basePrice: 500, minPrice: 500, pricingMethod: 'fixed' }
   ],
   concrete: [
-    { id: '1', name: 'Driveway Installation', basePrice: 8, pricingMethod: 'per_sqft' },
-    { id: '2', name: 'Patio Installation', basePrice: 10, pricingMethod: 'per_sqft' },
-    { id: '3', name: 'Sidewalk Installation', basePrice: 6, pricingMethod: 'per_sqft' },
-    { id: '4', name: 'Stamped Concrete', basePrice: 15, pricingMethod: 'per_sqft' },
-    { id: '5', name: 'Concrete Repair', basePrice: 200, pricingMethod: 'fixed' }
+    { id: '1', name: 'Driveway Installation', basePrice: 8, minPrice: 800, pricingMethod: 'per_sqft' },
+    { id: '2', name: 'Patio Installation', basePrice: 10, minPrice: 600, pricingMethod: 'per_sqft' },
+    { id: '3', name: 'Sidewalk Installation', basePrice: 6, minPrice: 400, pricingMethod: 'per_sqft' },
+    { id: '4', name: 'Stamped Concrete', basePrice: 15, minPrice: 1000, pricingMethod: 'per_sqft' },
+    { id: '5', name: 'Concrete Repair', basePrice: 200, minPrice: 200, pricingMethod: 'fixed' }
   ],
   landscaping: [
-    { id: '1', name: 'Lawn Mowing', basePrice: 50, pricingMethod: 'fixed' },
-    { id: '2', name: 'Sod Installation', basePrice: 2, pricingMethod: 'per_sqft' },
-    { id: '3', name: 'Tree Trimming', basePrice: 150, pricingMethod: 'per_hour' },
-    { id: '4', name: 'Mulch Installation', basePrice: 75, pricingMethod: 'custom', unit: 'per yard' },
-    { id: '5', name: 'Garden Design', basePrice: 500, pricingMethod: 'fixed' }
+    { id: '1', name: 'Lawn Mowing', basePrice: 50, minPrice: 50, pricingMethod: 'fixed' },
+    { id: '2', name: 'Sod Installation', basePrice: 2, minPrice: 300, pricingMethod: 'per_sqft' },
+    { id: '3', name: 'Tree Trimming', basePrice: 150, minPrice: 150, pricingMethod: 'per_hour' },
+    { id: '4', name: 'Mulch Installation', basePrice: 75, minPrice: 150, pricingMethod: 'custom', unit: 'per yard' },
+    { id: '5', name: 'Garden Design', basePrice: 500, minPrice: 500, pricingMethod: 'fixed' }
   ],
   roofing: [
-    { id: '1', name: 'Asphalt Shingle Roof', basePrice: 4, pricingMethod: 'per_sqft' },
-    { id: '2', name: 'Metal Roof Installation', basePrice: 8, pricingMethod: 'per_sqft' },
-    { id: '3', name: 'Roof Repair', basePrice: 300, pricingMethod: 'fixed' },
-    { id: '4', name: 'Gutter Installation', basePrice: 10, pricingMethod: 'per_linear_ft' },
-    { id: '5', name: 'Roof Inspection', basePrice: 200, pricingMethod: 'fixed' }
+    { id: '1', name: 'Asphalt Shingle Roof', basePrice: 4, minPrice: 800, pricingMethod: 'per_sqft' },
+    { id: '2', name: 'Metal Roof Installation', basePrice: 8, minPrice: 1200, pricingMethod: 'per_sqft' },
+    { id: '3', name: 'Roof Repair', basePrice: 300, minPrice: 300, pricingMethod: 'fixed' },
+    { id: '4', name: 'Gutter Installation', basePrice: 10, minPrice: 200, pricingMethod: 'per_linear_ft' },
+    { id: '5', name: 'Roof Inspection', basePrice: 200, minPrice: 200, pricingMethod: 'fixed' }
   ]
 }
 
@@ -85,6 +86,7 @@ export function ServicePricingTable({
       id: Date.now().toString(),
       name: '',
       basePrice: 0,
+      minPrice: 0,
       pricingMethod: 'fixed'
     }
     setServices([...services, newService])
@@ -109,6 +111,17 @@ export function ServicePricingTable({
       case 'per_hour': return 'Per Hour'
       case 'custom': return unit || 'Custom'
       default: return method
+    }
+  }
+
+  const getPriceLabel = (method: Service['pricingMethod'], unit?: string) => {
+    switch (method) {
+      case 'fixed': return 'Fixed Price'
+      case 'per_sqft': return 'Price per Sq Ft'
+      case 'per_linear_ft': return 'Price per Linear Ft'
+      case 'per_hour': return 'Price per Hour'
+      case 'custom': return `Price ${unit || 'per unit'}`
+      default: return 'Price'
     }
   }
 
@@ -164,7 +177,7 @@ export function ServicePricingTable({
                   ...suggestion,
                   id: Date.now().toString()
                 })}
-                className="px-3 py-1.5 text-xs rounded-md transition-colors"
+                className="px-3 py-2 text-xs rounded-md transition-colors"
                 style={{
                   backgroundColor: theme.inputBackground,
                   color: theme.primaryText,
@@ -179,7 +192,12 @@ export function ServicePricingTable({
                   e.currentTarget.style.color = theme.primaryText
                 }}
               >
-                + {suggestion.name}
+                <div className="text-left">
+                  <div className="font-medium">+ {suggestion.name}</div>
+                  <div className="text-xs opacity-75">
+                    ${suggestion.basePrice} {getPricingMethodLabel(suggestion.pricingMethod, suggestion.unit).toLowerCase()} • ${suggestion.minPrice} min
+                  </div>
+                </div>
               </button>
             ))}
           </div>
@@ -199,7 +217,10 @@ export function ServicePricingTable({
                   Pricing Method
                 </th>
                 <th className="text-left py-2 px-3 text-sm font-medium" style={{ color: theme.secondaryText }}>
-                  Base Price
+                  Unit Price
+                </th>
+                <th className="text-left py-2 px-3 text-sm font-medium" style={{ color: theme.secondaryText }}>
+                  Minimum Price
                 </th>
                 <th className="text-right py-2 px-3 text-sm font-medium" style={{ color: theme.secondaryText }}>
                   Actions
@@ -270,21 +291,51 @@ export function ServicePricingTable({
                     )}
                   </td>
                   <td className="py-3 px-3">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm" style={{ color: theme.secondaryText }}>$</span>
-                      <input
-                        type="number"
-                        value={service.basePrice}
-                        onChange={(e) => updateService(service.id, { 
-                          basePrice: parseFloat(e.target.value) || 0 
-                        })}
-                        className="w-24 px-2 py-1 rounded text-sm"
-                        style={{
-                          backgroundColor: theme.inputBackground,
-                          color: theme.inputText,
-                          border: `1px solid ${theme.inputBorder}`
-                        }}
-                      />
+                    <div className="space-y-1">
+                      <div className="text-xs" style={{ color: theme.secondaryText }}>
+                        {getPriceLabel(service.pricingMethod, service.unit)}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm" style={{ color: theme.secondaryText }}>$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={service.basePrice}
+                          onChange={(e) => updateService(service.id, { 
+                            basePrice: parseFloat(e.target.value) || 0 
+                          })}
+                          className="w-24 px-2 py-1 rounded text-sm"
+                          style={{
+                            backgroundColor: theme.inputBackground,
+                            color: theme.inputText,
+                            border: `1px solid ${theme.inputBorder}`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3 px-3">
+                    <div className="space-y-1">
+                      <div className="text-xs" style={{ color: theme.secondaryText }}>
+                        Min project cost
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm" style={{ color: theme.secondaryText }}>$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={service.minPrice}
+                          onChange={(e) => updateService(service.id, { 
+                            minPrice: parseFloat(e.target.value) || 0 
+                          })}
+                          className="w-24 px-2 py-1 rounded text-sm"
+                          style={{
+                            backgroundColor: theme.inputBackground,
+                            color: theme.inputText,
+                            border: `1px solid ${theme.inputBorder}`
+                          }}
+                        />
+                      </div>
                     </div>
                   </td>
                   <td className="py-3 px-3">

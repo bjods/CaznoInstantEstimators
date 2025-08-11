@@ -62,9 +62,19 @@ export function ServicePricingTable({
   error
 }: ServicePricingTableProps) {
   const theme = useWidgetTheme()
-  const [services, setServices] = useState<Service[]>(value)
+  // Ensure value is always an array
+  const initialServices = Array.isArray(value) ? value : []
+  const [services, setServices] = useState<Service[]>(initialServices)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showSuggestions, setShowSuggestions] = useState(true)
+
+  useEffect(() => {
+    // Sync with prop changes
+    const propServices = Array.isArray(value) ? value : []
+    if (JSON.stringify(propServices) !== JSON.stringify(services)) {
+      setServices(propServices)
+    }
+  }, [value])
 
   useEffect(() => {
     onChange(services)
@@ -102,7 +112,7 @@ export function ServicePricingTable({
     }
   }
 
-  const suggestedServices = SUGGESTED_SERVICES[businessType.toLowerCase()] || []
+  const suggestedServices = SUGGESTED_SERVICES[businessType?.toLowerCase()] || []
   const unusedSuggestions = suggestedServices.filter(suggested => 
     !services.some(service => service.name === suggested.name)
   )

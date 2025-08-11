@@ -57,12 +57,15 @@ export function DynamicServiceOptions({
   error
 }: DynamicServiceOptionsProps) {
   const theme = useWidgetTheme()
-  const [servicesWithOptions, setServicesWithOptions] = useState<ServiceWithOptions[]>(value)
-  const [activeServiceId, setActiveServiceId] = useState<string>(services[0]?.id || '')
+  // Ensure values are always arrays
+  const initialValue = Array.isArray(value) ? value : []
+  const safeServices = Array.isArray(services) ? services : []
+  const [servicesWithOptions, setServicesWithOptions] = useState<ServiceWithOptions[]>(initialValue)
+  const [activeServiceId, setActiveServiceId] = useState<string>(safeServices[0]?.id || '')
 
   useEffect(() => {
     // Initialize with empty options for each service
-    const initialized = services.map(service => {
+    const initialized = safeServices.map(service => {
       const existing = servicesWithOptions.find(s => s.serviceId === service.id)
       return existing || {
         serviceId: service.id,
@@ -71,7 +74,7 @@ export function DynamicServiceOptions({
       }
     })
     setServicesWithOptions(initialized)
-  }, [services])
+  }, [safeServices])
 
   useEffect(() => {
     onChange(servicesWithOptions)
@@ -125,7 +128,7 @@ export function DynamicServiceOptions({
     }
   }
 
-  if (services.length === 0) {
+  if (safeServices.length === 0) {
     return (
       <div className="text-center py-8" style={{ color: theme.secondaryText }}>
         <p className="text-sm">Add services first to configure options</p>
@@ -141,7 +144,7 @@ export function DynamicServiceOptions({
 
       {/* Service tabs */}
       <div className="flex flex-wrap gap-2 border-b" style={{ borderColor: theme.borderColor }}>
-        {services.map(service => (
+        {safeServices.map(service => (
           <button
             key={service.id}
             type="button"

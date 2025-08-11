@@ -86,6 +86,18 @@ export function DynamicComponent({ type, props, value, onChange, formData, confi
       error={error}
     />
   }
+
+  // Special handling for service pricing table
+  if (type === 'service_pricing_table' && formData) {
+    const businessType = props.businessType?.startsWith('{{') ? formData.business_type : props.businessType
+    return <Component {...props} value={value} onChange={onChange} businessType={businessType} error={error} />
+  }
+
+  // Special handling for dynamic service options
+  if (type === 'dynamic_service_options' && formData) {
+    const services = props.services?.startsWith('{{') ? formData.services : props.services
+    return <Component {...props} value={value} onChange={onChange} services={services} error={error} />
+  }
   
   return <Component {...props} value={value} onChange={onChange} error={error} />
 }

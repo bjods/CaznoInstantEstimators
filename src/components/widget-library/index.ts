@@ -20,6 +20,9 @@ import { MeasurementHub } from './inputs/MeasurementHub'
 import { ServiceDetailsHub } from './inputs/ServiceDetailsHub'
 import { SchedulingInput } from './inputs/SchedulingInput'
 import { CalendarPlaceholder } from './inputs/CalendarPlaceholder'
+import { ServicePricingTable } from './inputs/ServicePricingTable'
+import { ColorPicker } from './inputs/ColorPicker'
+import { DynamicServiceOptions } from './inputs/DynamicServiceOptions'
 
 export const ComponentMap = {
   'text_input': TextInput,
@@ -44,6 +47,9 @@ export const ComponentMap = {
   'service_details_hub': ServiceDetailsHub,
   'scheduling_input': SchedulingInput,
   'calendar_placeholder': CalendarPlaceholder,
+  'service_pricing_table': ServicePricingTable,
+  'color_picker': ColorPicker,
+  'dynamic_service_options': DynamicServiceOptions,
 } as const
 
 export type ComponentType = keyof typeof ComponentMap
@@ -71,5 +77,8 @@ export {
   MeasurementHub,
   ServiceDetailsHub,
   SchedulingInput,
-  CalendarPlaceholder
+  CalendarPlaceholder,
+  ServicePricingTable,
+  ColorPicker,
+  DynamicServiceOptions
 }

@@ -90,19 +90,19 @@ export default function Home() {
         )}
       </nav>
 
-      <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6 pt-20">
+      <section className="relative min-h-screen flex flex-col items-center justify-center bg-black text-white px-6 py-32">
 
         {/* Main Content */}
         <div className="text-center max-w-5xl mx-auto relative z-10">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-8">
             Turn website visitors into paying customers with instant quote calculators that work 24/7.
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
             Give the website visitors you're already getting what they want (instant pricing), and capture more, high quality leads.
           </p>
           
-          <Link href="/get-started" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold text-lg transition-colors transform hover:scale-105 mb-12">
+          <Link href="/get-started" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-full font-bold text-lg transition-colors transform hover:scale-105 mb-20">
             Get Started
           </Link>
 
